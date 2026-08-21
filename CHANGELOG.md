@@ -2,6 +2,23 @@
 
 This changelog records **publicly published releases only**. Internal development checkpoints and benchmark lineage are intentionally omitted.
 
+## 1.0.4 — 2026-08-21
+
+Benchmark and documentation release. Runtime transformation semantics are unchanged from 1.0.3.
+
+### Benchmarking and documentation
+
+- Added a reproducible plain-CPython-vs-extension benchmark covering switch dispatch, function inlining, and strict goto.
+- Published the README benchmark table from the committed JSON evidence under `benchmarks/results/`.
+- Added benchmark methodology and interpretation notes so speedups and slowdowns are presented rather than selectively reported.
+- Added attribution to [Entian's `goto`](https://entrian.com/goto/) as an inspiration for the goto extension's source-level label/jump idea.
+- Updated public release metadata and documentation to 1.0.4.
+
+### Packaging
+
+- Retains CPython `>=3.13,<3.14`, MPL-2.0, and the certified `bytecode>=0.17,<0.18` runtime dependency boundary.
+- Retains the hardened GitHub Release and PyPI Trusted Publishing workflow.
+
 ## 1.0.3 — 2026-08-21
 
 Initial public release of `cpython-extensions`.

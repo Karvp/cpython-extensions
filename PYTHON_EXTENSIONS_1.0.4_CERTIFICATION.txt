@@ -1,0 +1,60 @@
+python_extensions / cpython-extensions 1.0.4
+PRODUCTION RELEASE CERTIFICATION
+Date: 2026-08-21
+Target: CPython 3.13.x
+Primary interpreter used for this pass: CPython 3.13.5
+
+SCOPE
+-----
+1.0.4 is a benchmark/documentation/metadata release over the 1.0.3 runtime.
+A recursive comparison against the 1.0.3 source tree shows the transformation
+implementation under src/python_extensions is unchanged except for _version.py.
+
+The release adds a reproducible plain-CPython-vs-extension benchmark, publishes
+its complete results in the README, documents Entian's goto project as an
+inspiration for the source-level goto/label idea, and carries forward the
+hardened GitHub Release / PyPI metadata validation pipeline.
+
+BENCHMARK EVIDENCE
+------------------
+Benchmark: benchmarks/scripts/benchmark_readme_baseline_v104.py
+Result:    benchmarks/results/BENCHMARK_README_BASELINE_V104.json
+Runtime:   CPython 3.13.5, Linux x86-64
+Method:    timeit.repeat, 20,000 timed batches x 9 repeats, 500 warm-up batches
+
+Recorded median results:
+- 8-way string routing: 18.003 us plain vs 15.709 us extension, 1.146x speedup
+- small affine helper: 19.105 us plain vs 13.967 us extension, 1.368x speedup
+- countdown state loop: 13.192 us plain vs 13.288 us strict goto, 0.993x
+  relative result (about 0.7% slower)
+
+The benchmark reports both improvements and regressions. It is performance
+evidence for these specific workloads, not a universal speed claim.
+
+RELEASE GATES
+-------------
+- PASS 376/376 complete package unit/regression suite
+- CPython dev-mode / warnings-as-errors focused checks
+- repository hygiene and version-consistency checks
+- metadata/Trove-classifier preflight
+- compileall for source, tests, tools, and benchmark scripts
+- deterministic wheel/sdist build path and exact-artifact smoke coverage
+
+SUPPORT BOUNDARY
+----------------
+Supported: CPython >=3.13,<3.14 with bytecode>=0.17,<0.18.
+The project remains CPython-specific. Free-threaded CPython 3.13t is not
+independently certified by this release.
+
+ATTRIBUTION
+-----------
+The goto extension's source-level label/jump concept was inspired in part by
+Entian's goto project: https://entrian.com/goto/
+
+cpython-extensions uses its own CPython 3.13 transformation implementation,
+strict CFG and exception-region validation, and post-transform verifier.
+
+RESULT
+------
+PASS. 1.0.4 is suitable as the current public release, subject to the documented
+CPython 3.13 support boundary and benchmark methodology caveats.

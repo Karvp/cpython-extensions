@@ -1,0 +1,48 @@
+cpython-extensions 1.0.4 release audit
+Date: 2026-08-21
+
+Release intent
+==============
+Publish the baseline-vs-extension benchmark and related documentation as a new
+public patch release without changing the already-certified transformation
+runtime semantics.
+
+Runtime delta from 1.0.3
+========================
+No switch, inline, goto, compose, or shared _core implementation change. A
+recursive source comparison against the 1.0.3 repository shows the only
+python_extensions runtime-tree change is src/python_extensions/_version.py.
+
+1.0.4 additions
+===============
+- reproducible benchmark comparing plain CPython with extension-backed switch,
+  inline, and strict-goto examples
+- committed raw JSON benchmark evidence under benchmarks/results/
+- README benchmark table with all measured results, including the slower goto
+  case rather than selectively reporting only speedups
+- Entian goto inspiration attribution and implementation-boundary clarification
+- current release metadata/version update to 1.0.4
+- retained PyPI classifier preflight and hardened Trusted Publishing workflow
+
+Benchmark interpretation
+========================
+The recorded CPython 3.13.5 run shows meaningful improvements for the selected
+8-way dispatch and small-helper inlining workloads. Strict goto is approximately
+performance-neutral/slightly slower in the selected state-loop workload. Goto is
+therefore documented primarily as a validated control-flow expressiveness tool,
+not as an unconditional speed optimization.
+
+Release safety
+==============
+The runtime dependency boundary remains bytecode>=0.17,<0.18. Stable PyPI
+publication remains restricted to the exact stable version tag and protected
+pypi environment. Trove classifiers are validated before artifact publication.
+
+Validation
+==========
+376/376 package tests passed on CPython 3.13.5.
+Repository hygiene, compileall, tag/version checks, and benchmark/README consistency passed.
+
+Conclusion
+==========
+The repository is suitable for public release as version 1.0.4.

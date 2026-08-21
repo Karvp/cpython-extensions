@@ -46,14 +46,14 @@ Only the wheel and sdist are sent to PyPI; `SHA256SUMS.txt` stays attached to th
 
 ## First release tag
 
-The source version is already `1.0.3`. After the repository is pushed and its CI is green:
+The source version is `1.0.4`. After the repository is pushed and its CI is green:
 
 ```powershell
-git tag -a v1.0.3 -m "cpython-extensions 1.0.3"
-git push origin v1.0.3
+git tag -a v1.0.4 -m "cpython-extensions 1.0.4"
+git push origin v1.0.4
 ```
 
-If `v1.0.3` already exists in the destination repository, do not overwrite it; increment the package version and changelog instead.
+If `v1.0.4` already exists in the destination repository, do not overwrite it; increment the package version and changelog instead.
 
 ## Project URLs in package metadata
 

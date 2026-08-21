@@ -4,7 +4,7 @@ title: "cpython-extensions"
 type: software
 authors:
   - name: "Mch Stephen"
-version: "1.0.3"
+version: "1.0.4"
 date-released: "2026-08-21"
 license: MPL-2.0
 abstract: >-

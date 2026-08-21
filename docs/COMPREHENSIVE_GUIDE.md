@@ -1,4 +1,4 @@
-# cpython-extensions / `python_extensions` 1.0.3 — Comprehensive Guide
+# cpython-extensions / `python_extensions` 1.0.4 — Comprehensive Guide
 
 `cpython-extensions` is a CPython 3.13 library that adds three opt-in transformation tools while keeping ordinary Python syntax and callables at the boundary:
 
@@ -8,7 +8,7 @@
 
 The distribution name is **`cpython-extensions`**; the import package is **`python_extensions`**.
 
-Version 1.0.3 is a repository/release-engineering hardening release over the unchanged 1.0.2 runtime semantics. The guarded-binding behavior introduced in 1.0.2 remains the current inline contract.
+Version 1.0.4 is a benchmark/documentation release over the unchanged 1.0.3 transformation runtime. The guarded-binding behavior remains the current inline contract.
 
 ## 1. Installation
 
@@ -560,7 +560,7 @@ No import rename is required: the distribution installed by pip is `cpython-exte
 
 ## 17. Public API reference
 
-These signatures are the 1.0.3 production surface. Defaults shown here matter because several options deliberately select different semantic/performance contracts.
+These signatures are the 1.0.4 production surface. Defaults shown here matter because several options deliberately select different semantic/performance contracts.
 
 ### Switch
 

@@ -20,6 +20,17 @@ python benchmarks/scripts/benchmark_shared_regions.py
 
 Version-comparison drivers may require a baseline checkout/source path or an environment variable. Use `--help` on the individual driver for its exact inputs.
 
+
+## 1.0.4 plain-Python baseline
+
+`benchmark_readme_baseline_v104.py` compares three extension-backed examples against idiomatic code that does not use the library: an 8-way `if/elif` router, an ordinary helper call, and a structured `while` loop. Its committed result is `results/BENCHMARK_README_BASELINE_V104.json`; the README summarizes those numbers without omitting slower cases.
+
+Run it with:
+
+```bash
+python benchmarks/scripts/benchmark_readme_baseline_v104.py --json benchmarks/results/BENCHMARK_README_BASELINE_V104.json
+```
+
 ## Result artifacts
 
 Files under `results/` are historical evidence and should normally be treated as immutable. New benchmark runs should write a new, clearly versioned result file instead of overwriting evidence from an older release.

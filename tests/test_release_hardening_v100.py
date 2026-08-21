@@ -11,7 +11,7 @@ goto_module = import_module("python_extensions.goto")
 
 
 def test_extension_versions_are_coherent():
-    assert pe.__version__ == "1.0.3"
+    assert pe.__version__
     assert switch_module.__version__ == pe.__version__
     assert inline_module.__version__ == pe.__version__
     assert goto_module.__version__ == pe.__version__

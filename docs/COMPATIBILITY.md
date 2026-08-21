@@ -30,7 +30,7 @@ Runtime dependency:
 bytecode >=0.17,<0.18
 ```
 
-The upper bound is intentional. Bytecode library changes can alter instruction/CFG abstractions used by the transformation engine and must be certified before the range is widened. `bytecode` 0.18.1 is intentionally not admitted by the 1.0.3 dependency contract: its compatibility run reaches 369/370 tests and fails the high-fast-local copy-propagation regression with a transformed stack-size mismatch.
+The upper bound is intentional. Bytecode library changes can alter instruction/CFG abstractions used by the transformation engine and must be certified before the range is widened. `bytecode` 0.18.1 is intentionally not admitted by the 1.0.4 dependency contract: its compatibility run reaches 369/370 tests and fails the high-fast-local copy-propagation regression with a transformed stack-size mismatch.
 
 Build/release validation currently declares `twine >=5,<7`; the latest certified line is Twine 6.2.0. Twine is tooling only: it validates built wheel/sdist metadata with `twine check`; PyPI uploads use GitHub OIDC Trusted Publishing. CI includes an explicit Twine 7.0.0 candidate job so the upper bound is widened only after the new major version has actually built and validated this package. Release dependencies are read from `pyproject.toml` by `tools/install_dependencies.py` without installing the local project first; this preserves the clean tagged source tree required by the release preflight.
 

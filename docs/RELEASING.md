@@ -57,8 +57,8 @@ Also extract the sdist and run the full unit suite from the extracted source. Re
 The only stable/publishable tag is the exact package version:
 
 ```bash
-git tag -s v1.0.3 -m "cpython-extensions 1.0.3"
-git push origin v1.0.3
+git tag -s v1.0.4 -m "cpython-extensions 1.0.4"
+git push origin v1.0.4
 ```
 
 Use an unsigned annotated tag if signing is not configured, but signed tags are preferred.
@@ -66,11 +66,11 @@ Use an unsigned annotated tag if signing is not configured, but signed tags are 
 For a release-pipeline rehearsal, a preview suffix may be used without changing the package version, for example:
 
 ```bash
-git tag -a v1.0.3-beta -m "cpython-extensions 1.0.3 beta release rehearsal"
-git push origin v1.0.3-beta
+git tag -a v1.0.4-beta -m "cpython-extensions 1.0.4 beta release rehearsal"
+git push origin v1.0.4-beta
 ```
 
-Allowed preview labels are `alpha`, `beta`, `rc`, `preview`, and `test`, optionally followed by a numeric suffix. Preview tags build and certify the exact `1.0.3` package but are GitHub-only and can never enter the PyPI publishing job.
+Allowed preview labels are `alpha`, `beta`, `rc`, `preview`, and `test`, optionally followed by a numeric suffix. Preview tags build and certify the exact `1.0.4` package but are GitHub-only and can never enter the PyPI publishing job.
 
 ## 5. GitHub release
 

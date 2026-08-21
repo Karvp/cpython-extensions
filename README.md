@@ -125,6 +125,8 @@ def countdown(n: int) -> int:
 
 Strict mode is the production default and rejects jumps that cross unsafe control-flow or exception-region boundaries.
 
+The goto extension was inspired in part by [Entian's `goto`](https://entrian.com/goto/), which demonstrated source-level `goto`/`label` syntax for Python. `cpython-extensions` implements its own CPython 3.13 transformation pipeline with strict CFG/exception-region validation and post-transform bytecode verification.
+
 ### Compose extensions
 
 ```python
@@ -207,19 +209,40 @@ Long-running stress tests are intentionally separated from ordinary pull-request
 
 ## Release quality
 
-Version **1.0.3** is the first and current public release. It has been exercised on CPython 3.13.5 with package regressions, allocator/dev-mode checks, bytecode verification, multi-million-operation stress harnesses, reproducible wheel/sdist builds, and artifact-level installation tests.
+Version **1.0.4** is the current public release; 1.0.3 was the initial public release. It has been exercised on CPython 3.13.5 with package regressions, allocator/dev-mode checks, bytecode verification, multi-million-operation stress harnesses, reproducible wheel/sdist builds, and artifact-level installation tests.
 
 See:
 
-- [`PYTHON_EXTENSIONS_1.0.3_CERTIFICATION.txt`](PYTHON_EXTENSIONS_1.0.3_CERTIFICATION.txt)
-- [`RELEASE_AUDIT_1.0.3.txt`](RELEASE_AUDIT_1.0.3.txt)
+- [`PYTHON_EXTENSIONS_1.0.4_CERTIFICATION.txt`](PYTHON_EXTENSIONS_1.0.4_CERTIFICATION.txt)
+- [`RELEASE_AUDIT_1.0.4.txt`](RELEASE_AUDIT_1.0.4.txt)
 - [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md)
 
 The project does **not** currently claim independent certification for free-threaded CPython (`3.13t`).
 
 ## Benchmarks
 
-Historical benchmark drivers and recorded result artifacts are kept out of the repository root:
+### Plain CPython vs `cpython-extensions`
+
+The 1.0.4 README benchmark compares idiomatic CPython implementations with equivalent extension-backed paths. The recorded run used CPython 3.13.5 on Linux x86-64, `timeit.repeat`, 9 repeats, 20,000 timed batches per repeat, and 500 warm-up batches. Lower time is better.
+
+| Scenario | Plain CPython | With extension | Relative result |
+|---|---:|---:|---:|
+| 8-way string routing (`if/elif` vs `switch`) | 18.003 µs/batch | 15.709 µs/batch | **1.146× faster** |
+| Small affine helper (normal call vs inline) | 19.105 µs/batch | 13.967 µs/batch | **1.368× faster** |
+| Countdown state loop (`while` vs strict `goto`) | 13.192 µs/batch | 13.288 µs/batch | **0.993×** (about 0.7% slower) |
+
+These are microbenchmarks, not universal performance claims. They intentionally report both wins and losses: switch and inlining benefit these particular workloads, while strict goto is primarily a control-flow expressiveness feature and is approximately performance-neutral/slightly slower here. Results vary with CPU, OS, CPython patch release, specialization state, and workload shape.
+
+Reproduce the comparison from the repository root:
+
+```bash
+python benchmarks/scripts/benchmark_readme_baseline_v104.py \
+  --json benchmarks/results/BENCHMARK_README_BASELINE_V104.json
+```
+
+The raw committed evidence is [`benchmarks/results/BENCHMARK_README_BASELINE_V104.json`](benchmarks/results/BENCHMARK_README_BASELINE_V104.json).
+
+Historical benchmark drivers and recorded result artifacts remain separated from the repository root:
 
 - `benchmarks/scripts/` — executable benchmark drivers and workers
 - `benchmarks/results/` — committed benchmark JSON/text evidence
@@ -232,7 +255,7 @@ See [`benchmarks/README.md`](benchmarks/README.md) for layout, reproduction note
 - **[Architecture](docs/ARCHITECTURE.md)** — transformation pipeline, invariants, and subsystem responsibilities.
 - **[Compatibility](docs/COMPATIBILITY.md)** — interpreter/runtime support boundary and unsupported environments.
 - **[Release process](docs/RELEASING.md)** — reproducible build, artifact verification, and tag/release workflow.
-- **[Release notes](docs/RELEASE_NOTES.md)** — public 1.0.3 release summary.
+- **[Release notes](docs/RELEASE_NOTES.md)** — public release summary, including 1.0.4.
 - **[Changelog](CHANGELOG.md)** — public release changes.
 - **[Contributing](CONTRIBUTING.md)** — development expectations and test requirements.
 - **[Security policy](SECURITY.md)** — how to report verifier, crash, or unsafe-boundary issues.

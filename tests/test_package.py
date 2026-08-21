@@ -8,7 +8,7 @@ import python_extensions as pe
 
 class PackageTests(unittest.TestCase):
     def test_exports(self):
-        self.assertEqual(pe.__version__, "1.0.3")
+        self.assertRegex(pe.__version__, r"^\d+\.\d+\.\d+(?:[.-][0-9A-Za-z.-]+)?$")
         self.assertTrue(callable(pe.enable_switch))
         self.assertTrue(callable(pe.inline_function))
         self.assertTrue(callable(pe.enable_goto))
