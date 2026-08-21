@@ -1,14 +1,20 @@
 python_extensions / cpython-extensions 1.0.3
-PRODUCTION RELEASE CERTIFICATION
+PRODUCTION REPOSITORY CERTIFICATION
 Date: 2026-08-21
 Target: CPython 3.13.x
-Primary qualification interpreter: CPython 3.13.5
+Primary interpreter used for this pass: CPython 3.13.5
 
 SCOPE
 -----
-1.0.3 is the first public release of cpython-extensions. It certifies the
-switch, inline, goto, composition, verifier, packaging, and repository surfaces
-that ship in the published source tree.
+1.0.3 is a repository/release-engineering hardening release over the 1.0.2
+runtime. The switch, inline, goto, compose, and shared _core transformation
+modules are byte-identical to the certified 1.0.2 source tree. The only file
+under src/python_extensions changed for 1.0.3 is _version.py.
+
+Repository-facing changes include GitHub CI/security/release automation,
+contributor/security documentation, repository hygiene tooling, release smoke
+tests, an application-style stress harness, development extras/coverage
+configuration, and sanitization of historical benchmark launcher defaults.
 
 SOURCE TEST GATES
 -----------------
@@ -22,8 +28,8 @@ PASS  installed/source smoke for switch, guarded inline mutation/deopt, goto,
       composition, and verify_code
 PASS  repository hygiene/version/generated-output/secret/local-path checks
 
-FULL-SCALE STRESS QUALIFICATION
--------------------------------
+FULL-SCALE STRESS RERUN ON THE 1.0.3 SOURCE TREE
+------------------------------------------------
   2,505,011  application-style public API operations
   5,110,000  guarded inline mutation/concurrency operations
   3,766,637  deep switch/live/goto/registry/generated-code operations
@@ -38,7 +44,10 @@ REPOSITORY AUTOMATION
 - CPython 3.13 test matrix: Ubuntu, Windows, macOS
 - CPython dev-mode and allocator-debug jobs
 - branch coverage gate
-- wheel/sdist build + metadata + installed-artifact smoke
+- certified bytecode 0.17 dependency-contract job plus explicit Twine 7 candidate gate
+- clean-tree release preflight followed by dependency-only installation from pyproject.toml
+- deterministic wheel/sdist double-build + checksum + metadata + installed-artifact smoke
+- PyPI staging contains only wheel/sdist; SHA256SUMS.txt remains a GitHub Release asset
 - CodeQL Python scanning
 - Dependabot for pip and GitHub Actions
 - dependency review for public pull requests
@@ -50,12 +59,12 @@ REPOSITORY AUTOMATION
 SUPPORT BOUNDARY
 ----------------
 Supported: CPython >=3.13,<3.14 with bytecode>=0.17,<0.18.
-The project is CPython-specific. Free-threaded CPython 3.13t is not independently
-certified by 1.0.3 and is not a required CI gate.
+The project remains CPython-specific. Free-threaded CPython 3.13t is not
+independently certified by this release and is not a required CI gate.
 
 PRODUCTION DEFAULTS
 -------------------
-Switch: mode="auto"
+Switch: mode="auto" (portable production lowering)
 Inline: policy="speed", binding="frozen"; use binding="guarded" for mutable or
         replaceable targets
 Goto: mode="strict"
@@ -63,5 +72,5 @@ Verifier failures are fail-closed and must not be bypassed in production.
 
 RESULT
 ------
-PASS. Version 1.0.3 is qualified as the initial public GitHub/PyPI release,
+PASS. 1.0.3 is suitable as the GitHub repository baseline and release tag,
 subject to the documented CPython 3.13 support boundary.

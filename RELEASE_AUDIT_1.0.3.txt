@@ -1,31 +1,33 @@
-cpython-extensions 1.0.3 public release audit
+cpython-extensions 1.0.3 repository release audit
 Date: 2026-08-21
 
 Release intent
 ==============
-Prepare the first public cpython-extensions release for direct GitHub hosting and
-PyPI publication with clean source layout, reproducible artifacts, conservative
-runtime defaults, and no generated package metadata, build-host paths, or
-repository secrets.
+Create a source repository that can be pushed directly to GitHub without
+carrying generated package metadata, local build-machine paths, secrets, or an
+unsafe-by-default publication workflow.
 
-Public release state
+Runtime delta from 1.0.2
+========================
+No transformation implementation changes. A recursive source comparison
+against the sealed 1.0.2 sdist shows the only python_extensions runtime-tree
+change is src/python_extensions/_version.py (1.0.2 -> 1.0.3). This avoids
+reissuing changed package/repository metadata under the already sealed 1.0.2
+version.
+
+Repository additions
 ====================
-Version 1.0.3 is the only published release represented by the repository
-documentation. Numeric labels retained in benchmark filenames/results describe
-pre-public development comparisons and are not GitHub/PyPI release history.
-
-Repository contents
-===================
-- package README and comprehensive usage guide
-- architecture, compatibility, release, GitHub setup, contribution, security,
-  code-of-conduct, citation, and repository metadata documents
-- structured issue/PR templates
+- concise production README plus preserved historical release narrative
+- comprehensive guide, architecture, compatibility, release, GitHub setup docs
+- CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, CITATION
+- .gitignore, .gitattributes, .editorconfig
+- PR template and structured bug/feature issue forms
 - Dependabot configuration
-- GitHub workflows for CI, stress, CodeQL, dependency review, and release
+- GitHub workflows: CI, stress, CodeQL, dependency review, release
 - repository hygiene/version checks
-- exact-artifact smoke tests
-- application-style and adversarial stress harnesses
-- benchmark scripts/results isolated under benchmarks/
+- exact-artifact smoke test
+- application-style stress harness
+- development/build extras and coverage configuration
 
 Release safety
 ==============
@@ -35,12 +37,29 @@ publication receives id-token:write only in its dedicated job, is disabled
 unless repository variable PYPI_PUBLISH_ENABLED=true, and is designed for PyPI
 Trusted Publishing. Build machinery is isolated from the publishing job.
 
-Repository hygiene
-==================
-Historical benchmark launchers do not use build-host paths as active defaults.
-Baseline sources for comparison drivers must be supplied explicitly. Generated
-caches/build metadata and common credential patterns are rejected by the
-repository hygiene checker.
+Historical benchmark hygiene
+============================
+Historical comparison launchers no longer contain /mnt/data build-host
+locations as defaults. Baseline sources must be supplied explicitly through
+version-specific environment variables; the candidate source resolves from the
+repository checkout.
+
+Release workflow hardening
+==========================
+The release dependency installation path now reads runtime/build/test requirements
+directly from pyproject.toml without installing the local project. This prevents
+pip from creating build/ and src/*.egg-info before the clean-tree release gate.
+The CI package job mirrors the reproducible release builder, checksum validation,
+metadata validation, and exact-wheel smoke path so tag-only failures are caught
+earlier. GitHub Release handling is rerun-safe: existing published assets must
+match byte-for-byte, while an interrupted draft can be completed. PyPI publishing
+waits for GitHub Release success and re-verifies the certified checksum manifest.
+The PyPI job then stages only the wheel and sdist into a dedicated pypi-dist/
+directory; SHA256SUMS.txt remains a GitHub Release integrity artifact and is never
+passed to the publishing action as though it were a Python distribution.
+The GitHub Release job is artifact-only and therefore passes -R "$GITHUB_REPOSITORY"
+to every gh release command instead of relying on git-remote discovery. This
+removes the no-checkout "not a git repository" failure mode.
 
 Validation
 ==========
@@ -53,5 +72,4 @@ Validation
 
 Conclusion
 ==========
-The repository is suitable for direct public GitHub publication and the 1.0.3
-GitHub/PyPI release.
+The repository is suitable for direct GitHub publication as version 1.0.3.

@@ -5,6 +5,12 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      # bytecode 0.18.1 currently fails the high-fast-local inline stack-size
+      # regression. Keep 0.18.x out until that compatibility edge is fixed and
+      # the full transformation suite is recertified.
+      - dependency-name: "bytecode"
+        versions: [">=0.18,<0.19"]
     groups:
       python-tooling:
         dependency-type: "development"

@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: reproducible build and artifact certification
@@ -18,43 +22,86 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
-      - name: Install release dependencies
-        run: python -m pip install -U "setuptools>=75" "pytest>=8,<10" "twine>=5,<7" "bytecode>=0.17,<0.18"
-      - name: Check repository and tag version
+
+      # This must run before any build command. Installing the project itself
+      # creates build/ and *.egg-info and intentionally fails this clean-tree gate.
+      - name: Check clean repository and tag version
         id: version
         shell: bash
         run: |
+          set -euo pipefail
           python tools/check_repo.py
           VERSION=$(python tools/check_version.py --tag "$GITHUB_REF_NAME")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-      - name: Build twice with tagged commit epoch
+
+      # Install requirements declared in pyproject.toml without installing the
+      # local package, so the release source remains pristine until the build.
+      - name: Install declared release dependencies
+        run: >-
+          python tools/install_dependencies.py
+          --include-build-system
+          --include-runtime
+          --upgrade
+          build test
+      - name: Report release tooling
         shell: bash
         run: |
+          set -euo pipefail
+          python --version
+          python -m pip --version
+          python -m twine --version
+          python -m pip check
+
+      - name: Build twice with tagged commit epoch
+        id: distributions
+        shell: bash
+        run: |
+          set -euo pipefail
           EPOCH=$(git show -s --format=%ct HEAD)
+          echo "epoch=$EPOCH" >> "$GITHUB_OUTPUT"
           python tools/build_release.py --out-dir dist-a --epoch "$EPOCH"
           python tools/build_release.py --out-dir dist-b --epoch "$EPOCH"
           cmp dist-a/cpython_extensions-*.whl dist-b/cpython_extensions-*.whl
           cmp dist-a/cpython_extensions-*.tar.gz dist-b/cpython_extensions-*.tar.gz
+          cmp dist-a/SHA256SUMS.txt dist-b/SHA256SUMS.txt
           mv dist-a dist
           rm -rf dist-b
+
+      - name: Verify release checksums
+        shell: bash
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS.txt
+
       - name: Validate package metadata
         run: python -m twine check dist/*.whl dist/*.tar.gz
+
       - name: Test exact wheel
         shell: bash
         run: |
+          set -euo pipefail
           python -m pip install --target .wheel-install dist/*.whl
           PYTHONPATH=.wheel-install python tools/smoke_release.py
-      - name: Test extracted exact sdist
+
+      - name: Test and reproduce wheel from exact sdist
         shell: bash
         run: |
+          set -euo pipefail
           mkdir .sdist-test
           tar -xzf dist/cpython_extensions-*.tar.gz -C .sdist-test
-          cd .sdist-test/cpython_extensions-*
-          python -m pytest
+          SDIST_ROOT=$(find .sdist-test -mindepth 1 -maxdepth 1 -type d -name 'cpython_extensions-*' -print -quit)
+          test -n "$SDIST_ROOT"
+          (
+            cd "$SDIST_ROOT"
+            python -m pytest
+            python tools/build_release.py --out-dir .rebuild --epoch "${{ steps.distributions.outputs.epoch }}"
+          )
+          cmp "$SDIST_ROOT"/.rebuild/cpython_extensions-*.whl dist/cpython_extensions-*.whl
+
       - uses: actions/upload-artifact@v7
         with:
           name: release-distributions-${{ steps.version.outputs.version }}
@@ -73,15 +120,52 @@ jobs:
         with:
           name: release-distributions-${{ needs.build.outputs.version }}
           path: dist
-      - name: Create release and attach distributions
+      - name: Verify downloaded release artifact
+        shell: bash
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS.txt
+      - name: Create or verify GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes --title "cpython-extensions ${{ needs.build.outputs.version }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="$GITHUB_REF_NAME"
+          TITLE="cpython-extensions ${{ needs.build.outputs.version }}"
+
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            IS_DRAFT=$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')
+            if [[ "$IS_DRAFT" == "true" ]]; then
+              # A failed prior gh release create may leave a draft. Finish that
+              # draft instead of creating a duplicate release.
+              gh release upload "$TAG" dist/* --clobber -R "$GITHUB_REPOSITORY"
+              gh release edit "$TAG" --draft=false --title "$TITLE" -R "$GITHUB_REPOSITORY"
+            else
+              # A successful prior run may be re-run because a downstream job
+              # failed. Treat the existing release as valid only when every
+              # expected asset is byte-for-byte identical.
+              rm -rf .existing-release
+              mkdir .existing-release
+              gh release download "$TAG" --dir .existing-release -R "$GITHUB_REPOSITORY"
+              for file in dist/*; do
+                asset=".existing-release/$(basename "$file")"
+                test -f "$asset"
+                cmp "$file" "$asset"
+              done
+              echo "existing GitHub Release assets match certified artifacts"
+            fi
+          else
+            gh release create "$TAG" dist/* \
+              --verify-tag \
+              --generate-notes \
+              --title "$TITLE" \
+              -R "$GITHUB_REPOSITORY"
+          fi
 
   pypi-publish:
     name: PyPI Trusted Publishing
     if: ${{ vars.PYPI_PUBLISH_ENABLED == 'true' }}
-    needs: build
+    needs: [build, github-release]
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -93,6 +177,21 @@ jobs:
         with:
           name: release-distributions-${{ needs.build.outputs.version }}
           path: dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Verify distributions before PyPI
+        shell: bash
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS.txt
+      - name: Stage only publishable distributions
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf pypi-dist
+          mkdir pypi-dist
+          cp dist/*.whl dist/*.tar.gz pypi-dist/
+          test "$(find pypi-dist -maxdepth 1 -type f | wc -l)" -eq 2
+          test ! -e pypi-dist/SHA256SUMS.txt
+      - name: Publish certified distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: dist/
+          packages-dir: pypi-dist/
+          print-hash: true

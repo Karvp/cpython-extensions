@@ -25,7 +25,7 @@ git push -u origin main
 After the first push:
 
 1. Set the default branch to `main`.
-2. Enable the dependency graph and Dependabot alerts/updates.
+2. Enable the dependency graph and Dependabot alerts/updates. Dependency graph is required for the included Dependency Review workflow.
 3. Enable code scanning (the repository includes a CodeQL workflow).
 4. Enable private vulnerability reporting if available.
 5. Protect `main` with pull requests and require the `CI / test` jobs plus package validation before merge.
@@ -41,7 +41,8 @@ After configuring a PyPI Trusted Publisher for this GitHub repository:
 - create/protect a GitHub environment named `pypi`;
 - set repository variable `PYPI_PUBLISH_ENABLED` to `true`.
 
-No PyPI token needs to be stored in GitHub secrets.
+No PyPI token needs to be stored in GitHub secrets. The publishing job runs only after the same certified artifacts have been accepted by the GitHub Release job.
+Only the wheel and sdist are sent to PyPI; `SHA256SUMS.txt` stays attached to the GitHub Release for integrity verification.
 
 ## First release tag
 

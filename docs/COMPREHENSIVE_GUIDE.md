@@ -8,7 +8,7 @@
 
 The distribution name is **`cpython-extensions`**; the import package is **`python_extensions`**.
 
-Version 1.0.3 is the first public release. This guide describes the complete published API and its current semantic contracts.
+Version 1.0.3 is a repository/release-engineering hardening release over the unchanged 1.0.2 runtime semantics. The guarded-binding behavior introduced in 1.0.2 remains the current inline contract.
 
 ## 1. Installation
 
@@ -166,7 +166,7 @@ def hot_path(x):
 
 Do not assume every inlined function is faster. Small calls can already be efficient on modern CPython, and guard/setup/code-cache costs matter.
 
-### 4.3 Choose frozen versus guarded binding
+### 4.3 The important 1.0.2 choice: frozen versus guarded binding
 
 #### Frozen binding
 
@@ -543,19 +543,20 @@ If a function uses multiple extensions, use `@optimize_extensions(...)` instead 
 
 If a transformation is skipped, inspect the report/stats first. A conservative non-transform is normally preferable to an optimization that changes Python semantics.
 
-## 16. Versioning and upgrade policy
+## 16. Migrating from 1.0.1 to 1.0.2
 
-Version **1.0.3** is the first published release. Pre-public numeric labels that appear in benchmark filenames or development harness names are internal lineage markers, not released packages.
+1.0.2 is source-compatible with the normal 1.0.1 API. Existing callers continue to use `binding="frozen"` unless they opt in to guarded semantics, so upgrading does not silently add runtime target checks.
 
-For future upgrades:
+Recommended migration audit:
 
-1. Read the public changelog and release notes.
-2. Re-run tests that exercise transformed functions on the exact CPython patch version you deploy.
-3. Re-check callers that rely on `binding="frozen"` if their target lifecycle changes.
-4. Re-measure import/decorator time and hot-path runtime when transformation options change.
-5. Never replace files for an already-published PyPI version; publish a new version instead.
+1. Search transformed callers for helpers that are monkey-patched, hot-reloaded, rebound in tests, configured through `__defaults__` / `__kwdefaults__`, or replaced on classes.
+2. Change only those callers to `binding="guarded"`.
+3. Keep `policy="speed"` first; inspect `__inline_stats__` to see whether guarded expansion remains profitable.
+4. If a guarded site is intentionally tiny and remains an ordinary CALL, accept that result unless profiling shows a real reason to force `policy="always"`.
+5. Re-run tests that mutate the helper *after* caller decoration. This is the scenario guarded mode specifically hardens.
+6. Re-measure import/decorator time and hot-path runtime. Do not copy a microbenchmark decision across workloads.
 
-The distribution installed by pip is `cpython-extensions`; application code imports `python_extensions`.
+No import rename is required: the distribution installed by pip is `cpython-extensions`, while code still imports `python_extensions`.
 
 ## 17. Public API reference
 
