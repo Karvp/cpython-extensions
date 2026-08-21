@@ -2,6 +2,14 @@
 
 This changelog records supported public releases. Internal benchmark/checkpoint labels remain in benchmark filenames when they are needed to preserve historical evidence, but they are not release versions.
 
+## 1.2.1
+
+Packaging correction for 1.2.0.
+
+- Build Linux binary releases with cibuildwheel in a manylinux container.
+- Do not publish raw `linux_x86_64` setuptools wheels to PyPI.
+- Preserve the CPython 3.13 native live-switch accelerator.
+
 ## 1.2.0 — 2026-08-22
 
 Feature and architecture release for CPython 3.13. It adds guarded specialization/partial evaluation and renovates the explicit live switch backend with an optional fused native C dispatcher. Portable switch remains the production default.
