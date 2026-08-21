@@ -67,3 +67,7 @@ Documentation = "https://github.com/<OWNER>/cpython-extensions/blob/main/docs/CO
 ```
 
 Optionally add a `repository-code` field with the final GitHub URL to `CITATION.cff` once the owner is known.
+
+## Repository metadata
+
+Use [`.github/REPOSITORY_METADATA.md`](.github/REPOSITORY_METADATA.md) for the recommended repository name, GitHub description, topics, website, labels, and public repository settings. The project license is **Mozilla Public License 2.0 (`MPL-2.0`)**.

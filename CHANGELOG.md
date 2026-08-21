@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Re-license the project from MIT to the Mozilla Public License 2.0 (`MPL-2.0`) before public package publication.
+- Refresh the GitHub-facing README with installation, quick-start, mode-selection, verification, release-quality, documentation, security, and licensing guidance.
+- Add `.github/REPOSITORY_METADATA.md` with recommended repository name, description, topics, website, labels, and GitHub settings.
+
 ## 1.0.3
 
 - Productionize the source repository for direct GitHub use without changing the 1.0.2 runtime transformation semantics.

@@ -6,7 +6,7 @@ authors:
   - name: "Mch Stephen"
 version: "1.0.3"
 date-released: "2026-08-21"
-license: MIT
+license: MPL-2.0
 abstract: >-
   CPython 3.13 switch, inline-function, and goto extensions with verified
   bytecode transformation, production-safe defaults, and stress-tested

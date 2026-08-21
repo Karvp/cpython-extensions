@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "CPython 3.13 switch, inline-function, and goto extensions"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-license = "MIT"
+license = "MPL-2.0"
 authors = [{name = "Mch Stephen"}]
 dependencies = ["bytecode>=0.17,<0.18"]
 classifiers = [

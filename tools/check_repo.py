@@ -92,7 +92,7 @@ def main() -> int:
             errors.append(f"version drift: {path.relative_to(ROOT)} does not contain {needle!r}")
 
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    for needle in ('name = "cpython-extensions"', 'requires-python = ">=3.13,<3.14"', 'bytecode>=0.17,<0.18'):
+    for needle in ('name = "cpython-extensions"', 'requires-python = ">=3.13,<3.14"', 'license = "MPL-2.0"', 'bytecode>=0.17,<0.18'):
         if needle not in pyproject:
             errors.append(f"pyproject invariant missing: {needle}")
 
@@ -121,6 +121,14 @@ def main() -> int:
             if pattern.search(text):
                 errors.append(f"possible {label} committed in: {rel}")
 
+
+    license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+    if not license_text.startswith("Mozilla Public License Version 2.0"):
+        errors.append("LICENSE is not the canonical MPL 2.0 text")
+    citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+    if "license: MPL-2.0" not in citation:
+        errors.append("CITATION.cff license metadata is not MPL-2.0")
+
     guide = ROOT / "docs/COMPREHENSIVE_GUIDE.md"
     if not guide.is_file() or guide.stat().st_size < 10_000:
         errors.append("comprehensive guide missing or unexpectedly small")
@@ -134,6 +142,7 @@ def main() -> int:
         "SECURITY.md",
         "CONTRIBUTING.md",
         "LICENSE",
+        ".github/REPOSITORY_METADATA.md",
     ]
     for rel in required:
         if not (ROOT / rel).exists():
