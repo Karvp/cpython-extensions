@@ -1,0 +1,8 @@
+3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+scenario: 3 candidates; a crosses b+c; b contains c
+v0.6 speed         90.33 ns  code= 80 B  locals=3  resident=1  spilled=-1
+  samples: 90.83, 90.66, 89.65, 90.33, 90.60, 90.25, 90.21
+v0.7 speed         90.36 ns  code= 80 B  locals=3  resident=1  spilled=2
+  samples: 90.25, 94.81, 90.60, 90.09, 90.58, 90.36, 89.92
+v0.7 density       91.61 ns  code= 78 B  locals=2  resident=2  spilled=1
+  samples: 91.29, 92.35, 91.25, 96.35, 90.86, 91.61, 95.96

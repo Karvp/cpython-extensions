@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cpython-extensions"
+dynamic = ["version"]
+description = "CPython 3.13 switch, inline-function, and goto extensions"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+license = "MPL-2.0"
+authors = [{name = "Mch Stephen"}]
+dependencies = ["bytecode>=0.17,<0.18"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Implementation :: CPython",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10", "coverage[toml]>=7.6,<8"]
+build = ["build>=1.2,<2", "twine>=5,<7"]
+dev = ["pytest>=8,<10", "coverage[toml]>=7.6,<8", "build>=1.2,<2", "twine>=5,<7"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["pyswitch", "inline_function", "pygoto"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "python_extensions._version.__version__"}
+
+[tool.setuptools.package-data]
+python_extensions = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["python_extensions"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 80
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+]

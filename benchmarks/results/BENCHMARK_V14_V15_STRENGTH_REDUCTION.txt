@@ -1,0 +1,6 @@
+Python: 3.13.5
+scenario                 v0.14 ns   v0.15 ns  speedup   bytes        locals  derived/uses
+affine_twice              871.68     730.89    1.193x   106->94     3->4   1/2
+scaled_four              1129.20    1025.85    1.101x   126->114    3->4   1/4
+two_derived              1445.61    1138.42    1.270x   142->118    3->5   2/4
+single_control            632.88     627.62    1.008x    84->84     3->3   0/0

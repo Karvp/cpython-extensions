@@ -1,0 +1,14 @@
+3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+median of 7 process-level minima; each process uses min(timeit.repeat(..., repeat=7, number=300000))
+right: old=77.95 ns new=74.78 ns speedup=1.042x
+  code/locals/stack-resident: [28, 2, 0, 1] -> [26, 1, 1, 1]
+  old samples: 78.89, 77.95, 76.49, 79.15, 76.69, 78.95, 77.06
+  new samples: 74.14, 74.59, 74.86, 77.26, 75.28, 74.78, 74.06
+deep: old=88.35 ns new=80.74 ns speedup=1.094x
+  code/locals/stack-resident: [40, 2, 0, 1] -> [38, 1, 1, 1]
+  old samples: 88.25, 88.53, 87.32, 85.21, 92.31, 92.84, 88.35
+  new samples: 81.52, 79.88, 81.03, 79.58, 80.96, 80.74, 80.14
+call: old=68.00 ns new=63.67 ns speedup=1.068x
+  code/locals/stack-resident: [40, 2, 0, 1] -> [38, 1, 1, 1]
+  old samples: 68.90, 68.71, 68.00, 67.50, 68.58, 67.28, 67.60
+  new samples: 63.50, 65.70, 63.38, 63.64, 64.13, 64.85, 63.67

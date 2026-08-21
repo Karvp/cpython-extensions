@@ -1,0 +1,60 @@
+{
+  "python": "3.13.5",
+  "processes": 5,
+  "scenarios": {
+    "literal64": {
+      "old_ns": 110.22951000086323,
+      "new_ns": 108.58885999823542,
+      "speedup": 1.0151088242629536,
+      "old_backend": "portable-direct-value-v16",
+      "new_backend": "portable-direct-value-v18",
+      "dict_ns": 116.01098000028286,
+      "if_ns": 907.8136600010112,
+      "match_ns": 928.6432299995795
+    },
+    "typed16": {
+      "old_ns": 216.74953992470725,
+      "new_ns": 161.6709873550238,
+      "speedup": 1.3406829726890508,
+      "old_backend": "portable-direct-value-v16",
+      "new_backend": "portable-direct-value-v18",
+      "dict_ns": 173.6789286317115
+    },
+    "template_full64": {
+      "old_ns": 128.51350999881106,
+      "new_ns": 128.51058000251214,
+      "speedup": 1.0000227996504167,
+      "old_backend": "portable-expression-template-v16",
+      "new_backend": "portable-expression-template-v18",
+      "if_ns": 933.5673600025984,
+      "match_ns": 969.6796600019297
+    },
+    "template_partial64": {
+      "old_ns": 163.79062999931193,
+      "new_ns": 138.71360999928584,
+      "speedup": 1.1807826932062053,
+      "old_backend": "portable-return-handler-v16",
+      "new_backend": "portable-expression-template-v18",
+      "if_ns": 934.1394600005515,
+      "match_ns": 965.0798600023335
+    },
+    "statement64": {
+      "old_ns": 281.7734100017333,
+      "new_ns": 161.25766999721236,
+      "speedup": 1.7473488858334878,
+      "old_backend": "portable-balanced-v16",
+      "new_backend": "portable-statement-template-v18",
+      "if_ns": 949.5493399981568,
+      "match_ns": 986.1291400011396
+    },
+    "heterogeneous64": {
+      "old_ns": 267.99492000009195,
+      "new_ns": 270.3072499980408,
+      "speedup": 0.991445549470221,
+      "old_backend": "portable-balanced-v16",
+      "new_backend": "portable-balanced-v18",
+      "if_ns": 948.9085899986094,
+      "match_ns": 957.8593899959742
+    }
+  }
+}

@@ -1,0 +1,6 @@
+3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+baseline {'safe_ns': 43.09616449972964, 'safe_code': 32, 'safe_locals': 3, 'aggr_ns': 46.82721049994143, 'aggr_code': 32, 'aggr_locals': 3, 'const_ns': 40.20467800000915, 'const_code': 40, 'const_locals': 2}
+current {'safe_ns': 41.84659250040568, 'safe_code': 32, 'safe_locals': 3, 'aggr_ns': 38.808418499684194, 'aggr_code': 24, 'aggr_locals': 1, 'const_ns': 34.35712999998941, 'const_code': 16, 'const_locals': 2}
+safe: 43.10 -> 41.85 ns  speedup 1.030x  code 32->32  locals 3->3
+aggr: 46.83 -> 38.81 ns  speedup 1.207x  code 32->24  locals 3->1
+const: 40.20 -> 34.36 ns  speedup 1.170x  code 40->16  locals 2->2

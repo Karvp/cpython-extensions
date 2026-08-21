@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use cpython-extensions in research, please cite this software."
+title: "cpython-extensions"
+type: software
+authors:
+  - name: "Mch Stephen"
+version: "1.0.3"
+date-released: "2026-08-21"
+license: MPL-2.0
+abstract: >-
+  CPython 3.13 switch, inline-function, and goto extensions with verified
+  bytecode transformation, production-safe defaults, and stress-tested
+  semantics.

@@ -1,0 +1,6 @@
+CPython shared-inline benchmark
+normal       3007.56 ns  code= 182 bytes
+duplicated   2947.41 ns  code=1094 bytes
+shared       3287.97 ns  code= 348 bytes
+duplicated stats: InlineStats(calls_inlined=8, original_code_bytes=182, final_code_bytes=1094, calls_skipped_unprofitable=0, calls_skipped_unsupported=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=0, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=0, protected_shared_regions=0)
+shared stats:     InlineStats(calls_inlined=0, original_code_bytes=182, final_code_bytes=348, calls_skipped_unprofitable=0, calls_skipped_unsupported=0, calls_shared=8, shared_regions=1, reused_local_groups=0, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=0, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=0, protected_shared_regions=0)

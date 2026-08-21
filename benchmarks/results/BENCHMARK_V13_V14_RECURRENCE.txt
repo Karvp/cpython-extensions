@@ -1,0 +1,12 @@
+Python 3.13.5 — median of 5 isolated processes
+scenario             v0.13 ns   current ns  speedup   code 0.13->current  locals
+parity                  780.06      553.16    1.410x   106->78         4->4
+low_bits                782.51      551.03    1.420x   106->78         4->4
+monotonic               675.04      549.66    1.228x   100->78         4->4
+dynamic_control         801.02      804.91    0.995x   104->104        5->5
+
+current recurrence diagnostics:
+parity recurrences= 1 folds= 1
+low_bits recurrences= 1 folds= 1
+monotonic recurrences= 1 folds= 1
+dynamic_control recurrences= 0 folds= 0

@@ -1,0 +1,14 @@
+3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+Linux-6.18.35-x86_64-with-glibc2.41
+
+scenario                       raw ns     opt ns   speedup   bytes  locals  direct ns
+default boolean branch          76.51      50.49    1.515x      12       1      50.70
+  stats=InlineStats(calls_inlined=1, original_code_bytes=24, final_code_bytes=12, calls_skipped_unprofitable=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=1, dead_instructions_pruned=4, late_stack_forwards=0, redundant_jumps_removed=1, caller_parameter_aliases=1, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=0)
+repeated read                   79.30      63.29    1.253x      20       2      62.19
+  stats=InlineStats(calls_inlined=1, original_code_bytes=24, final_code_bytes=20, calls_skipped_unprofitable=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=2, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=0)
+four local-heavy calls         218.17     158.31    1.378x     122       6        nan
+  stats=InlineStats(calls_inlined=4, original_code_bytes=90, final_code_bytes=122, calls_skipped_unprofitable=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=1, caller_local_aliases=3, constant_comparisons_folded=0, constant_binary_ops_folded=0)
+default string mode             77.84      51.60    1.509x      12       1      51.08
+  stats=InlineStats(calls_inlined=1, original_code_bytes=24, final_code_bytes=12, calls_skipped_unprofitable=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=1, dead_instructions_pruned=4, late_stack_forwards=0, redundant_jumps_removed=1, caller_parameter_aliases=1, caller_local_aliases=0, constant_comparisons_folded=1, constant_binary_ops_folded=0)
+constant arithmetic             89.96      61.63    1.460x      24       1      50.71
+  stats=InlineStats(calls_inlined=1, original_code_bytes=24, final_code_bytes=24, calls_skipped_unprofitable=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=1, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=1)

@@ -1,0 +1,43 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Packaging/build output
+build/
+dist/
+*.egg-info/
+.eggs/
+*.whl
+*.tar.gz
+
+# Environments
+.venv/
+venv/
+env/
+
+# Editors/OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local stress/benchmark output
+artifacts/
+.coverage-report/
+*.prof
+*.pstats
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key

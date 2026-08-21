@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (${{ matrix.os }}, CPython 3.13)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install test dependencies
+        run: python -m pip install -e ".[test]"
+      - name: Repository hygiene
+        run: python tools/check_repo.py --allow-dirty-build-output
+      - name: Unit and regression suite
+        run: python -m pytest
+      - name: Compile all Python sources
+        run: python -m compileall -q src tests tools
+      - name: Dependency consistency
+        run: python -m pip check
+
+  dev-mode:
+    name: CPython dev mode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[test]"
+      - name: Warnings as errors under dev mode
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: python -X dev -W error -m pytest
+      - name: Allocator-debug focused suite
+        env:
+          PYTHONMALLOC: debug
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: python -X dev -m pytest tests/test_release_hardening_v101.py tests/test_inline_guarded_binding_v102.py
+
+  coverage:
+    name: branch coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[test]"
+      - run: python -m coverage run --branch -m pytest
+      - run: python -m coverage report
+
+  package:
+    name: package validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install build tools
+        run: python -m pip install -U "setuptools>=75" "build>=1.2,<2" "twine>=5,<7"
+      - name: Build wheel and sdist
+        run: python -m build
+      - name: Validate metadata
+        run: python -m twine check dist/*
+      - name: Install exact wheel into isolated target
+        run: python -m pip install --target .artifact-install dist/*.whl
+      - name: Smoke exact wheel
+        env:
+          PYTHONPATH: .artifact-install
+        run: python tools/smoke_release.py
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ci-distributions
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7

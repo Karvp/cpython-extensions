@@ -1,0 +1,6 @@
+Python: 3.13.5
+scenario             v0.15 ns   v0.16 ns  speedup   bytes        locals  derived/uses
+branch_before          1163.13    1105.61    1.052x   122->110    4->5   1/2
+branch_after           1156.53    1095.30    1.056x   122->110    4->5   1/2
+before_after           1504.83    1205.62    1.248x   106->94     3->4   1/2
+rare_control            838.79     834.57    1.005x   110->110    4->4   0/0

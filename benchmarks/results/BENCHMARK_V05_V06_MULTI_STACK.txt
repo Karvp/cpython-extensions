@@ -1,0 +1,17 @@
+nested retained temporaries: fast-local spill vs multi-stack
+count    local ns    stack ns   speedup   local/stack locals   local/stack bytes
+    2      122.62      124.17     0.988x    3/1               56/52 
+    3      169.34      165.39     1.024x    4/1               84/78 
+    4      215.98      208.43     1.036x    5/1              112/104
+    6      320.71      289.13     1.109x    7/1              168/156
+    8      431.59      397.18     1.087x    9/1              224/208
+   10      506.91      482.93     1.050x   11/1              280/260
+   12      584.77      557.53     1.049x   13/1              336/312
+
+Correctness regression reproduced against the original 0.5.0 source:
+  nested two-value fixture: baseline=104, transformed=107, stack_resident_values=2
+Corrected 0.6.0 candidate:
+  nested two-value fixture: baseline=104, transformed=104, stack_resident_values=2
+
+Five process-isolated two-value runs (150k calls x 3 repeats, per-process minimum):
+  median local/stack speed ratio: 1.0225x

@@ -1,0 +1,58 @@
+name: Bug report
+description: Report incorrect behavior or a regression
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Please include a minimal source-file reproducer. Some decorators require inspectable source and cannot be diagnosed reliably from an interactive snippet alone."
+  - type: input
+    id: version
+    attributes:
+      label: cpython-extensions version
+      placeholder: "1.0.3"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: CPython version
+      placeholder: "3.13.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Subsystem
+      options:
+        - switch
+        - inline
+        - goto
+        - composition / verifier
+        - packaging / documentation
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal reproducer
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Transformation report / verifier output
+      description: Include `explain_extensions()` / `verify_code()` output when applicable.

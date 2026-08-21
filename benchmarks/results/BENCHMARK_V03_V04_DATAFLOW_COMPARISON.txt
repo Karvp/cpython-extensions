@@ -1,0 +1,17 @@
+python_extensions inline dataflow comparison — CPython 3.13.5
+
+v0.3.0 baseline:
+scenario                 raw ns    optimized ns   speedup   bytes  nlocals  stats
+ephemeral-chain            60.41          42.53    1.420x     30        4  rt=0 cp=0 k=0 slots=0
+duplicate-temp             59.30          46.08    1.287x     20        2  rt=0 cp=0 k=0 slots=0
+copy-propagation           63.27          49.65    1.274x     20        2  rt=0 cp=0 k=0 slots=0
+constant-local             50.46          37.39    1.350x     40        2  rt=0 cp=0 k=0 slots=0
+cross-callee-slots        106.46          80.74    1.318x     46        3  rt=0 cp=0 k=0 slots=0
+
+v0.4.0:
+scenario                 raw ns    optimized ns   speedup   bytes  nlocals  stats
+ephemeral-chain            60.17          34.31    1.754x     18        1  rt=2 cp=1 k=0 slots=0
+duplicate-temp             56.80          44.22    1.285x     18        1  rt=1 cp=0 k=0 slots=0
+copy-propagation           62.53          46.92    1.333x     16        1  rt=0 cp=1 k=0 slots=0
+constant-local             49.99          30.60    1.633x     12        1  rt=0 cp=0 k=1 slots=0
+cross-callee-slots        101.58          78.94    1.287x     46        2  rt=0 cp=0 k=0 slots=1
