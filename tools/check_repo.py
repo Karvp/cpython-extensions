@@ -144,6 +144,7 @@ def main() -> int:
         ".github/dependabot.yml",
         "SECURITY.md",
         "tools/install_dependencies.py",
+        ".github/scripts/publish_release.cjs",
         "CONTRIBUTING.md",
         "LICENSE",
         ".github/REPOSITORY_METADATA.md",
@@ -161,8 +162,14 @@ def main() -> int:
         errors.append("PyPI publish directory must not include SHA256SUMS.txt or other non-distribution files")
     if 'packages-dir: pypi-dist/' not in release_workflow or 'cp dist/*.whl dist/*.tar.gz pypi-dist/' not in release_workflow:
         errors.append("release workflow must stage only wheel/sdist files for PyPI publishing")
-    if '-R "$GITHUB_REPOSITORY"' not in release_workflow:
-        errors.append("GitHub Release CLI calls must select the repository explicitly in the no-checkout release job")
+    if 'actions/github-script@v9' not in release_workflow:
+        errors.append("GitHub Release creation must use the API-driven github-script release step")
+    if 'actions: read' not in release_workflow:
+        errors.append("artifact-consuming release jobs must request actions: read explicitly")
+    if "needs.build.outputs.channel == 'stable'" not in release_workflow:
+        errors.append("PyPI publishing must be restricted to the exact stable release channel")
+    if 'RELEASE_CHANNEL: ${{ needs.build.outputs.channel }}' not in release_workflow:
+        errors.append("GitHub Release job must receive the validated release channel")
     clean_step = release_workflow.find("Check clean repository and tag version")
     dependency_step = release_workflow.find("Install declared release dependencies")
     if clean_step < 0 or dependency_step < 0 or clean_step > dependency_step:

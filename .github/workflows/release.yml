@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      channel: ${{ steps.version.outputs.channel }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -28,8 +29,8 @@ jobs:
           python-version: "3.13"
           cache: pip
 
-      # This must run before any build command. Installing the project itself
-      # creates build/ and *.egg-info and intentionally fails this clean-tree gate.
+      # Run before installing/building anything. Installing the local project
+      # creates build metadata that intentionally fails the clean-tree gate.
       - name: Check clean repository and tag version
         id: version
         shell: bash
@@ -37,10 +38,13 @@ jobs:
           set -euo pipefail
           python tools/check_repo.py
           VERSION=$(python tools/check_version.py --tag "$GITHUB_REF_NAME")
+          CHANNEL=$(python tools/check_version.py --tag "$GITHUB_REF_NAME" --print-channel)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "release tag $GITHUB_REF_NAME accepted as $CHANNEL for package $VERSION"
 
-      # Install requirements declared in pyproject.toml without installing the
-      # local package, so the release source remains pristine until the build.
+      # Resolve dependencies from pyproject.toml without installing the local
+      # package, keeping release source pristine until the deterministic build.
       - name: Install declared release dependencies
         run: >-
           python tools/install_dependencies.py
@@ -48,6 +52,7 @@ jobs:
           --include-runtime
           --upgrade
           build test
+
       - name: Report release tooling
         shell: bash
         run: |
@@ -104,7 +109,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: release-distributions-${{ steps.version.outputs.version }}
+          name: release-distributions-${{ steps.version.outputs.version }}-${{ steps.version.outputs.channel }}
           path: dist/
           if-no-files-found: error
           retention-days: 30
@@ -114,73 +119,64 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
     steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@v8
         with:
-          name: release-distributions-${{ needs.build.outputs.version }}
+          name: release-distributions-${{ needs.build.outputs.version }}-${{ needs.build.outputs.channel }}
           path: dist
+
       - name: Verify downloaded release artifact
         shell: bash
         working-directory: dist
         run: sha256sum -c SHA256SUMS.txt
-      - name: Create or verify GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          TAG="$GITHUB_REF_NAME"
-          TITLE="cpython-extensions ${{ needs.build.outputs.version }}"
 
-          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            IS_DRAFT=$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')
-            if [[ "$IS_DRAFT" == "true" ]]; then
-              # A failed prior gh release create may leave a draft. Finish that
-              # draft instead of creating a duplicate release.
-              gh release upload "$TAG" dist/* --clobber -R "$GITHUB_REPOSITORY"
-              gh release edit "$TAG" --draft=false --title "$TITLE" -R "$GITHUB_REPOSITORY"
-            else
-              # A successful prior run may be re-run because a downstream job
-              # failed. Treat the existing release as valid only when every
-              # expected asset is byte-for-byte identical.
-              rm -rf .existing-release
-              mkdir .existing-release
-              gh release download "$TAG" --dir .existing-release -R "$GITHUB_REPOSITORY"
-              for file in dist/*; do
-                asset=".existing-release/$(basename "$file")"
-                test -f "$asset"
-                cmp "$file" "$asset"
-              done
-              echo "existing GitHub Release assets match certified artifacts"
-            fi
-          else
-            gh release create "$TAG" dist/* \
-              --verify-tag \
-              --generate-notes \
-              --title "$TITLE" \
-              -R "$GITHUB_REPOSITORY"
-          fi
+      # Use GitHub's REST API through github-script rather than gh CLI state.
+      # This is idempotent: matching assets are retained, missing assets are
+      # uploaded, stale preview assets are repaired, and stable assets are
+      # never overwritten if their certified bytes differ.
+      - name: Create or verify GitHub Release
+        uses: actions/github-script@v9
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+          RELEASE_CHANNEL: ${{ needs.build.outputs.channel }}
+          RELEASE_DIR: dist
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const publishRelease = require('./.github/scripts/publish_release.cjs');
+            await publishRelease({ github, context, core });
 
   pypi-publish:
     name: PyPI Trusted Publishing
-    if: ${{ vars.PYPI_PUBLISH_ENABLED == 'true' }}
+    # Preview/test tags such as v1.0.3-beta exercise build + GitHub prerelease,
+    # but only the exact v<package-version> stable tag can ever reach PyPI.
+    if: ${{ vars.PYPI_PUBLISH_ENABLED == 'true' && needs.build.outputs.channel == 'stable' }}
     needs: [build, github-release]
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/p/cpython-extensions
     permissions:
+      actions: read
+      contents: read
       id-token: write
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: release-distributions-${{ needs.build.outputs.version }}
+          name: release-distributions-${{ needs.build.outputs.version }}-${{ needs.build.outputs.channel }}
           path: dist
+
       - name: Verify distributions before PyPI
         shell: bash
         working-directory: dist
         run: sha256sum -c SHA256SUMS.txt
+
       - name: Stage only publishable distributions
         shell: bash
         run: |
@@ -190,6 +186,7 @@ jobs:
           cp dist/*.whl dist/*.tar.gz pypi-dist/
           test "$(find pypi-dist -maxdepth 1 -type f | wc -l)" -eq 2
           test ! -e pypi-dist/SHA256SUMS.txt
+
       - name: Publish certified distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:

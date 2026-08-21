@@ -129,6 +129,8 @@ jobs:
           cache: pip
       - name: Clean-tree release preflight
         run: python tools/check_repo.py
+      - name: Validate GitHub Release helper syntax
+        run: node --check .github/scripts/publish_release.cjs
       - name: Install declared package-validation dependencies
         run: >-
           python tools/install_dependencies.py
