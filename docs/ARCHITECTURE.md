@@ -1,10 +1,14 @@
 # Architecture
 
+Current documented release: **1.1.0**.
+
+Version 1.1.0 preserves the production transformation contracts of 1.0.4 and strengthens the structural regression and scaling evidence around the optimized paths. The architecture below describes the supported runtime design; benchmark harnesses observe that design but do not define it.
+
 ## Overview
 
-`cpython-extensions` is a pure-Python package that rewrites CPython 3.13 code objects. The public package is `python_extensions`; compatibility modules `pyswitch`, `inline_function`, and `pygoto` remain available for older imports.
+`cpython-extensions` is a pure-Python package that rewrites CPython 3.13 code objects. The distribution is `cpython-extensions`; the primary import package is `python_extensions`. Compatibility modules `pyswitch`, `inline_function`, and `pygoto` remain available for older imports.
 
-The central design rule is **fail closed**: a transformation that cannot prove its structural assumptions should preserve the ordinary Python path or reject decoration with a specific error instead of emitting speculative bytecode.
+The central rule is **fail closed**: a transformation that cannot prove its structural assumptions must preserve the ordinary Python path or reject decoration with a specific error. It must not emit speculative bytecode and hope verification succeeds later.
 
 ## Source layout
 
@@ -22,56 +26,62 @@ src/python_extensions/
     verify.py      generated-code verification
 ```
 
-`src/python_extensions/_version.py` is the sole version source.
+`src/python_extensions/_version.py` is the sole package-version source.
 
 ## Transformation pipeline
 
-A typical decorated function follows these steps:
+A decorated function generally moves through six stages:
 
-1. **Inspect source/bytecode** and recognize only supported marker shapes.
-2. **Build a semantic plan** before mutating code.
-3. **Select a backend/strategy** based on explicit options and proof-based profitability/safety checks.
-4. **Lower to CPython 3.13 bytecode** while preserving stack and exception-table invariants.
-5. **Verify the resulting code object** and reject/fall back when verification fails.
-6. **Attach reports/telemetry** used by `explain_extensions()` and tests.
+1. **Recognize** supported source/bytecode marker shapes.
+2. **Plan** semantics before mutating code.
+3. **Select** a backend or strategy from explicit options plus proof-based safety/profitability checks.
+4. **Lower** to CPython 3.13 bytecode while preserving stack, exception-table, and code-object invariants.
+5. **Verify** the generated code object; reject or fall back when verification fails.
+6. **Report** the selected backend, transformation decisions, and verifier state for tests and `explain_extensions()`.
 
 Composition uses the canonical order `switch -> inline -> goto`, followed by final verification.
 
-## Switch invariants
+## Switch architecture and invariants
 
-Production `mode="auto"` uses the portable compiler. It preserves dictionary-style hash/equality behavior in `case_key_mode="python"`, evaluates the switch subject once, and keeps user case bodies in the caller frame where promised.
+Production `mode="auto"` uses the portable compiler. It evaluates the switch subject once and preserves dictionary-style hash/equality semantics in `case_key_mode="python"`.
 
-Exact typed mode includes the runtime type in route identity. Optimized typed partitions/routers are used only when their metaclass/hash/equality assumptions can be proven.
+When a route shape is provably suitable, the portable compiler can specialize dispatch into a table-backed backend. The **route table grows with case count; the hot executable dispatch path does not become an N-way comparison chain**. Release 1.1.0 makes this property an explicit structural regression contract through 1,024 direct-value routes, with bounded-shape checks for expression-template and statement-template lowering as well.
 
-Live/self-modifying backends are explicit opt-ins and are not selected by ordinary `auto`.
+Typed mode includes the runtime type in route identity. Optimized typed partitions/routers are selected only when their metaclass/hash/equality assumptions are proven.
 
-## Inline invariants
+Guarded/fallthrough-heavy shapes may require a different backend with different scaling characteristics. The optimizer must never select a faster specialization by weakening case semantics.
 
-Inlining is registration-based: only eligible exact call targets are cloned. The inliner maintains transactional registries and weak identity tracking so failed decoration or garbage collection cannot leave stale eligibility behind.
+Live/self-modifying backends remain explicit opt-ins and are not selected by ordinary `auto` mode.
 
-Two binding policies exist:
+## Inline architecture and invariants
 
-- `frozen` — clone against the target state observed during transformation; maximizes optimization opportunities.
-- `guarded` — validate the loaded target/state at runtime and deopt to the exact ordinary callable when the cloned state is stale.
+Inlining is registration-based: only eligible exact call targets are cloned. Registries are transactional and use weak identity tracking so failed decoration or garbage collection cannot leave stale eligibility behind.
 
-Profitability (`policy="speed"`) accounts for transformation/guard costs and may leave a call ordinary.
+Two binding policies are exposed:
 
-Shared regions reduce code duplication when multiple eligible call sites can safely branch to one appended inlined body.
+- `frozen` — clone against the target state observed during transformation; maximizes optimization opportunities and intentionally uses snapshot semantics.
+- `guarded` — validate supported loaded target/state at runtime and deopt to the exact ordinary callable when the cloned state is stale.
 
-## Goto invariants
+`policy="speed"` accounts for transformation/guard costs and may intentionally leave a call ordinary. Shared regions reduce code duplication when multiple eligible call sites can safely branch to one appended inlined body.
 
-Strict goto preserves code length/offset relationships where required, validates exception-handler stack semantics, patches only proven marker spans, and verifies synthetic jump targets against the final CFG.
+## Goto architecture and invariants
 
-`mode="unsafe"` relaxes safety checks and is not the production recommendation.
+Strict goto validates synthetic jump targets against the final CFG, preserves required code/offset relationships, and checks CPython exception-handler stack semantics before accepting a transformation.
+
+`mode="unsafe"` relaxes safety checks for controlled low-level experiments and is not the production recommendation.
+
+The source-level `goto .name` / `label .name` concept is inspired in part by [Entian's “goto for Python”](https://entrian.com/goto/). `cpython-extensions` does not reuse that implementation; it performs its own CPython 3.13 lowering and verification.
 
 ## Verification
 
-`python_extensions.verify_code()` checks generated code structure, stack behavior, and CFG properties. Subsystems add feature-specific proofs on top of this shared verifier. A verifier failure is a transformation failure, not a warning to ignore.
+`python_extensions.verify_code()` checks generated code structure, stack behavior, and CFG properties. Each subsystem layers feature-specific proofs on top of the shared verifier.
+
+A verifier failure is a transformation failure, not a warning to suppress.
 
 ## Concurrency and lifecycle
 
-Runtime transformed paths avoid global registry locks. Registration/decorating/unregistering operations serialize the mutation of shared inline registry state. Live switch modes have backend-specific concurrency contracts documented in the comprehensive guide.
+Runtime transformed paths avoid global registry locks. Registration, decoration, and unregister operations serialize mutation of shared inline registry state. Live switch modes have backend-specific concurrency contracts documented in the comprehensive guide.
 
 ## Compatibility boundary
 
-This package intentionally relies on CPython 3.13 bytecode and exception-table behavior. Do not broaden the declared Python range until the full parser/lowering/verifier/stress matrix has been audited against that interpreter line.
+The package deliberately depends on CPython 3.13 opcode, call, code-object, and exception-table behavior. Widening `requires-python` is therefore a compatibility port requiring full parser/lowering/verifier/stress recertification, not a metadata-only edit. See [`COMPATIBILITY.md`](COMPATIBILITY.md).

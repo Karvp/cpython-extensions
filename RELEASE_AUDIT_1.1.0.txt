@@ -1,0 +1,107 @@
+cpython-extensions 1.1.0 release audit
+Date: 2026-08-21
+
+RELEASE INTENT
+--------------
+1.1.0 is a minor-version milestone for performance evidence, structural
+verification, documentation quality, and release consistency. It does not
+silently change the production transformation runtime: the switch, inline,
+goto, composition, and shared-verifier modules are unchanged from 1.0.4.
+
+PUBLIC STATE
+------------
+- Distribution: cpython-extensions
+- Import package: python_extensions
+- Version source: src/python_extensions/_version.py = 1.1.0
+- Supported interpreter: CPython >=3.13,<3.14
+- Runtime dependency: bytecode>=0.17,<0.18
+- License: Mozilla Public License 2.0 (MPL-2.0)
+- Canonical repository: https://github.com/Karvp/cpython-extensions
+- Stable release tag: v1.1.0
+- Preview/rehearsal example: v1.1.0-beta
+
+MILESTONE DELTA
+---------------
+- Adds 2..1,024-route switch scaling benchmarks for integer and string keys.
+- Adds configurable benchmark intensity and raw 1.1.0 JSON evidence.
+- Adds structural tests that keep specialized switch executable code bounded
+  as route count grows.
+- Adds intended-workload inline/goto evidence.
+- Refines and synchronizes all active release-sensitive documentation.
+- Extends tools/check_repo.py to derive current benchmark evidence names from
+  the package version and validate all three current benchmark artifacts.
+- Keeps historical 1.0.x release/certification evidence intact.
+
+VALIDATION
+----------
+- Unit/regression suite: 378/378 PASS.
+- CPython dev-mode, warnings-as-errors, third-party pytest plugin autoload
+  disabled: 378/378 PASS.
+- compileall across src/tests/tools/benchmarks/scripts: PASS.
+- Reproducible artifact build: wheel/sdist/checksum manifest byte-identical
+  across two fixed-epoch builds.
+- Exact wheel install/smoke: PASS.
+- Exact sdist suite: 378/378 PASS.
+- Wheel rebuilt from exact sdist: byte-identical PASS.
+- Full switch production differential: 3,680,000 calls PASS.
+- Full switch adversarial: 4,703,400 calls PASS.
+- Full strict-goto harness: 3,526,500 calls/yields PASS.
+- Coordinated all-extension harness: 157,200/157,200 PASS.
+- Inline optimizer + guarded-binding counted workload: 9,010,000 operations
+  across randomized, threaded, unbound-local, crash-isolated, and guarded
+  binding runs PASS.
+
+PERFORMANCE EVIDENCE
+--------------------
+Committed 1.1.0 switch evidence demonstrates the expected scaling shape:
+small native branches can win, while the portable table-backed direct-value
+backend remains close to dict.get and avoids linear executable growth.
+Selected integer speedups versus if/elif are 9.94x (64), 38.96x (256),
+71.33x (512), and 142.90x (1,024). The 1,024 string case records 83.86x.
+
+The intended-workload evidence records 1.34x for frozen small-helper inlining
+and 2.47x for strict goto versus explicit state dispatch. The naturally
+structured reference remains slightly faster than goto and that caveat is
+published rather than hidden.
+
+DOCUMENTATION AUDIT
+-------------------
+Reviewed/refined active documentation:
+- README.md
+- CHANGELOG.md
+- CONTRIBUTING.md
+- CODE_OF_CONDUCT.md
+- SECURITY.md
+- GITHUB_SETUP.md
+- CITATION.cff
+- benchmarks/README.md
+- docs/ARCHITECTURE.md
+- docs/COMPATIBILITY.md
+- docs/COMPREHENSIVE_GUIDE.md
+- docs/RELEASE_NOTES.md
+- docs/RELEASING.md
+- .github/REPOSITORY_METADATA.md
+- .github/pull_request_template.md
+- .github/ISSUE_TEMPLATE/bug.yml
+
+Historical 1.0.x certification/audit files remain historical records and are
+not rewritten to pretend they were produced for 1.1.0.
+
+RELEASE WORKFLOW
+----------------
+The hardened tag-driven workflow remains in place:
+- clean-tree and tag/version/channel validation;
+- metadata preflight;
+- deterministic double build and checksum comparison;
+- exact wheel smoke test and exact-sdist full test/rebuild;
+- API-driven idempotent GitHub Release handling;
+- preview tags excluded from PyPI;
+- stable tags enter the protected pypi environment;
+- PyPI Trusted Publishing uses OIDC with id-token: write only in the publish
+  job.
+
+FINAL ASSESSMENT
+----------------
+PASS for the 1.1.0 source-tree milestone. Final wheel/sdist publication remains
+conditional on the repository's normal CI/release workflow succeeding on the
+v1.1.0 tag.

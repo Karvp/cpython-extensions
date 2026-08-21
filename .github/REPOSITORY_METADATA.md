@@ -12,6 +12,7 @@ Use the following values when creating or editing the GitHub repository.
 - **Python import package:** `python_extensions`
 - **Primary language:** Python
 - **Supported interpreter:** CPython 3.13.x
+- **Current release:** `1.1.0`
 
 ## Recommended GitHub description
 
@@ -31,13 +32,14 @@ GitHub topics are lowercase and should be added without `#` prefixes:
 
 `python`, `cpython`, `python313`, `bytecode`, `compiler`, `optimization`, `performance`, `switch`, `function-inlining`, `goto`, `control-flow`, `metaprogramming`, `language-extensions`, `developer-tools`, `python-library`, `setuptools`, `pypi`, `mpl-2-0`
 
-## Website
+## Canonical links
 
-After the first PyPI publication, use:
+- **Repository:** `https://github.com/Karvp/cpython-extensions`
+- **Issues:** `https://github.com/Karvp/cpython-extensions/issues`
+- **Documentation:** `https://github.com/Karvp/cpython-extensions/blob/main/docs/COMPREHENSIVE_GUIDE.md`
+- **PyPI:** `https://pypi.org/project/cpython-extensions/`
 
-`https://pypi.org/project/cpython-extensions/`
-
-Before PyPI publication, either leave the website blank or use the repository's GitHub Pages/documentation URL if you create one.
+Use the PyPI project page as the GitHub repository website after the desired release is published; otherwise the repository URL is a safe default.
 
 ## Suggested social preview / one-line positioning
 

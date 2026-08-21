@@ -1,48 +1,64 @@
 # Compatibility
 
+Current supported release: **1.1.0**.
+
 ## Supported runtime
 
-The current production line supports:
+| Area | Supported boundary |
+|---|---|
+| Implementation | CPython |
+| Python | `>=3.13,<3.14` |
+| Primary certification interpreter | CPython 3.13.5 |
+| Portable package platforms | Windows, Linux, macOS |
+| Distribution type | Pure Python, CPython-bytecode-specific |
 
-- **Implementation:** CPython
-- **Python:** `>=3.13,<3.14`
-- **Primary certification interpreter:** CPython 3.13.5
-- **Platforms:** Windows, Linux, macOS for the portable pure-Python package
-
-CI runs the required regression suite on current CPython 3.13 GitHub-hosted runners for all three major desktop/server operating systems.
+CI runs the required regression suite on CPython 3.13 GitHub-hosted runners across Windows, Linux, and macOS. The package is pure Python, but its transformations deliberately depend on CPython 3.13 bytecode and exception-table behavior; “pure Python” does **not** imply implementation portability.
 
 ## Not currently certified
 
-The following are not claimed as independently production-certified:
+The project does not currently claim independent production certification for:
 
-- CPython 3.13 free-threaded (`3.13t`);
-- CPython 3.14+;
+- free-threaded CPython 3.13 (`3.13t`);
+- CPython 3.14 or newer;
+- CPython 3.12 or older;
 - PyPy, GraalPy, or other Python implementations;
-- live/self-modifying switch modes under environments that prohibit or instrument the required runtime behavior.
+- live/self-modifying switch modes in environments that prohibit or instrument their required runtime behavior.
 
-Some imports may fail explicitly outside the supported runtime rather than attempting an unsafe transformation.
+Unsupported runtimes may fail explicitly rather than attempting an unsafe transformation.
 
-## Dependency boundary
+## Runtime dependency boundary
 
-Runtime dependency:
+The package requires:
 
 ```text
 bytecode >=0.17,<0.18
 ```
 
-The upper bound is intentional. Bytecode library changes can alter instruction/CFG abstractions used by the transformation engine and must be certified before the range is widened. `bytecode` 0.18.1 is intentionally not admitted by the 1.0.4 dependency contract: its compatibility run reaches 369/370 tests and fails the high-fast-local copy-propagation regression with a transformed stack-size mismatch.
+The upper bound is intentional. `bytecode` changes can alter instruction, stack, CFG, and exception-region abstractions used by the transformation engine. Version 0.18.1 is not admitted by the 1.1.0 contract: its compatibility run reached 369/370 tests and failed the high-fast-local copy-propagation regression because the transformed stack-size calculation no longer matched the expected code object.
 
-Build/release validation currently declares `twine >=5,<7`; the latest certified line is Twine 6.2.0. Twine is tooling only: it validates built wheel/sdist metadata with `twine check`; PyPI uploads use GitHub OIDC Trusted Publishing. CI includes an explicit Twine 7.0.0 candidate job so the upper bound is widened only after the new major version has actually built and validated this package. Release dependencies are read from `pyproject.toml` by `tools/install_dependencies.py` without installing the local project first; this preserves the clean tagged source tree required by the release preflight.
+Do not widen this range until the full transformation suite, generated-code verifier, artifact tests, and relevant stress harnesses pass on the candidate dependency.
 
-## Source availability
+## Build and release tooling
 
-Switch and goto decorators depend on retrievable function source for marker recognition. Functions created in contexts where `inspect` cannot recover source (for example, some interactive/`stdin` definitions) may not be transformable. Put production-decorated functions in normal source files.
+Release validation currently declares `twine>=5,<7`; Twine 6.2.0 is the certified line. CI also runs a dedicated Twine 7.0.0 candidate job so a future major-version widening is based on an actual build/metadata-validation run rather than a dependency-range edit alone.
 
-## Dynamic mutation
+Twine is validation tooling, not the upload credential path. PyPI publication uses GitHub OIDC Trusted Publishing. `tools/install_dependencies.py` reads declared release dependencies from `pyproject.toml` without installing the local project first, preserving the clean tagged tree required by release preflight.
 
-Inlining has two explicit contracts:
+## Source availability requirements
 
-- `binding="frozen"` is snapshot-oriented and assumes the target remains stable.
-- `binding="guarded"` is the choice when target binding/code/default state may change after decoration.
+Switch and goto decorators recognize marker syntax from retrievable function source. Functions defined in contexts where `inspect` cannot recover source—some REPL, `stdin`, notebook, generated, or dynamically executed definitions—may require the documented explicit-source path or may be untransformable.
 
-See `COMPREHENSIVE_GUIDE.md` for the exact guarded coverage and deoptimization behavior.
+Put production-decorated functions in normal source files whenever practical. See the comprehensive guide for generated/notebook examples.
+
+## Dynamic mutation and inline binding
+
+Inlining exposes two explicit binding contracts:
+
+- `binding="frozen"` snapshots the eligible target state used during transformation and is appropriate for intentionally stable hot helpers;
+- `binding="guarded"` validates supported target/code/default/descriptor state and falls back to the ordinary call when that state becomes stale.
+
+Guarded binding is semantic hardening, not a synchronization primitive for arbitrary concurrent mutation. See [`COMPREHENSIVE_GUIDE.md`](COMPREHENSIVE_GUIDE.md) for the exact guard and deoptimization behavior.
+
+## Compatibility expansion policy
+
+Supporting another CPython minor version is a port, not a metadata-only change. The 1.1.0 milestone intentionally keeps the CPython 3.13 boundary while strengthening evidence inside that boundary. A new interpreter line requires review of opcode forms, call conventions, jumps, exception tables, stack effects, code-object construction, source/bytecode mapping, verifier logic, and all transformation-specific stress suites before `requires-python` is widened.

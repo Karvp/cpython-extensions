@@ -1,0 +1,149 @@
+python_extensions / cpython-extensions 1.1.0
+Release certification
+Date: 2026-08-21
+
+SCOPE
+-----
+1.1.0 is the performance-evidence, verification, and documentation milestone
+for the CPython 3.13 release line. The production transformation modules are
+byte-identical to the current 1.0.4 source tree; only
+src/python_extensions/_version.py changes inside the runtime package. The new
+release therefore preserves the established switch/inline/goto semantic
+contracts while adding stronger structural regressions, benchmark evidence,
+and release/documentation consistency checks.
+
+SUPPORTED BOUNDARY
+------------------
+- Implementation: CPython
+- Python: >=3.13,<3.14
+- Primary certification runtime: CPython 3.13.5
+- Runtime dependency: bytecode>=0.17,<0.18
+- License: MPL-2.0
+- Free-threaded CPython 3.13t: not independently certified
+- CPython 3.14+, 3.12-, PyPy/GraalPy: not certified
+
+RUNTIME IDENTITY CHECK
+----------------------
+Recursive comparison against the 1.0.4 runtime package found exactly one
+changed runtime file:
+
+  src/python_extensions/_version.py   1.0.4 -> 1.1.0
+
+Representative unchanged SHA-256 digests:
+
+  switch.py       94b6fdff464c934d7672e5d5bb6e3bfaac0e54d8b84e26e6dfa3aded1ef7588f
+  inline.py       0fdb545b2e8e4fcdd5026cfb16b765ca94edc7091e9441c0fd2d8a9073d97472
+  goto.py         d50eeda8871ca4857e60d527b72c925b05917a5a7089d11756679247dc668de2
+  _core/verify.py 66a6f1b6bd00f9baddabf28aaa0ae02f869b291ce4a1b9e5b562b423fe563906
+
+REGRESSION AND DEVELOPMENT-MODE GATES
+-------------------------------------
+- python -m pytest -q
+  PASS: 378/378
+- PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -X dev -W error -m pytest -q
+  PASS: 378/378
+- python -m compileall -q src tests tools benchmarks/scripts
+  PASS
+
+REPRODUCIBLE ARTIFACT GATES
+---------------------------
+The 1.1.0 source tree was built twice with the repository's setuptools backend
+and a fixed SOURCE_DATE_EPOCH. The resulting wheel, canonicalized sdist, and
+checksum manifest were byte-for-byte identical across both builds.
+
+- SHA256SUMS verification: PASS
+- Exact wheel install + tools/smoke_release.py: PASS
+- Exact sdist full regression suite: PASS, 378/378
+- Wheel rebuilt from the exact sdist with the same epoch: byte-identical PASS
+- Wheel metadata version: 1.1.0
+- Wheel CPython classifier: Programming Language :: Python :: Implementation :: CPython
+
+The local sandbox did not include the optional Twine / trove-classifiers
+executables used by the hosted release job. The release workflow installs the
+declared build tooling before running metadata preflight and `twine check`;
+publication remains conditional on those hosted gates.
+
+FULL-SCALE DIFFERENTIAL / STRESS RERUN
+--------------------------------------
+- Production switch differential/stress harness:
+  PASS: 3,680,000 calls
+- Adversarial switch harness:
+  PASS: 4,703,400 calls
+- Strict goto harness:
+  PASS: 3,526,500 calls/yields
+- Coordinated all-extension harness:
+  PASS: 157,200/157,200 calls
+- Inline optimizer randomized differential:
+  PASS: 1,000,000 rounds
+- Inline optimizer threaded differential:
+  PASS: 800,000 calls
+- Inline unbound-local semantics:
+  PASS: 100,000 rounds
+- Crash-isolated optimized inline calls:
+  PASS: 2,000,000 calls
+- Guarded binding harness:
+  PASS: 5,110,000 operations
+
+Total explicitly counted operations/calls/yields above: 21,077,100.
+
+1.1.0 SWITCH SCALING EVIDENCE
+-----------------------------
+Driver:
+  benchmarks/scripts/benchmark_switch_scaling_v110.py
+Evidence:
+  benchmarks/results/BENCHMARK_SWITCH_SCALING_V110.json
+Runtime:
+  CPython 3.13.5 / Linux x86-64
+Method:
+  timeit.repeat; uniform forward+reverse successful hits; misses validated but
+  excluded from timing; 100,000 target dispatches/sample through 256 routes,
+  scaled by route count thereafter with a 50,000-dispatch floor; 7 repeats;
+  50 warm-up batches.
+
+Selected median integer results versus generated if/elif:
+- 64 routes:    9.94x
+- 256 routes:  38.96x
+- 512 routes:  71.33x
+- 1,024 routes: 142.90x
+
+The 1,024-route string case records 83.86x versus if/elif. The specialized
+1,024-route direct-value switch remains 74 bytes of executable bytecode while
+the generated integer if/elif baseline reaches 17,420 bytes and match reaches
+19,466 bytes. Route-table storage still grows with route count; the bounded
+claim applies to the executable dispatch path.
+
+Small-route crossover is retained in the public evidence: at two routes native
+branching remains faster. The release therefore does not claim a universal
+switch speedup.
+
+INLINE / GOTO INTENDED-WORKLOAD EVIDENCE
+----------------------------------------
+Driver:
+  benchmarks/scripts/benchmark_extension_benefits_v110.py
+Evidence:
+  benchmarks/results/BENCHMARK_EXTENSION_BENEFITS_V110.json
+
+Recorded medians:
+- Frozen small-helper inlining: 1.34x faster than the ordinary helper call.
+- Strict goto explicit 3-state machine: 2.47x faster than explicit state
+  dispatch.
+- Naturally structured reference remains about 1.1% faster than strict goto,
+  which is documented as an important interpretation boundary.
+
+DOCUMENTATION / RELEASE CONSISTENCY
+-----------------------------------
+The 1.1.0 pass audits and synchronizes README, changelog, citation metadata,
+security policy, contributor guide, GitHub/PyPI setup, repository metadata,
+architecture, compatibility, comprehensive guide, release notes, release
+procedure, benchmark guide/evidence, issue template, and release-sensitive
+repository hygiene checks.
+
+The source-level goto/label notation credits Entrian's "goto for Python" as an
+inspiration while explicitly documenting that cpython-extensions uses an
+independent CPython 3.13 lowering and verification implementation.
+
+VERDICT
+-------
+PASS. The 1.1.0 tree is suitable as the next supported release line, subject
+to the normal GitHub Actions reproducible-build, metadata-preflight, GitHub
+Release, protected-environment approval, and PyPI Trusted Publishing gates.

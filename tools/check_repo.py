@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -54,6 +55,13 @@ LOCAL_PATH_PATTERNS = (
 )
 
 
+DOC_PLACEHOLDERS = (
+    "<OWNER>",
+    "<your-repository-url>",
+    "your-repository-url",
+)
+
+
 def _version() -> str:
     match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', VERSION_FILE.read_text(encoding="utf-8"), re.M)
     if not match:
@@ -88,6 +96,17 @@ def main() -> int:
         ROOT / "README.md": f"Version **{version}**",
         ROOT / "CHANGELOG.md": f"## {version}",
         ROOT / "CITATION.cff": f'version: "{version}"',
+        ROOT / "SECURITY.md": f"Version **{version}** is the current supported release",
+        ROOT / "GITHUB_SETUP.md": f"source version is `{version}`",
+        ROOT / "CONTRIBUTING.md": f"current release is **{version}**",
+        ROOT / "docs/ARCHITECTURE.md": f"Current documented release: **{version}**",
+        ROOT / "docs/COMPREHENSIVE_GUIDE.md": f"`python_extensions` {version}",
+        ROOT / "docs/COMPATIBILITY.md": f"Current supported release: **{version}**",
+        ROOT / "docs/RELEASE_NOTES.md": f"## {version}",
+        ROOT / "docs/RELEASING.md": f"v{version}",
+        ROOT / "benchmarks/README.md": f"Current benchmark evidence release: **{version}**",
+        ROOT / ".github/ISSUE_TEMPLATE/bug.yml": f'placeholder: "{version}"',
+        ROOT / ".github/REPOSITORY_METADATA.md": f"**Current release:** `{version}`",
     }
     for path, needle in checks.items():
         text = path.read_text(encoding="utf-8")
@@ -95,7 +114,7 @@ def main() -> int:
             errors.append(f"version drift: {path.relative_to(ROOT)} does not contain {needle!r}")
 
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    for needle in ('name = "cpython-extensions"', 'requires-python = ">=3.13,<3.14"', 'license = "MPL-2.0"', 'bytecode>=0.17,<0.18', 'twine>=5,<7', 'trove-classifiers>=2026.6.1.19', 'Programming Language :: Python :: Implementation :: CPython'):
+    for needle in ('name = "cpython-extensions"', 'requires-python = ">=3.13,<3.14"', 'license = "MPL-2.0"', 'bytecode>=0.17,<0.18', 'twine>=5,<7', 'trove-classifiers>=2026.6.1.19', 'Programming Language :: Python :: Implementation :: CPython', '[project.urls]', 'https://github.com/Karvp/cpython-extensions'):
         if needle not in pyproject:
             errors.append(f"pyproject invariant missing: {needle}")
 
@@ -120,10 +139,82 @@ def main() -> int:
             for local in LOCAL_PATH_PATTERNS:
                 if local in text:
                     errors.append(f"machine-local path {local!r} in active file: {rel}")
+        if path.suffix.lower() in {".md", ".txt", ".cff"}:
+            for placeholder in DOC_PLACEHOLDERS:
+                if placeholder in text:
+                    errors.append(f"documentation placeholder {placeholder!r} in active file: {rel}")
+            if re.search(r"[ \t]+$", text, re.M):
+                errors.append(f"trailing whitespace in active documentation: {rel}")
+            if "\n\n\n\n" in text:
+                errors.append(f"excess blank lines in active documentation: {rel}")
         for label, pattern in SECRET_PATTERNS.items():
             if pattern.search(text):
                 errors.append(f"possible {label} committed in: {rel}")
 
+
+    markdown_link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    for path in _iter_active_text_files():
+        if path.suffix.lower() != ".md":
+            continue
+        text = path.read_text(encoding="utf-8")
+        for match in markdown_link.finditer(text):
+            href = match.group(1)
+            if href.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            target_text = href.split("#", 1)[0]
+            if not target_text:
+                continue
+            target = (path.parent / target_text).resolve()
+            if not target.exists():
+                errors.append(
+                    f"broken local markdown link in {path.relative_to(ROOT)}: {href}"
+                )
+
+    version_token = "V" + "".join(version.split("."))
+    benchmark_evidence = ROOT / f"benchmarks/results/BENCHMARK_SWITCH_SCALING_{version_token}.json"
+    if benchmark_evidence.is_file():
+        try:
+            benchmark = json.loads(benchmark_evidence.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"cannot read switch benchmark evidence: {exc}")
+        else:
+            if benchmark.get("package_version") != version:
+                errors.append("switch benchmark evidence package_version does not match release version")
+            rows = {
+                (row.get("key_kind"), row.get("size")): row
+                for row in benchmark.get("rows", [])
+                if isinstance(row, dict)
+            }
+            for key_kind in ("int", "str"):
+                for size in (2, 4, 8, 16, 32, 64, 128, 256, 512, 1024):
+                    if (key_kind, size) not in rows:
+                        errors.append(f"switch benchmark evidence missing {key_kind}/{size} row")
+            readme = (ROOT / "README.md").read_text(encoding="utf-8")
+            int_1024 = rows.get(("int", 1024))
+            str_1024 = rows.get(("str", 1024))
+            if int_1024:
+                speedup = f"{float(int_1024['speedup_vs_if_elif']):.2f}×"
+                if speedup not in readme:
+                    errors.append(f"README switch benchmark is not synchronized with evidence ({speedup})")
+            if str_1024:
+                speedup = f"{float(str_1024['speedup_vs_if_elif']):.2f}×"
+                if speedup not in readme:
+                    errors.append(f"README string benchmark is not synchronized with evidence ({speedup})")
+    else:
+        errors.append(f"current-release switch benchmark evidence is missing: {benchmark_evidence.relative_to(ROOT)}")
+
+    for stem in ("BENCHMARK_EXTENSION_BENEFITS", "BENCHMARK_README_BASELINE"):
+        evidence = ROOT / f"benchmarks/results/{stem}_{version_token}.json"
+        if not evidence.is_file():
+            errors.append(f"current-release benchmark evidence is missing: {evidence.relative_to(ROOT)}")
+            continue
+        try:
+            payload = json.loads(evidence.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"cannot read {evidence.relative_to(ROOT)}: {exc}")
+            continue
+        if payload.get("package_version") != version:
+            errors.append(f"benchmark evidence package_version does not match release version: {evidence.relative_to(ROOT)}")
 
     license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
     if not license_text.startswith("Mozilla Public License Version 2.0"):
@@ -131,6 +222,8 @@ def main() -> int:
     citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
     if "license: MPL-2.0" not in citation:
         errors.append("CITATION.cff license metadata is not MPL-2.0")
+    if 'repository-code: "https://github.com/Karvp/cpython-extensions"' not in citation:
+        errors.append("CITATION.cff repository-code does not identify the canonical repository")
 
     guide = ROOT / "docs/COMPREHENSIVE_GUIDE.md"
     if not guide.is_file() or guide.stat().st_size < 10_000:

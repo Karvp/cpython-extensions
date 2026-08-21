@@ -1,0 +1,919 @@
+{
+  "schema": 1,
+  "benchmark": "switch scaling vs native Python dispatch",
+  "package_version": "1.1.0",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "method": {
+    "timer": "timeit.repeat",
+    "aggregation": "median per successful dispatch",
+    "hit_distribution": "uniform over every route, forward then reverse",
+    "misses": "validated for correctness, excluded from timing",
+    "target_dispatches_per_sample": 100000,
+    "repeat": 7,
+    "warmup_batches": 50,
+    "sizes": "2,4,8,16,32,64,128,256,512,1024"
+  },
+  "rows": [
+    {
+      "size": 2,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 2,
+      "code_bytes": {
+        "if_elif": 32,
+        "match": 34,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 45.70930999761913,
+          "best_ns": 42.147389999627194,
+          "stdev_ns": 1.5279292982883608,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 47.19306999959372,
+          "best_ns": 44.62252999928751,
+          "stdev_ns": 1.7417104762501718,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 51.344739999876765,
+          "best_ns": 50.05892000099266,
+          "stdev_ns": 1.7948293587077597,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 49.84339999737131,
+          "best_ns": 47.867309999674035,
+          "stdev_ns": 1.889834332019385,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 0.9170584269939409,
+      "speedup_vs_match": 0.9468268617727249,
+      "ratio_vs_dict_get": 0.9707596142757942
+    },
+    {
+      "size": 4,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 4,
+      "code_bytes": {
+        "if_elif": 60,
+        "match": 66,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 53.277120000529976,
+          "best_ns": 47.33033999855252,
+          "stdev_ns": 2.762522785591829,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 59.93364999994811,
+          "best_ns": 56.98122000012518,
+          "stdev_ns": 1.8679210995397375,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 46.65100999773131,
+          "best_ns": 44.13368999848899,
+          "stdev_ns": 1.24661922605783,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 46.10031000083836,
+          "best_ns": 45.48112999600562,
+          "stdev_ns": 1.9830787530726313,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 1.1556781288360338,
+      "speedup_vs_match": 1.3000704333410813,
+      "ratio_vs_dict_get": 0.9881953253119338
+    },
+    {
+      "size": 8,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 8,
+      "code_bytes": {
+        "if_elif": 116,
+        "match": 130,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 72.51122000070609,
+          "best_ns": 68.3386699984112,
+          "stdev_ns": 5.882696868776804,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 82.41953999913676,
+          "best_ns": 79.4068300001527,
+          "stdev_ns": 20.442368550067258,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 43.76291999960813,
+          "best_ns": 42.14909999973315,
+          "stdev_ns": 1.2112666136120231,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 44.650969998656365,
+          "best_ns": 42.140509999626374,
+          "stdev_ns": 12.8235526206109,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 1.6239562097506077,
+      "speedup_vs_match": 1.8458622511810365,
+      "ratio_vs_dict_get": 1.0202922930886738
+    },
+    {
+      "size": 16,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 16,
+      "code_bytes": {
+        "if_elif": 228,
+        "match": 258,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 125.42732999918371,
+          "best_ns": 123.58150999716598,
+          "stdev_ns": 3.1245617720671666,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 133.69007999699534,
+          "best_ns": 130.186890000914,
+          "stdev_ns": 3.4195751070378906,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 45.718090000264056,
+          "best_ns": 42.57808999682311,
+          "stdev_ns": 4.016381997269547,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 43.34668999945279,
+          "best_ns": 42.37652000028902,
+          "stdev_ns": 1.3656441295043038,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 2.893584954255264,
+      "speedup_vs_match": 3.0842050453836967,
+      "ratio_vs_dict_get": 0.9481299415439803
+    },
+    {
+      "size": 32,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 32,
+      "code_bytes": {
+        "if_elif": 452,
+        "match": 514,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 237.92156490223968,
+          "best_ns": 234.44870358546444,
+          "stdev_ns": 2.0734001645566864,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 242.1814980784022,
+          "best_ns": 236.64017485737847,
+          "stdev_ns": 22.349970236925312,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 44.41373239648321,
+          "best_ns": 43.21170774623112,
+          "stdev_ns": 1.686082855854987,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 43.0693021767492,
+          "best_ns": 42.035121240101134,
+          "stdev_ns": 1.1493369054786946,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 5.524156484492121,
+      "speedup_vs_match": 5.623065288695181,
+      "ratio_vs_dict_get": 0.9697294024349894
+    },
+    {
+      "size": 64,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 64,
+      "code_bytes": {
+        "if_elif": 900,
+        "match": 1026,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 451.3985775430469,
+          "best_ns": 439.72598231520266,
+          "stdev_ns": 24.87825459804829,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 484.47704265106165,
+          "best_ns": 457.6622919364174,
+          "stdev_ns": 14.859666725997359,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 46.169414216355214,
+          "best_ns": 44.55618798144132,
+          "stdev_ns": 3.3778432269469607,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 45.422755284773665,
+          "best_ns": 44.133032570601905,
+          "stdev_ns": 4.630914482668037,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 9.937718984967914,
+      "speedup_vs_match": 10.665954533442076,
+      "ratio_vs_dict_get": 0.9838278448133949
+    },
+    {
+      "size": 128,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 128,
+      "code_bytes": {
+        "if_elif": 1796,
+        "match": 2050,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 842.5934395061264,
+          "best_ns": 833.4494591321045,
+          "stdev_ns": 57.84869423475952,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 899.7334635415436,
+          "best_ns": 876.076963143063,
+          "stdev_ns": 15.314350660381534,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 44.199499199110576,
+          "best_ns": 42.89607371988087,
+          "stdev_ns": 1.0837088938489108,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 44.03643829985453,
+          "best_ns": 43.695983569919534,
+          "stdev_ns": 1.0487006979254814,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 19.134005201980873,
+      "speedup_vs_match": 20.431567544474092,
+      "ratio_vs_dict_get": 0.9963107975834412
+    },
+    {
+      "size": 256,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 256,
+      "code_bytes": {
+        "if_elif": 3596,
+        "match": 4106,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 1741.3566606586746,
+          "best_ns": 1627.8967648257017,
+          "stdev_ns": 84.7880913004688,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 1718.0727363817155,
+          "best_ns": 1674.5227463971082,
+          "stdev_ns": 59.17796630165951,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 44.61194911606561,
+          "best_ns": 42.34114583276311,
+          "stdev_ns": 1.334098113941855,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 44.69190705035631,
+          "best_ns": 43.52023237284806,
+          "stdev_ns": 5.808515231337232,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 38.96357921573166,
+      "speedup_vs_match": 38.44259173021837,
+      "ratio_vs_dict_get": 1.0017922986077716
+    },
+    {
+      "size": 512,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 512,
+      "code_bytes": {
+        "if_elif": 8204,
+        "match": 9226,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 3444.4391276052443,
+          "best_ns": 3348.458618157579,
+          "stdev_ns": 966.9009069204894,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 3378.7210489966137,
+          "best_ns": 3316.101196295292,
+          "stdev_ns": 34.893470927393,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 45.86012776937783,
+          "best_ns": 44.305887856680805,
+          "stdev_ns": 1.5060818407606622,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 48.2857462624775,
+          "best_ns": 47.25457763051407,
+          "stdev_ns": 1.946555213541619,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 71.33449090507052,
+      "speedup_vs_match": 69.97346650976777,
+      "ratio_vs_dict_get": 1.0528916645260489
+    },
+    {
+      "size": 1024,
+      "key_kind": "int",
+      "backend": "portable-direct-value-v18",
+      "case_count": 1024,
+      "code_bytes": {
+        "if_elif": 17420,
+        "match": 19466,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 7222.896525068319,
+          "best_ns": 7079.154134115306,
+          "stdev_ns": 208.5497832368118,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 7181.3934936585765,
+          "best_ns": 7083.396606442453,
+          "stdev_ns": 121.36297694511991,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 44.98000080732645,
+          "best_ns": 44.60003661758508,
+          "stdev_ns": 1.024851088290141,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 50.54429117838192,
+          "best_ns": 49.647440593843704,
+          "stdev_ns": 3.4480908844377987,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 142.90232104704225,
+      "speedup_vs_match": 142.08119900848664,
+      "ratio_vs_dict_get": 1.123705875304234
+    },
+    {
+      "size": 2,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 2,
+      "code_bytes": {
+        "if_elif": 32,
+        "match": 34,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 45.91412000081618,
+          "best_ns": 42.62738999841531,
+          "stdev_ns": 6.096153859370269,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 46.146109998517204,
+          "best_ns": 43.60710000128165,
+          "stdev_ns": 1.6315665057683046,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 51.1215300002732,
+          "best_ns": 48.232039998765686,
+          "stdev_ns": 1.6059160017531438,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 54.11966999872675,
+          "best_ns": 50.78803999822412,
+          "stdev_ns": 2.5445168678894348,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 0.8483813741269373,
+      "speedup_vs_match": 0.8526679855882873,
+      "ratio_vs_dict_get": 1.0586473057132197
+    },
+    {
+      "size": 4,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 4,
+      "code_bytes": {
+        "if_elif": 60,
+        "match": 66,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 47.87156000020332,
+          "best_ns": 46.51196999930107,
+          "stdev_ns": 1.053599881945723,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 53.04740000156016,
+          "best_ns": 51.87479000142048,
+          "stdev_ns": 2.242785188530758,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 47.24130999875342,
+          "best_ns": 44.104599996899196,
+          "stdev_ns": 2.3049542027409036,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 50.302199997531716,
+          "best_ns": 47.02441000063118,
+          "stdev_ns": 5.329173597141183,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 0.9516792506600572,
+      "speedup_vs_match": 1.054574153897109,
+      "ratio_vs_dict_get": 1.064792657080404
+    },
+    {
+      "size": 8,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 8,
+      "code_bytes": {
+        "if_elif": 116,
+        "match": 130,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 67.22882000303798,
+          "best_ns": 65.56069999987812,
+          "stdev_ns": 1.0800516209792883,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 74.38917999934347,
+          "best_ns": 73.9912600010939,
+          "stdev_ns": 2.149552819988033,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 48.781870000311756,
+          "best_ns": 47.29854000288469,
+          "stdev_ns": 2.3461452729701096,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 49.72978999830957,
+          "best_ns": 48.38812999878428,
+          "stdev_ns": 2.819907089798909,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 1.3518822421193262,
+      "speedup_vs_match": 1.4958675675459745,
+      "ratio_vs_dict_get": 1.0194318093585129
+    },
+    {
+      "size": 16,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 16,
+      "code_bytes": {
+        "if_elif": 228,
+        "match": 258,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 105.1265499972942,
+          "best_ns": 101.91734999807522,
+          "stdev_ns": 1.9501585689951388,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 107.61214000012842,
+          "best_ns": 107.2818400007236,
+          "stdev_ns": 2.939345999334299,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 44.44070999852556,
+          "best_ns": 43.32427000008465,
+          "stdev_ns": 1.4786301055236952,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 46.13760999745864,
+          "best_ns": 44.774329999199836,
+          "stdev_ns": 2.000547925753716,
+          "sample_dispatches": 100000,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 2.278543470350649,
+      "speedup_vs_match": 2.332416872179897,
+      "ratio_vs_dict_get": 1.0381834583423482
+    },
+    {
+      "size": 32,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 32,
+      "code_bytes": {
+        "if_elif": 452,
+        "match": 514,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 204.79617477408848,
+          "best_ns": 183.2090969131591,
+          "stdev_ns": 16.578012151148165,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 178.19867357899912,
+          "best_ns": 175.0900488143683,
+          "stdev_ns": 3.0007902378562967,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 48.676826587131885,
+          "best_ns": 47.09406010018701,
+          "stdev_ns": 2.1428040965072426,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 50.932118279896095,
+          "best_ns": 49.70893686032135,
+          "stdev_ns": 1.1758719538962326,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 4.0209632289125805,
+      "speedup_vs_match": 3.4987485224885617,
+      "ratio_vs_dict_get": 1.0463319376156788
+    },
+    {
+      "size": 64,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 64,
+      "code_bytes": {
+        "if_elif": 900,
+        "match": 1026,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 321.95979713196664,
+          "best_ns": 310.30107634733,
+          "stdev_ns": 25.153121265974658,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 321.1527688837829,
+          "best_ns": 307.8216829374422,
+          "stdev_ns": 50.60543730396241,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 49.21503880939632,
+          "best_ns": 48.03803216871747,
+          "stdev_ns": 18.943750298390583,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 51.4570662614091,
+          "best_ns": 50.8276448433077,
+          "stdev_ns": 2.488381828568248,
+          "sample_dispatches": 99968,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 6.256862672589334,
+      "speedup_vs_match": 6.241179146364114,
+      "ratio_vs_dict_get": 1.045555738779276
+    },
+    {
+      "size": 128,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 128,
+      "code_bytes": {
+        "if_elif": 1800,
+        "match": 2054,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 588.319821718623,
+          "best_ns": 581.374148635788,
+          "stdev_ns": 16.13953963964998,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 569.0811999187052,
+          "best_ns": 565.3288161064861,
+          "stdev_ns": 3.9765695458080694,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 49.84450120341185,
+          "best_ns": 48.15410657116468,
+          "stdev_ns": 0.8127012496898643,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 54.02169470960562,
+          "best_ns": 53.07754407386967,
+          "stdev_ns": 26.124525761020642,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 10.890436238276946,
+      "speedup_vs_match": 10.534308539889562,
+      "ratio_vs_dict_get": 1.0838045001021666
+    },
+    {
+      "size": 256,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 256,
+      "code_bytes": {
+        "if_elif": 4104,
+        "match": 4614,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 1145.9676482371533,
+          "best_ns": 1120.9444310886431,
+          "stdev_ns": 32.34069391682747,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 1144.0961538474937,
+          "best_ns": 1112.3282952724276,
+          "stdev_ns": 412.7056962967198,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 92.00916466329983,
+          "best_ns": 89.15420672942003,
+          "stdev_ns": 2.8726858870519236,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 106.00079126933136,
+          "best_ns": 101.92760416662722,
+          "stdev_ns": 3.792267055307017,
+          "sample_dispatches": 99840,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 10.810934847886461,
+      "speedup_vs_match": 10.793279372231526,
+      "ratio_vs_dict_get": 1.152067749525091
+    },
+    {
+      "size": 512,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 512,
+      "code_bytes": {
+        "if_elif": 8712,
+        "match": 9734,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 4173.7309570318475,
+          "best_ns": 2407.7489827467602,
+          "stdev_ns": 838.5407950513974,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 2416.552652993268,
+          "best_ns": 2331.816040035406,
+          "stdev_ns": 41.24263230025517,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 50.2334594754128,
+          "best_ns": 49.4264526344305,
+          "stdev_ns": 1.6011364476198287,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 55.03721110337404,
+          "best_ns": 54.426269537518245,
+          "stdev_ns": 1.2637025641669455,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 75.83471025071577,
+      "speedup_vs_match": 43.907614585600285,
+      "ratio_vs_dict_get": 1.0956285248542852
+    },
+    {
+      "size": 1024,
+      "key_kind": "str",
+      "backend": "portable-direct-value-v18",
+      "case_count": 1024,
+      "code_bytes": {
+        "if_elif": 17928,
+        "match": 19974,
+        "dict_get": 20,
+        "extension": 74
+      },
+      "timing": {
+        "if_elif": {
+          "median_ns": 5040.343058260177,
+          "best_ns": 4868.274108884203,
+          "stdev_ns": 180.58612170184006,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "match": {
+          "median_ns": 4904.666320804107,
+          "best_ns": 4784.75632731401,
+          "stdev_ns": 282.40770256451947,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "dict_get": {
+          "median_ns": 52.37524414170025,
+          "best_ns": 50.3593546585801,
+          "stdev_ns": 1.3766575224465296,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        },
+        "extension": {
+          "median_ns": 60.101725263272954,
+          "best_ns": 54.95930989011614,
+          "stdev_ns": 2.3345545965875902,
+          "sample_dispatches": 49152,
+          "repeat": 7
+        }
+      },
+      "speedup_vs_if_elif": 83.86353363703249,
+      "speedup_vs_match": 81.60608201044867,
+      "ratio_vs_dict_get": 1.1475216249239593
+    }
+  ]
+}

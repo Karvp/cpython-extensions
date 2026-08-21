@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "benchmark": "inline and goto intended-workload benefits",
+  "package_version": "1.1.0",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "method": {
+    "timer": "timeit.repeat",
+    "aggregation": "median per function call",
+    "repeat": 9,
+    "warmup": 1000
+  },
+  "inline": {
+    "scenario": "small frozen helper call",
+    "baseline": {
+      "median_ns": 58.31197599945881,
+      "best_ns": 57.17949600148131,
+      "stdev_ns": 1.0453451146255512
+    },
+    "extension": {
+      "median_ns": 43.52076000031957,
+      "best_ns": 42.18631599906075,
+      "stdev_ns": 0.6370889983072704
+    },
+    "speedup_median": 1.339865755998531
+  },
+  "goto": {
+    "scenario": "three-state explicit state machine, n=32",
+    "baseline_explicit_state": {
+      "median_ns": 4005.892160021176,
+      "best_ns": 3940.2051999786636,
+      "stdev_ns": 60.77890567289956
+    },
+    "extension": {
+      "median_ns": 1620.3368000060436,
+      "best_ns": 1585.4612799739698,
+      "stdev_ns": 94.55530389481771
+    },
+    "structured_reference": {
+      "median_ns": 1602.9086400158121,
+      "best_ns": 1567.399679988739,
+      "stdev_ns": 50.6540505485217
+    },
+    "speedup_vs_explicit_state": 2.472258952587039,
+    "ratio_vs_structured_reference": 1.0108728342683708
+  }
+}

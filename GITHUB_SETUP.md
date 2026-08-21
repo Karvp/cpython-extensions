@@ -1,74 +1,86 @@
-# GitHub Setup
+# GitHub Repository Setup
 
-This checkout is ready to push as a repository named `cpython-extensions`.
+This document records the recommended GitHub configuration for the canonical repository:
 
-## Fastest path
+- **Repository:** <https://github.com/Karvp/cpython-extensions>
+- **Default branch:** `main`
+- **Package:** `cpython-extensions`
+- **Import package:** `python_extensions`
+- **Current release:** `1.1.0`
 
-Create an **empty** GitHub repository (do not add a README, license, or `.gitignore` because they already exist here), then from this directory:
+## Clone or connect the repository
+
+For a new local checkout:
 
 ```powershell
-git remote add origin https://github.com/<OWNER>/cpython-extensions.git
+git clone https://github.com/Karvp/cpython-extensions.git
+cd cpython-extensions
+```
+
+If an existing local checkout does not yet have the remote configured:
+
+```powershell
+git remote add origin https://github.com/Karvp/cpython-extensions.git
 git push -u origin main
 ```
 
-The prepared repository already contains an initial commit made with the neutral local identity `Repository Bootstrap <repository-bootstrap@localhost>` so no personal email address is invented. If you want the first commit attributed to your own Git identity, run `git commit --amend --reset-author --no-edit` before pushing.
-
-If you use SSH:
+SSH users can use:
 
 ```powershell
-git remote add origin git@github.com:<OWNER>/cpython-extensions.git
-git push -u origin main
+git remote add origin git@github.com:Karvp/cpython-extensions.git
 ```
 
 ## Recommended repository settings
 
-After the first push:
+1. Keep `main` as the default branch.
+2. Enable the dependency graph, Dependabot alerts, and Dependabot updates. The dependency-review workflow requires the dependency graph.
+3. Enable CodeQL/code scanning and private vulnerability reporting.
+4. Protect `main` with pull requests and the normal CI/package-validation checks.
+5. Disallow force-pushes and branch deletion on `main`.
+6. Enable secret scanning and push protection when available.
+7. Prefer signed release tags when the maintainer signing workflow is configured.
 
-1. Set the default branch to `main`.
-2. Enable the dependency graph and Dependabot alerts/updates. Dependency graph is required for the included Dependency Review workflow.
-3. Enable code scanning (the repository includes a CodeQL workflow).
-4. Enable private vulnerability reporting if available.
-5. Protect `main` with pull requests and require the `CI / test` jobs plus package validation before merge.
-6. Disallow force-pushes/deletion on `main`.
-7. Prefer signed commits/tags for releases if your workflow supports them.
+## PyPI Trusted Publishing
 
-## PyPI publishing
+The release workflow builds and certifies artifacts for validated `v*` tags. Only the exact stable tag for the package version can enter the PyPI publishing job; preview tags such as `v1.1.0-beta` create GitHub prereleases and are never eligible for PyPI.
 
-The release workflow creates GitHub release artifacts on `v*` tags. PyPI publication is **off by default**.
+Configure publishing as follows:
 
-After configuring a PyPI Trusted Publisher for this GitHub repository:
+1. Configure `Karvp/cpython-extensions` as a Trusted Publisher for the `cpython-extensions` project on PyPI.
+2. Create a protected GitHub environment named `pypi`.
+3. Add the desired required reviewers or other deployment-protection rules to that environment.
+4. If the tag pusher is the only required reviewer, either add another eligible reviewer or disable **Prevent self-review**; otherwise the deployment cannot be approved.
 
-- create/protect a GitHub environment named `pypi`;
-- set repository variable `PYPI_PUBLISH_ENABLED` to `true`.
+No PyPI API token is required in GitHub secrets. Publishing uses GitHub OIDC with `id-token: write` only in the dedicated PyPI job.
 
-No PyPI token needs to be stored in GitHub secrets. The publishing job runs only after the same certified artifacts have been accepted by the GitHub Release job.
-Only the wheel and sdist are sent to PyPI; `SHA256SUMS.txt` stays attached to the GitHub Release for integrity verification.
+Do **not** gate that job on an environment-scoped variable in a job-level `if:` expression. GitHub evaluates job eligibility before the job enters the environment, so those variables are unavailable at that point. The workflow instead gates publication on the validated stable release channel and uses the protected `pypi` environment as the approval boundary.
 
-## First release tag
+## Release tag
 
-The source version is `1.0.4`. After the repository is pushed and its CI is green:
+The source version is `1.1.0`. After CI is green and the release commit is final:
 
 ```powershell
-git tag -a v1.0.4 -m "cpython-extensions 1.0.4"
-git push origin v1.0.4
+git tag -a v1.1.0 -m "cpython-extensions 1.1.0"
+git push origin v1.1.0
 ```
 
-If `v1.0.4` already exists in the destination repository, do not overwrite it; increment the package version and changelog instead.
+If `v1.1.0` already exists remotely, do not move or overwrite a published stable tag. Increment the package version and changelog instead.
 
-## Project URLs in package metadata
+For a release-pipeline rehearsal, use an allowed preview tag such as:
 
-`pyproject.toml` intentionally does not guess your GitHub account. Once the final repository URL is known, you can add:
-
-```toml
-[project.urls]
-Homepage = "https://github.com/<OWNER>/cpython-extensions"
-Repository = "https://github.com/<OWNER>/cpython-extensions"
-Issues = "https://github.com/<OWNER>/cpython-extensions/issues"
-Documentation = "https://github.com/<OWNER>/cpython-extensions/blob/main/docs/COMPREHENSIVE_GUIDE.md"
+```powershell
+git tag -a v1.1.0-beta -m "cpython-extensions 1.1.0 release rehearsal"
+git push origin v1.1.0-beta
 ```
 
-Optionally add a `repository-code` field with the final GitHub URL to `CITATION.cff` once the owner is known.
+## Package metadata links
 
-## Repository metadata
+The package metadata points to the canonical project resources:
 
-Use [`.github/REPOSITORY_METADATA.md`](.github/REPOSITORY_METADATA.md) for the recommended repository name, GitHub description, topics, website, labels, and public repository settings. The project license is **Mozilla Public License 2.0 (`MPL-2.0`)**.
+- Homepage: <https://github.com/Karvp/cpython-extensions>
+- Repository: <https://github.com/Karvp/cpython-extensions>
+- Issues: <https://github.com/Karvp/cpython-extensions/issues>
+- Documentation: <https://github.com/Karvp/cpython-extensions/blob/main/docs/COMPREHENSIVE_GUIDE.md>
+- PyPI: <https://pypi.org/project/cpython-extensions/>
+
+See [`.github/REPOSITORY_METADATA.md`](.github/REPOSITORY_METADATA.md) for the recommended description, topics, labels, and repository-policy settings.

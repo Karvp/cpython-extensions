@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "benchmark": "README baseline vs cpython-extensions",
+  "package_version": "1.1.0",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "method": {
+    "timer": "timeit.repeat",
+    "aggregation": "median of per-batch timings",
+    "number": 20000,
+    "repeat": 9,
+    "warmup_batches": 500
+  },
+  "scenarios": [
+    {
+      "name": "8-way string routing",
+      "baseline": {
+        "median_seconds": 2.2528464399988478e-05,
+        "best_seconds": 1.67074044499941e-05,
+        "stdev_seconds": 4.983396229878043e-06
+      },
+      "extension": {
+        "median_seconds": 1.9256716149993735e-05,
+        "best_seconds": 1.572052149999763e-05,
+        "stdev_seconds": 4.028740564256064e-06
+      },
+      "speedup_median": 1.1699016709033128,
+      "speedup_best": 1.062776731038892,
+      "result": 1152
+    },
+    {
+      "name": "small affine helper",
+      "baseline": {
+        "median_seconds": 1.6857804150004084e-05,
+        "best_seconds": 1.637659220000387e-05,
+        "stdev_seconds": 1.1649533367998695e-06
+      },
+      "extension": {
+        "median_seconds": 1.2797119649985689e-05,
+        "best_seconds": 1.2503397600016796e-05,
+        "stdev_seconds": 4.426978749330866e-07
+      },
+      "speedup_median": 1.3173123805264206,
+      "speedup_best": 1.3097713696621045,
+      "result": 16640
+    },
+    {
+      "name": "countdown state loop",
+      "baseline": {
+        "median_seconds": 1.3235138899995036e-05,
+        "best_seconds": 1.2879183550012385e-05,
+        "stdev_seconds": 4.5592441568606614e-07
+      },
+      "extension": {
+        "median_seconds": 1.2440355700005057e-05,
+        "best_seconds": 1.1754660799988414e-05,
+        "stdev_seconds": 4.827923673879304e-07
+      },
+      "speedup_median": 1.0638874980069626,
+      "speedup_best": 1.0956661165437525,
+      "result": 960
+    }
+  ]
+}

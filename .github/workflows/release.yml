@@ -157,8 +157,11 @@ jobs:
 
   pypi-publish:
     name: PyPI Trusted Publishing
-    # Preview/test tags such as v1.0.3-beta exercise build + GitHub prerelease,
+    # Preview/test tags such as v<package-version>-beta exercise build + GitHub prerelease,
     # but only the exact v<package-version> stable tag can ever reach PyPI.
+    # The pypi environment (required reviewers/protection rules) is the explicit
+    # human approval gate. Do not use an environment-scoped vars.* value in this
+    # job-level if: environment variables are unavailable until the job starts.
     if: ${{ needs.build.outputs.channel == 'stable' }}
     needs: [build, github-release]
     runs-on: ubuntu-latest

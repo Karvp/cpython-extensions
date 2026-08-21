@@ -1,101 +1,144 @@
 # Releasing
 
-The repository is designed so release artifacts are produced from a clean tagged commit and can be reproduced from the same source and epoch.
+The release process is designed around a clean tagged commit, deterministic artifacts, explicit metadata validation, and a separate OIDC-only publishing job.
 
 ## 1. Prepare the release
 
 1. Update `src/python_extensions/_version.py`.
-2. Add the release section to `CHANGELOG.md`.
-3. Update certification/audit documents when the runtime changes.
-4. Run all required tests and relevant full-scale stress harnesses.
-5. Run repository hygiene checks:
+2. Add the release section to `CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
+3. Update release-sensitive documentation: `README.md`, `SECURITY.md`, `CITATION.cff`, compatibility/setup guidance, benchmark documentation/evidence, and repository metadata where applicable.
+4. Update the release certification and audit records.
+5. Run the full unit suite and the relevant full-scale stress/differential harnesses.
+6. Run repository hygiene and compile checks.
+
+Recommended local gates:
 
 ```bash
 python tools/check_repo.py
 python -m pytest
-python -X dev -W error -m pytest
-python -m compileall -q src tests
+python -m compileall -q src tests tools benchmarks/scripts
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -X dev -W error -m pytest
 ```
 
-## 2. Build reproducibly
+The isolated dev-mode form avoids unrelated globally installed pytest plugins affecting release certification before this project's tests are collected.
 
-`tools/build_release.py` requires a fixed Unix epoch. A release should normally use the tagged commit timestamp:
+## 2. Validate release metadata
+
+Install the declared release tooling **without installing the local project**:
+
+```bash
+python tools/install_dependencies.py \
+  --include-build-system \
+  --include-runtime \
+  --upgrade build test
+python tools/check_metadata.py
+```
+
+Do not run `pip install ".[build,test]"` before the clean-tree preflight. Installing the local project creates build metadata such as `build/` and `src/*.egg-info`, which correctly makes the checkout dirty.
+
+## 3. Build reproducibly
+
+`tools/build_release.py` requires a fixed Unix epoch. Use the release commit timestamp:
 
 ```bash
 EPOCH=$(git show -s --format=%ct HEAD)
 python tools/build_release.py --out-dir dist --epoch "$EPOCH"
 ```
 
-On PowerShell:
+PowerShell:
 
 ```powershell
 $epoch = git show -s --format=%ct HEAD
 python tools/build_release.py --out-dir dist --epoch $epoch
 ```
 
-The command writes a canonical sdist, wheel, and `SHA256SUMS.txt`.
+The command writes a wheel, sdist, and `SHA256SUMS.txt`.
 
-Build twice from the same clean commit/epoch and compare hashes before claiming reproducibility.
+For release certification, build twice from the same clean commit and epoch and compare the resulting wheel, sdist, and checksum manifest byte-for-byte.
 
-## 3. Validate artifacts
+## 4. Validate exact artifacts
 
-Install and smoke-test the exact wheel and sdist, not merely the checkout. The GitHub release workflow performs this automatically.
-
-At minimum, install the declared tooling without installing the local project itself:
+Validate only Python distributions with Twine; the checksum manifest is not package metadata:
 
 ```bash
-python tools/install_dependencies.py --include-build-system --include-runtime --upgrade build test
-python -m twine check dist/*
+python -m twine check dist/*.whl dist/*.tar.gz
 ```
 
-Do not use `pip install ".[build,test]"` before the clean-tree release check. A local project install creates `build/` and `src/*.egg-info`, which correctly causes `tools/check_repo.py` to reject the checkout as dirty.
+Then:
 
-Also extract the sdist and run the full unit suite from the extracted source. Rebuilding a wheel from that sdist should reproduce the shipped wheel when the same epoch is used.
+1. verify `SHA256SUMS.txt`;
+2. install and smoke-test the exact wheel;
+3. extract the exact sdist and run the full suite from that source;
+4. rebuild the wheel from the exact sdist using the same epoch and compare it with the shipped wheel.
 
-## 4. Tag
+The GitHub release workflow performs these checks automatically.
+
+## 5. Tag the release
 
 The only stable/publishable tag is the exact package version:
 
 ```bash
-git tag -s v1.0.4 -m "cpython-extensions 1.0.4"
-git push origin v1.0.4
+git tag -s v1.1.0 -m "cpython-extensions 1.1.0"
+git push origin v1.1.0
 ```
 
-Use an unsigned annotated tag if signing is not configured, but signed tags are preferred.
-
-For a release-pipeline rehearsal, a preview suffix may be used without changing the package version, for example:
+If signing is not configured, use an unsigned annotated tag:
 
 ```bash
-git tag -a v1.0.4-beta -m "cpython-extensions 1.0.4 beta release rehearsal"
-git push origin v1.0.4-beta
+git tag -a v1.1.0 -m "cpython-extensions 1.1.0"
+git push origin v1.1.0
 ```
 
-Allowed preview labels are `alpha`, `beta`, `rc`, `preview`, and `test`, optionally followed by a numeric suffix. Preview tags build and certify the exact `1.0.4` package but are GitHub-only and can never enter the PyPI publishing job.
+Do not move or overwrite a stable tag after publication. If a published release needs another change, increment the package version.
 
-## 5. GitHub release
+### Preview/rehearsal tags
 
-A pushed stable tag creates a normal GitHub Release. An allowed preview tag creates a GitHub **prerelease**. Both attach the certified wheel, sdist, and SHA-256 manifest.
+A preview suffix can exercise the build and GitHub prerelease path without changing the package version:
 
-Release creation uses the GitHub REST API through `actions/github-script`, so it does not depend on GitHub CLI repository discovery. Re-runs are idempotent: matching assets are retained, missing assets are uploaded, and stale preview assets may be repaired. A stable release asset whose bytes differ from the newly certified artifact causes a hard failure rather than being overwritten.
+```bash
+git tag -a v1.1.0-beta -m "cpython-extensions 1.1.0 release rehearsal"
+git push origin v1.1.0-beta
+```
 
-## 6. PyPI Trusted Publishing
+Allowed preview labels are `alpha`, `beta`, `rc`, `preview`, and `test`, optionally followed by a numeric suffix. Preview tags certify the same package version but can never enter the PyPI publishing job.
 
-PyPI publishing is deliberately disabled by default. To enable it:
+## 6. GitHub Release behavior
 
-1. Create/configure the `cpython-extensions` project and Trusted Publisher on PyPI.
-2. Configure the GitHub environment named `pypi` and its protection rules.
-3. Add repository variable `PYPI_PUBLISH_ENABLED=true`.
+A stable tag creates a normal GitHub Release. A preview tag creates a GitHub prerelease. Both use the already-certified artifacts and attach the wheel, sdist, and checksum manifest.
 
-The publish job uses OIDC (`id-token: write`) and does not require a stored PyPI API token.
+Release creation is API-driven through `actions/github-script`. Re-runs are idempotent:
 
-Keep build and publish jobs separate; the publish job should only download already-built artifacts and send them to PyPI.
+- matching assets are retained;
+- missing assets are uploaded;
+- stale preview assets may be repaired;
+- a stable asset whose bytes differ from the newly certified artifact causes a hard failure instead of being overwritten.
 
-## Release workflow failure recovery
+## 7. PyPI Trusted Publishing
 
-The tag workflow is designed to be safe to re-run. It verifies checksums after every artifact handoff. GitHub Release creation is API-driven and normalizes an interrupted draft/prerelease state before checking assets. Existing release assets are SHA-256 checked against the certified local files; stable assets are immutable on mismatch, while preview assets may be replaced so a release rehearsal can recover from a partial/stale upload.
+Stable tags enter the protected PyPI job after artifact certification and GitHub Release success. Preview tags are excluded by the validated release channel.
 
-The GitHub Release job explicitly requests `actions: read` for cross-job artifact retrieval and `contents: write` for release creation. PyPI publishing separately requests `actions: read`, `contents: read`, and `id-token: write`. This keeps permissions explicit instead of relying on implicit defaults.
+Before the first stable publication from a repository:
 
-PyPI publishing remains a separate OIDC-only job and runs only after both artifact certification and GitHub Release success **and** only when the validated release channel is `stable`.
+1. configure `Karvp/cpython-extensions` as the Trusted Publisher for the `cpython-extensions` project on PyPI;
+2. configure the GitHub environment named `pypi`;
+3. add the desired required reviewers/deployment-protection rules;
+4. if the tag pusher is the only reviewer, add another reviewer or disable **Prevent self-review**.
 
-The build artifact also contains `SHA256SUMS.txt` for GitHub Release integrity. That checksum manifest is **not** a Python distribution and must never be passed to the PyPI publishing action. The workflow therefore stages only `*.whl` and `*.tar.gz` into `pypi-dist/` before invoking the PyPA action.
+The PyPI job requests `id-token: write` and uses OIDC. It does not require a stored PyPI API token.
+
+Do not put an environment-scoped enable variable in the job-level `if:` expression. GitHub evaluates job eligibility before entering the environment, so those variables are unavailable there. The stable-channel check decides eligibility; the protected environment supplies the human/administrative gate.
+
+Before invoking the PyPA publishing action, the workflow stages only `*.whl` and `*.tar.gz` into `pypi-dist/`. `SHA256SUMS.txt` remains a GitHub Release integrity artifact and must not be sent to PyPI.
+
+## 8. Failure recovery
+
+The tag workflow verifies checksums after each artifact handoff and is designed to be safe to re-run.
+
+If a run fails:
+
+- **before GitHub Release creation:** fix the release commit, increment/recreate only an unpublished preview tag as appropriate, and rerun certification;
+- **during preview release creation:** the API helper may repair missing/stale preview assets on rerun;
+- **after a stable GitHub Release exists:** do not replace differing stable assets; investigate the mismatch and publish a new package version when necessary;
+- **during PyPI upload:** determine whether PyPI accepted any file before retrying. PyPI files are immutable; if any artifact for that version was accepted, do not attempt to replace it.
+
+The GitHub Release job explicitly requests `actions: read` and `contents: write`. The PyPI job requests `actions: read`, `contents: read`, and `id-token: write`. Keep these permissions explicit and scoped to the jobs that need them.
