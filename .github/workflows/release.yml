@@ -53,6 +53,9 @@ jobs:
           --upgrade
           build test
 
+      - name: Validate publish metadata
+        run: python tools/check_metadata.py
+
       - name: Report release tooling
         shell: bash
         run: |

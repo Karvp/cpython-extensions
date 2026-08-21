@@ -95,7 +95,7 @@ def main() -> int:
             errors.append(f"version drift: {path.relative_to(ROOT)} does not contain {needle!r}")
 
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    for needle in ('name = "cpython-extensions"', 'requires-python = ">=3.13,<3.14"', 'license = "MPL-2.0"', 'bytecode>=0.17,<0.18', 'twine>=5,<7'):
+    for needle in ('name = "cpython-extensions"', 'requires-python = ">=3.13,<3.14"', 'license = "MPL-2.0"', 'bytecode>=0.17,<0.18', 'twine>=5,<7', 'trove-classifiers>=2026.6.1.19', 'Programming Language :: Python :: Implementation :: CPython'):
         if needle not in pyproject:
             errors.append(f"pyproject invariant missing: {needle}")
 
@@ -144,6 +144,7 @@ def main() -> int:
         ".github/dependabot.yml",
         "SECURITY.md",
         "tools/install_dependencies.py",
+        "tools/check_metadata.py",
         ".github/scripts/publish_release.cjs",
         "CONTRIBUTING.md",
         "LICENSE",
@@ -152,6 +153,9 @@ def main() -> int:
     for rel in required:
         if not (ROOT / rel).exists():
             errors.append(f"required repository file missing: {rel}")
+
+    if '"Implementation :: CPython"' in pyproject:
+        errors.append("invalid shortened CPython Trove classifier present")
 
     release_workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     if 'python tools/install_dependencies.py' not in release_workflow:

@@ -101,9 +101,11 @@ jobs:
           python-version: "3.13"
           cache: pip
       - name: Install Twine 7 candidate tooling
-        run: python -m pip install -U "setuptools>=75" "build>=1.2,<2" "twine==7.0.0"
+        run: python -m pip install -U "setuptools>=75" "build>=1.2,<2" "twine==7.0.0" "trove-classifiers>=2026.6.1.19"
       - name: Report candidate tooling
         run: python -m twine --version
+      - name: Validate PyPI classifiers
+        run: python tools/check_metadata.py
       - name: Build wheel and sdist
         run: python -m build
       - name: Validate metadata with Twine 7
@@ -138,6 +140,8 @@ jobs:
           --include-runtime
           --upgrade
           build
+      - name: Validate publish metadata
+        run: python tools/check_metadata.py
       - name: Report build tooling
         shell: bash
         run: |
