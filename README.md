@@ -1,13 +1,13 @@
 # cpython-extensions
 
-**Production-oriented CPython 3.13 language-extension utilities for fast switch dispatch, bytecode-level function inlining, and validated local goto.**
+**Production-oriented CPython 3.13 extensions for switch dispatch, guarded specialization/partial evaluation, bytecode-level function inlining, and validated local goto.**
 
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Implementation](https://img.shields.io/badge/implementation-CPython-306998)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MPL--2.0-brightgreen)](LICENSE)
 [![Typing](https://img.shields.io/badge/typing-py.typed-informational)](src/python_extensions/py.typed)
 
-The distribution is named **`cpython-extensions`**; the import package is **`python_extensions`**. The project deliberately targets CPython internals and currently supports **CPython 3.13.x** (`>=3.13,<3.14`).
+The distribution is **`cpython-extensions`** and the primary import package is **`python_extensions`**. The project deliberately targets CPython internals and currently supports **CPython 3.13.x** (`>=3.13,<3.14`).
 
 ```bash
 python -m pip install cpython-extensions
@@ -18,8 +18,12 @@ from python_extensions import (
     case,
     enable_goto,
     enable_switch,
+    hotpath,
     inline_calls,
     inline_function,
+    optimize_extensions,
+    partial,
+    specialize,
     switch,
 )
 ```
@@ -30,22 +34,26 @@ from python_extensions import (
 
 | Capability | What it provides | Production-oriented default |
 |---|---|---|
-| **Switch** | Hash-table-style multi-way dispatch, typed key identity, guarded cases, and fallthrough | `mode="auto"` |
+| **Switch** | Hash/table-backed multi-way dispatch, typed key identity, guarded cases, fallthrough, and optional live self-modifying dispatch | `mode="auto"` (portable) |
+| **Partial** | Freeze selected parameters into a real transformed function and eliminate provably dead work | explicit `partial(...)` |
+| **Specialize** | Guarded exact-type/constant variants with guaranteed generic fallback | explicit `@specialize(...)` |
+| **Hotpath** | Bounded adaptive discovery and promotion of profitable argument shapes | `policy="speed", backend="auto"` |
 | **Inline** | Bytecode-level call inlining, profitability checks, shared regions, data-flow optimization | `policy="speed", binding="frozen"` |
 | **Goto** | Explicit local jumps with exception-region and CFG validation | `mode="strict"` |
-| **Verification** | Post-transform bytecode/control-flow verification and reports | Keep enabled |
+| **Verification** | Post-transform bytecode/control-flow verification and transformation reports | Keep enabled |
 
-The package favors **general Python semantics, explicit opt-ins, and fail-closed transformation** over benchmark-specific shortcuts.
+The package favors **general Python semantics, explicit opt-ins, bounded adaptive state, and fail-closed transformation** over benchmark-specific shortcuts.
 
 ## Why cpython-extensions?
 
-Python intentionally keeps its language small and structured, but some performance-sensitive or generated-code workloads benefit from lower-level control. `cpython-extensions` explores three bounded extensions while keeping the transformation pipeline observable and verifiable:
+Python intentionally keeps its language and execution model structured. Some hot interpreters, parsers, generated state machines, numeric kernels, and stable internal helpers nevertheless benefit from lower-level control. `cpython-extensions` provides a set of CPython-specific transformations while keeping the selected plan inspectable and independently verifiable.
 
-- **Switch** — efficient multi-route dispatch without manually maintaining a dictionary of lambdas or a long `if/elif` ladder.
-- **Inline** — clone selected function bodies into callers, with profitability analysis and guarded binding when targets may change.
-- **Goto** — local control-flow jumps for state machines, generated parsers, and carefully audited low-level code.
+- **Switch** — efficient multi-route dispatch without a manually maintained handler dictionary or long `if/elif` ladder.
+- **Partial / specialize / hotpath** — expose constants and exact runtime types to the bytecode optimizer while retaining explicit guards or generic fallback where required.
+- **Inline** — clone eligible helper bodies into callers, with profitability analysis and guarded binding for replaceable targets.
+- **Goto** — local control-flow jumps for generated state machines and carefully audited low-level code.
 
-This is **not** a replacement Python implementation and does not claim portability to PyPy or other interpreters. It is intentionally CPython-specific.
+This is not a replacement Python implementation and does not claim portability to PyPy or other interpreters.
 
 ## Quick start
 
@@ -81,6 +89,69 @@ def exact(value):
             return "other"
 ```
 
+The default `mode="auto"` is deliberately portable and never mutates executable bytecode. Live dispatch is an explicit CPython-3.13-only optimization for hot, repeated in-frame routing:
+
+```python
+@enable_switch(mode="fast", live_engine="auto")
+def run_vm(opcodes):
+    acc = 0
+    for opcode in opcodes:
+        with switch(opcode):
+            if case(0):
+                acc += 1
+            if case(1):
+                acc ^= 7
+            # ... many heterogeneous opcode bodies ...
+    return acc
+```
+
+`live_engine="auto"` uses the optional fused C dispatcher when its runtime self-test succeeds and otherwise falls back to the historical ctypes gate. `live_engine="native"` requires the C accelerator; `live_engine="ctypes"` is mainly useful for diagnostics and reproducible comparisons.
+
+**Do not assume live is universally faster.** The extensive 1.2.0 qualification shows strong gains for large dense integer VM/parser loops, while portable statement-template/direct-value lowering remains preferable for ordinary HTTP/RPC routing and trivial cases. See [Live switch architecture and performance](docs/LIVE_SWITCH.md).
+
+### Partial evaluation
+
+```python
+from python_extensions import partial
+
+def parse(data, mode="safe"):
+    if mode == "fast":
+        return fast_parse(data)
+    return checked_parse(data)
+
+fast_parse_only = partial(parse, mode="fast")
+```
+
+`partial()` produces a transformed Python function whose frozen parameters are removed from the effective call signature. Safe constant propagation and dead-branch elimination are applied without changing observable local-variable behavior.
+
+### Guarded specialization
+
+```python
+from python_extensions import specialize
+
+@specialize(constants={"mode": "fast"}, types={"value": int})
+def convert(value, mode="safe"):
+    if type(value) is int and mode == "fast":
+        return value + 1
+    return slow_convert(value, mode)
+```
+
+The specialized variant is guarded. A guard miss executes the original generic function. Exact-type and constant guards are used only where their matching semantics are safe.
+
+### Adaptive hot paths
+
+```python
+from python_extensions import hotpath
+
+@hotpath(threshold=64, max_variants=1, policy="speed")
+def decode(value, mode):
+    if mode == "binary":
+        return decode_binary(value)
+    return decode_text(value)
+```
+
+`hotpath()` observes only a bounded number of shapes for a bounded profiling budget. On eligible ordinary functions, `backend="auto"` prefers CPython 3.13 `sys.monitoring` during warm-up and can install a verified in-frame dispatcher after promotion. It falls back to a wrapper where that contract is not suitable. See [Specialization and partial evaluation](docs/SPECIALIZATION.md).
+
 ### Function inlining
 
 ```python
@@ -95,15 +166,13 @@ def hot_path(x: int) -> int:
     return affine(x)
 ```
 
-The default `binding="frozen"` is the highest-optimization mode and assumes the target remains intentionally stable after transformation. Use guarded binding when a callee may be rebound or mutated:
+The default `binding="frozen"` is the highest-optimization mode and assumes the target intentionally remains stable after transformation. Use guarded binding when a callee may be rebound or mutated:
 
 ```python
 @inline_calls(policy="always", binding="guarded")
 def plugin_sensitive(x):
     return affine(x)
 ```
-
-Guarded mode validates the callable state used by the cloned body and falls back to the ordinary call if that state no longer matches.
 
 ### Validated goto
 
@@ -125,23 +194,33 @@ def countdown(n: int) -> int:
 
 Strict mode is the production default and rejects jumps that cross unsafe control-flow or exception-region boundaries.
 
-The source-level `goto .name` / `label .name` notation is inspired in part by [Entrian's “goto for Python”](https://entrian.com/goto/). `cpython-extensions` uses an independent CPython 3.13 lowering pipeline with strict CFG/exception-region validation and post-transform bytecode verification; it does not reuse Entrian's implementation.
+The source-level notation is inspired in part by [Entrian's “goto for Python”](https://entrian.com/goto/). `cpython-extensions` uses an independent CPython 3.13 lowering pipeline with strict CFG/exception-region validation and post-transform verification.
 
 ### Compose extensions
+
+Composition uses one fixed order:
+
+```text
+switch -> partial -> inline -> goto -> specialize/hotpath
+```
 
 ```python
 from python_extensions import optimize_extensions
 
 @optimize_extensions(
     switch=True,
+    partial={"mode": "fast"},
     inline={"policy": "speed"},
     goto=True,
+    specialize={"types": {"value": int}},
 )
-def execute(...):
+def execute(value, mode="safe"):
     ...
 ```
 
-Inspect rather than blindly trust transformed functions:
+`specialize` and `hotpath` are alternative final layers and cannot both be enabled in the same pipeline.
+
+Inspect transformed functions rather than blindly trusting them:
 
 ```python
 from python_extensions import explain_extensions, verify_code
@@ -150,24 +229,39 @@ print(explain_extensions(execute))
 verify_code(execute.__code__)
 ```
 
-## Choosing the right modes
+## Choosing the right mode
 
 | Area | Recommended default | Choose another mode when... |
 |---|---|---|
-| Switch | `mode="auto"` | You have explicitly accepted the contract of a live/self-modifying backend |
+| Switch | `mode="auto"` | Use live modes only after accepting their CPython/runtime and concurrency contracts |
+| Live engine | `live_engine="auto"` | Force `native` for certification or `ctypes` for fallback/diagnostic comparison |
 | Case identity | `case_key_mode="python"` | Exact runtime types such as `1`, `1.0`, and `True` must remain distinct |
+| Partial | explicit frozen bindings | You can prove the bound configuration is intentionally stable |
+| Specialize | explicit constants/types | You know the valuable shape and need generic fallback |
+| Hotpath | `policy="speed"`, bounded defaults | Runtime shape discovery is more useful than declaring variants manually |
 | Inline binding | `binding="frozen"` | Use `guarded` for hot reload, plugins, monkey-patching, replaceable methods, or mutable defaults |
-| Inline policy | `policy="speed"` | Use `always` for controlled experiments or code-size/latency tradeoffs you have measured |
+| Inline policy | `policy="speed"` | Use `always` only for controlled experiments or measured tradeoffs |
 | Goto | `mode="strict"` | `unsafe` is reserved for carefully audited low-level experiments |
 | Verification | enabled | Do not bypass verifier failures in production |
 
-## Installation
+## Installation and native accelerator
 
 ### PyPI
 
 ```bash
 python -m pip install cpython-extensions
 ```
+
+When the build environment can compile the optional extension, the installed wheel contains `python_extensions._livegate`, the native live-switch accelerator. Source installations retain portable/ctypes functionality if that optional extension build is unavailable.
+
+Check availability:
+
+```python
+import importlib.util
+print(importlib.util.find_spec("python_extensions._livegate") is not None)
+```
+
+The native accelerator is **not imported automatically on free-threaded CPython 3.13 builds** because this release does not certify live self-modifying dispatch for no-GIL execution. Portable switch mode remains the supported path there.
 
 ### Development checkout
 
@@ -205,114 +299,88 @@ python -m coverage report
 python tools/check_repo.py
 ```
 
-Long-running stress tests are intentionally separated from ordinary pull-request feedback. See `.github/workflows/stress.yml`.
+Long-running stress tests are intentionally separated from ordinary pull-request feedback. See `.github/workflows/stress.yml` and the harnesses under `tests/`.
 
 ## Release quality
 
-Version **1.1.0** is the current supported release line. It is a performance-evidence, verification, and documentation milestone over 1.0.4: the production transformation contracts are preserved, while the optimized paths are covered by stronger scaling benchmarks and structural regression tests.
+Version **1.2.0** is the current documented release line. It adds guarded specialization/partial evaluation and renovates the explicit CPython 3.13 live-switch backend with an optional fused native C dispatcher, dense/sparse exact-int routing, typed-builtin fast partitions, and corrected `EXTENDED_ARG` handling for large/multi-site generated functions.
 
-The 1.1.0 tree has been exercised on CPython 3.13.5 with the package regression suite, CPython dev-mode checks, bytecode/control-flow verification, multi-million-operation stress and differential harnesses, reproducible wheel/sdist builds, and exact-artifact smoke tests.
+The 1.2.0 qualification baseline on CPython 3.13.5 records:
+
+- **450/450** package tests;
+- **1,239,100** calls through the existing full live-switch compatibility harness under CPython dev mode;
+- a **30-configuration** cross-task live benchmark matrix;
+- **202,798,080 timed dispatches** in the broad matrix, excluding warmups and correctness checks;
+- additional 5–10 million-dispatch sustained-loop tests;
+- explicit VM/parser, state-machine, HTTP/RPC, sparse-protocol, threaded, async, and per-request controls.
 
 Release evidence:
 
-- [`PYTHON_EXTENSIONS_1.1.0_CERTIFICATION.txt`](PYTHON_EXTENSIONS_1.1.0_CERTIFICATION.txt)
-- [`RELEASE_AUDIT_1.1.0.txt`](RELEASE_AUDIT_1.1.0.txt)
+- [`PYTHON_EXTENSIONS_1.2.0_CERTIFICATION.txt`](PYTHON_EXTENSIONS_1.2.0_CERTIFICATION.txt)
+- [`RELEASE_AUDIT_1.2.0.txt`](RELEASE_AUDIT_1.2.0.txt)
 - [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md)
+- [`benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.md`](benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.md)
+- [`benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.json`](benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.json)
 
-The project does **not** currently claim independent certification for free-threaded CPython (`3.13t`) or for CPython 3.14+.
+The `v121`/`v122` suffixes in benchmark and regression filenames are **engineering evidence identifiers**, not package versions.
 
-## Benchmarks
+## Performance: use workload shape, not slogans
 
-### Switch scaling: constant-shape dispatch as route count grows
+The portable compiler and live backend solve different problems. Portable mode is still the default because it can often collapse direct values and shared statement/expression shapes into extremely compact dispatch. Live mode keeps heterogeneous bodies inline and changes a bytecode jump gate at runtime; it is strongest when one outer call performs many dispatches among many distinct code regions.
 
-For direct literal routes, the portable compiler can lower the switch to a bound table lookup. Route data grows with the number of cases, but the executable hot path remains bounded instead of expanding into an N-way comparison chain. The 1.1.0 scaling harness compares equivalent generated routers implemented as `if/elif`, `match`, a hand-written bound `dict.get`, and `@enable_switch(mode="portable")`.
+Selected real-backend CPython 3.13.5 results from the extensive qualification:
 
-Every successful route is validated before timing. Hits are distributed uniformly over every route in forward and reverse order; misses are checked for correctness but excluded from timing so the linear baselines represent average successful-hit depth rather than a deliberately worst-case miss. The committed 1.1.0 run used CPython 3.13.5 on Linux x86-64 and `timeit.repeat` with 7 repeats and 50 warm-up batches. It targets 100,000 successful dispatches per sample through 256 routes; for larger generated routers the harness scales work with route count while retaining at least 50,000 dispatches per sample.
+| Workload | Routes / traffic | Portable | Native live | Native vs portable |
+|---|---|---:|---:|---:|
+| Dense VM | 64 / random | 250.4 ns | **147.4 ns** | **1.70×** |
+| Dense VM | 1,024 / skewed | 330.6 ns | **160.5 ns** | **2.06×** |
+| Dense VM | 2,048 / random | 393.3 ns | **159.2 ns** | **2.47×** |
+| Integer parser | 256 / skewed | 289.0 ns | **156.5 ns** | **1.85×** |
+| State machine | 128 / random | 152.9 ns | **121.1 ns** | **1.26×** |
+| HTTP string router | 64 / random | **230.7 ns** | 230.0 ns | ~1.00× |
+| Sparse protocol IDs | 256 / random | **237.1 ns** | 242.2 ns | 0.98× |
+| Heavy server bodies | 256 / random | **406.3 ns** | 427.6 ns | 0.95× |
+| Direct/minimal control | 256 / random | **49.7 ns** | 62.2 ns | 0.80× |
 
-| Integer cases | `if/elif` | `match` | bound `dict.get` | `switch` | vs `if/elif` | vs `match` |
-|---:|---:|---:|---:|---:|---:|---:|
-| 2 | 45.71 ns | 47.19 ns | 51.34 ns | 49.84 ns | 0.92× | 0.95× |
-| 4 | 53.28 ns | 59.93 ns | 46.65 ns | 46.10 ns | **1.16×** | **1.30×** |
-| 8 | 72.51 ns | 82.42 ns | 43.76 ns | 44.65 ns | **1.62×** | **1.85×** |
-| 16 | 125.43 ns | 133.69 ns | 45.72 ns | 43.35 ns | **2.89×** | **3.08×** |
-| 32 | 237.92 ns | 242.18 ns | 44.41 ns | 43.07 ns | **5.52×** | **5.62×** |
-| 64 | 451.40 ns | 484.48 ns | 46.17 ns | 45.42 ns | **9.94×** | **10.67×** |
-| 128 | 842.59 ns | 899.73 ns | 44.20 ns | 44.04 ns | **19.13×** | **20.43×** |
-| 256 | 1,741.36 ns | 1,718.07 ns | 44.61 ns | 44.69 ns | **38.96×** | **38.44×** |
-| 512 | 3,444.44 ns | 3,378.72 ns | 45.86 ns | 48.29 ns | **71.33×** | **69.97×** |
-| 1,024 | 7,222.90 ns | 7,181.39 ns | 44.98 ns | 50.54 ns | **142.90×** | **142.08×** |
+A separate **10,000,384-dispatch** 1,024-route VM sample recorded about **329.4 ns portable vs 169.0 ns native**, or **1.95×**. A 10-million-dispatch HTTP loop remained essentially tied (**228.9 ns portable vs 231.2 ns native**).
 
-The scaling behavior is the important result. The switch stays near a dictionary lookup while the linear branch forms grow with route count. At 64 integer routes it is **9.94×** faster than `if/elif`; at 256 routes **38.96×**; at 512 routes **71.33×**; and at 1,024 routes **142.90×**. String routing shows the same large-route advantage: the 1,024-route string case records **83.86×** versus `if/elif` on this run.
+For a classic server that performs one router call per request, the 64-route control measured approximately **135.9 ns portable**, **141.0 ns shared native**, and **246.2 ns thread-local native**. This is why ordinary web routing should remain portable even though live dispatch is excellent for interpreter loops embedded inside a request or worker.
 
-The bounded-code regression explains why the curve does not become linear: the specialized direct-value function remains **74 bytes of executable bytecode at 1,024 routes**, while the generated `if/elif` reaches **17,420 bytes** and `match` reaches **19,466 bytes**. The table payload still consumes memory proportional to route count; the bounded claim applies to the executable dispatch path, not total storage.
+These are measured results from one certified host, not universal guarantees. CPU, OS, CPython patch/build, adaptive state, key type, route-body shape, traffic distribution, and surrounding work matter. Read [the live-switch guide](docs/LIVE_SWITCH.md) and [benchmark methodology](benchmarks/README.md) before making a backend decision.
 
-The crossover is also part of the evidence. At two routes, native branching is faster. Around 4–8 routes the table-backed path reaches parity and then begins to pull away. Use `switch` for the semantics and maintainability you need, and treat the scaling advantage as strongest for larger static route sets that qualify for the portable specialization.
-
-Reproduce the matrix:
-
-```bash
-python benchmarks/scripts/benchmark_switch_scaling_v110.py \
-  --target-dispatches 100000 --repeat 7 --warmup-batches 50 \
-  --json benchmarks/results/BENCHMARK_SWITCH_SCALING_V110.json
-```
-
-Raw evidence: [`benchmarks/results/BENCHMARK_SWITCH_SCALING_V110.json`](benchmarks/results/BENCHMARK_SWITCH_SCALING_V110.json).
-
-### Inline and goto on intended workloads
-
-The companion harness keeps the comparisons specific to the feature being measured. Frozen inlining is compared with an ordinary call to the same helper. Strict goto is compared with an explicit state-machine loop, with a naturally structured reference measured separately so the cost of label/jump lowering remains visible.
-
-| Scenario | Plain Python | With extension | Relative result |
-|---|---:|---:|---:|
-| Small frozen affine helper | 58.31 ns/call | 43.52 ns/call | **1.34× faster** |
-| Three-state explicit FSM (`n=32`) | 4,005.89 ns/call | 1,620.34 ns/call | **2.47× faster** |
-| Naturally structured reference for the same work | 1,602.91 ns/call | 1,620.34 ns/call (`goto`) | 1.1% slower than structured reference |
-
-The goto result should be read narrowly. `goto` is not a replacement for code that is already naturally expressed as a loop. It is useful when the source genuinely is a state machine, generated control-flow graph, or cleanup-oriented low-level routine; in that setting strict lowering can remove repeated state-variable dispatch while preserving explicit label/jump structure and verifier checks.
-
-Reproduce these measurements:
-
-```bash
-python benchmarks/scripts/benchmark_extension_benefits_v110.py \
-  --json benchmarks/results/BENCHMARK_EXTENSION_BENEFITS_V110.json
-```
-
-Raw evidence: [`benchmarks/results/BENCHMARK_EXTENSION_BENEFITS_V110.json`](benchmarks/results/BENCHMARK_EXTENSION_BENEFITS_V110.json).
-
-### Benchmark discipline
-
-These are microbenchmarks, not universal performance guarantees. CPU, operating system, CPython patch release, adaptive specialization state, key type, hit distribution, route-body shape, and surrounding application work can all change the result. The repository therefore keeps timing evidence separate from semantic qualification, validates results before timing, commits raw JSON, and uses structural tests to guard the mechanism behind the large-switch scaling result.
-
-The broader 1.1.0 baseline is available through [`benchmarks/scripts/benchmark_readme_baseline_v110.py`](benchmarks/scripts/benchmark_readme_baseline_v110.py) and its committed JSON result. Historical benchmark evidence remains under `benchmarks/results/` and is not rewritten when a new release is cut.
-
-See [`benchmarks/README.md`](benchmarks/README.md) for reproduction and evidence-retention guidance.
+The earlier 1.1.0 direct-value scaling evidence remains valid and is retained unchanged under `benchmarks/results/`: it answers a different question—how a portable table-backed switch scales against linear `if/elif` and `match` chains.
 
 ## Documentation
 
-- **[Comprehensive guide](docs/COMPREHENSIVE_GUIDE.md)** — complete API, performance choices, guarded/frozen semantics, composition, troubleshooting, and deployment guidance.
+- **[Comprehensive guide](docs/COMPREHENSIVE_GUIDE.md)** — complete API, composition, deployment, and troubleshooting guidance.
+- **[Live switch architecture and performance](docs/LIVE_SWITCH.md)** — native/ctypes engines, concurrency contracts, benchmark interpretation, and workload selection.
+- **[Specialization and partial evaluation](docs/SPECIALIZATION.md)** — `partial`, `specialize`, `hotpath`, guards, profiling bounds, and composition.
 - **[Architecture](docs/ARCHITECTURE.md)** — transformation pipeline, invariants, and subsystem responsibilities.
-- **[Compatibility](docs/COMPATIBILITY.md)** — interpreter/runtime support boundary and unsupported environments.
+- **[Compatibility](docs/COMPATIBILITY.md)** — interpreter/runtime/build support boundary.
 - **[Release process](docs/RELEASING.md)** — reproducible build, artifact verification, and tag/release workflow.
-- **[Release notes](docs/RELEASE_NOTES.md)** — release summary, including 1.1.0.
+- **[Release notes](docs/RELEASE_NOTES.md)** — release summaries.
+- **[Benchmarks](benchmarks/README.md)** — benchmark reproduction and evidence-retention rules.
 - **[Changelog](CHANGELOG.md)** — public release changes.
 - **[Contributing](CONTRIBUTING.md)** — development expectations and test requirements.
-- **[Security policy](SECURITY.md)** — how to report verifier, crash, or unsafe-boundary issues.
+- **[Security policy](SECURITY.md)** — reporting verifier, crash, unsafe-boundary, and native live-gate issues.
 
 ## Repository metadata
 
-Canonical repository: **[Karvp/cpython-extensions](https://github.com/Karvp/cpython-extensions)**. Recommended repository settings and topics are tracked in [`.github/REPOSITORY_METADATA.md`](.github/REPOSITORY_METADATA.md). The recommended GitHub description is:
+Canonical repository: **[Karvp/cpython-extensions](https://github.com/Karvp/cpython-extensions)**. Recommended repository settings and topics are tracked in [`.github/REPOSITORY_METADATA.md`](.github/REPOSITORY_METADATA.md).
 
-> Production-oriented CPython 3.13 bytecode extensions for switch dispatch, function inlining, and validated goto.
+Recommended GitHub description:
+
+> CPython 3.13 extensions for fast switch/live dispatch, specialization, function inlining, and verified local goto.
 
 ## Contributing
 
-Contributions are welcome when they preserve general Python semantics and avoid benchmark- or fixture-specific shortcuts. Please run the normal development gates before opening a pull request and include focused regression coverage for observable behavior changes.
+Contributions are welcome when they preserve general Python semantics and avoid benchmark- or fixture-specific shortcuts. Performance changes must include correctness coverage and a workload-appropriate benchmark; a microbenchmark win is not sufficient if a broader certified workload regresses.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
-Low-level bytecode transformation can amplify interpreter/runtime assumptions. Crashes, verifier bypasses, incorrect exception-region handling, or unsafe boundary crossings should be treated as security-relevant until triaged.
+Low-level bytecode transformation and explicit live self-modification amplify interpreter/runtime assumptions. Crashes, verifier bypasses, incorrect exception-region handling, unsafe gate writes, or unexpected no-GIL behavior should be treated as security-relevant until triaged.
 
 See [SECURITY.md](SECURITY.md).
 

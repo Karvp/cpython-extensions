@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cpython-extensions"
 dynamic = ["version"]
-description = "Production-oriented CPython 3.13 switch dispatch, function inlining, and validated goto extensions"
+description = "CPython 3.13 switch/live dispatch, specialization, function inlining, and validated goto extensions"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 license = "MPL-2.0"
@@ -18,7 +18,9 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Intended Audience :: Developers",
-  "Operating System :: OS Independent",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX",
+  "Operating System :: MacOS",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
 ]
@@ -36,7 +38,7 @@ dev = ["pytest>=8,<10", "coverage[toml]>=7.6,<8", "build>=1.2,<2", "twine>=5,<7"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-py-modules = ["pyswitch", "inline_function", "pygoto"]
+py-modules = ["pyswitch", "inline_function", "pygoto", "pyspecialize"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

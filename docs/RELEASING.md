@@ -55,6 +55,7 @@ python tools/build_release.py --out-dir dist --epoch $epoch
 The command writes a wheel, sdist, and `SHA256SUMS.txt`.
 
 For release certification, build twice from the same clean commit and epoch and compare the resulting wheel, sdist, and checksum manifest byte-for-byte.
+Because 1.2.0 contains a native extension, also keep the exact-sdist rebuild check below: it catches compiler metadata that is stable within one checkout but embeds the source directory. The extension build suppresses POSIX debug-path metadata for this reason.
 
 ## 4. Validate exact artifacts
 
@@ -78,15 +79,15 @@ The GitHub release workflow performs these checks automatically.
 The only stable/publishable tag is the exact package version:
 
 ```bash
-git tag -s v1.1.0 -m "cpython-extensions 1.1.0"
-git push origin v1.1.0
+git tag -s v1.2.0 -m "cpython-extensions 1.2.0"
+git push origin v1.2.0
 ```
 
 If signing is not configured, use an unsigned annotated tag:
 
 ```bash
-git tag -a v1.1.0 -m "cpython-extensions 1.1.0"
-git push origin v1.1.0
+git tag -a v1.2.0 -m "cpython-extensions 1.2.0"
+git push origin v1.2.0
 ```
 
 Do not move or overwrite a stable tag after publication. If a published release needs another change, increment the package version.
@@ -96,8 +97,8 @@ Do not move or overwrite a stable tag after publication. If a published release 
 A preview suffix can exercise the build and GitHub prerelease path without changing the package version:
 
 ```bash
-git tag -a v1.1.0-beta -m "cpython-extensions 1.1.0 release rehearsal"
-git push origin v1.1.0-beta
+git tag -a v1.2.0-beta -m "cpython-extensions 1.2.0 release rehearsal"
+git push origin v1.2.0-beta
 ```
 
 Allowed preview labels are `alpha`, `beta`, `rc`, `preview`, and `test`, optionally followed by a numeric suffix. Preview tags certify the same package version but can never enter the PyPI publishing job.

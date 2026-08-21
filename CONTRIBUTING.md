@@ -1,12 +1,12 @@
 # Contributing
 
-Thank you for contributing to `cpython-extensions`. The current release is **1.1.0**, targeting CPython 3.13.
+Thank you for contributing to `cpython-extensions`. The current release is **1.2.0**, targeting CPython 3.13.
 
 ## Engineering principles
 
 Changes must be general-purpose, CPython-3.13-aware, and semantics-preserving for the mode being modified. Do not introduce test-specific pattern matching, benchmark-only shortcuts, silent semantic weakening, or bytecode rewrites that bypass verification.
 
-For transformation work, prefer this sequence:
+For transformation and specialization work, prefer this sequence:
 
 1. Reproduce the behavior with a focused regression.
 2. Identify the shared parser/compiler/runtime invariant that is incorrect or incomplete.
@@ -75,11 +75,20 @@ python tests/harness_guarded_binding_v102.py --scale 0.05
 python tests/stress/harness_release_deep.py --quick
 ```
 
-Performance changes should also run the corresponding public benchmark. For switch work:
+Performance changes should also run the corresponding public benchmark. Select the benchmark that matches the architecture being changed:
 
 ```bash
+# portable/direct-value scaling
 python benchmarks/scripts/benchmark_switch_scaling_v110.py --quick
+
+# real live backends and in-frame workload routing
+python benchmarks/scripts/benchmark_live_workloads_v122.py --quick
+
+# specialization/partial/hotpath
+python benchmarks/scripts/benchmark_specialization_v120.py --quick
 ```
+
+Live-switch performance claims must include repeated **in-frame** dispatch when that is the intended workload. Do not replace the VM/parser workload with millions of separate Python calls. For native/live changes, compare identical-source `portable`, `fast + ctypes`, and `fast + native`, verify the selected backend/plan, and retain negative controls such as direct-value and HTTP/RPC routing where portable compilation may legitimately win.
 
 Do not optimize solely for committed benchmark inputs. Performance work must retain differential correctness coverage and, where practical, a structural regression that protects the optimization mechanism rather than a machine-specific timing threshold. Timing regressions belong in review evidence; correctness and structural invariants belong in automated gates.
 
@@ -96,6 +105,19 @@ Return values are only one observable. Relevant tests may also need to cover:
 - thread-safe decoration and registry lifecycle;
 - stack depth, code size, and generated-code verification;
 - behavior under different `PYTHONHASHSEED` values.
+
+### Native extension changes
+
+Changes to `src/python_extensions/_livegate.c` require more than ordinary unit coverage. At minimum:
+
+- build/import the extension from a clean source tree;
+- run `tests/test_switch_live_native_v122.py`;
+- run the full live compatibility harness under `-X dev`;
+- exercise large/extended operands, typed-key fallbacks, user `__hash__`/`__eq__`, tracing/PEP 669 monitoring, and clone/concurrency lifecycles;
+- compare against the ctypes engine for semantic equivalence before timing;
+- keep free-threaded CPython behavior side-effect-free.
+
+The native path is optional. Do not make ordinary imports or portable mode depend on a successful C build.
 
 ## Pull requests
 

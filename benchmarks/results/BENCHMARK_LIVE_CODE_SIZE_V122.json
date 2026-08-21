@@ -1,0 +1,186 @@
+[
+  {
+    "kind": "vm_dense",
+    "routes": 256,
+    "source_chars": 33138,
+    "portable": {
+      "co_code_bytes": 14940,
+      "co_consts": 449,
+      "stacksize": 6,
+      "nlocals": 10
+    },
+    "ctypes": {
+      "co_code_bytes": 18526,
+      "co_consts": 737,
+      "stacksize": 6,
+      "nlocals": 13
+    },
+    "native": {
+      "co_code_bytes": 18428,
+      "co_consts": 733,
+      "stacksize": 6,
+      "nlocals": 12
+    }
+  },
+  {
+    "kind": "vm_dense",
+    "routes": 1024,
+    "source_chars": 132231,
+    "portable": {
+      "co_code_bytes": 59892,
+      "co_consts": 1757,
+      "stacksize": 6,
+      "nlocals": 10
+    },
+    "ctypes": {
+      "co_code_bytes": 74700,
+      "co_consts": 2904,
+      "stacksize": 6,
+      "nlocals": 13
+    },
+    "native": {
+      "co_code_bytes": 74602,
+      "co_consts": 2900,
+      "stacksize": 6,
+      "nlocals": 12
+    }
+  },
+  {
+    "kind": "protocol_sparse",
+    "routes": 256,
+    "source_chars": 63209,
+    "portable": {
+      "co_code_bytes": 346,
+      "co_consts": 12,
+      "stacksize": 6,
+      "nlocals": 11
+    },
+    "ctypes": {
+      "co_code_bytes": 29980,
+      "co_consts": 766,
+      "stacksize": 6,
+      "nlocals": 14
+    },
+    "native": {
+      "co_code_bytes": 29882,
+      "co_consts": 762,
+      "stacksize": 6,
+      "nlocals": 13
+    }
+  },
+  {
+    "kind": "http_server",
+    "routes": 64,
+    "source_chars": 15301,
+    "portable": {
+      "co_code_bytes": 360,
+      "co_consts": 14,
+      "stacksize": 6,
+      "nlocals": 14
+    },
+    "ctypes": {
+      "co_code_bytes": 6560,
+      "co_consts": 205,
+      "stacksize": 6,
+      "nlocals": 14
+    },
+    "native": {
+      "co_code_bytes": 6470,
+      "co_consts": 201,
+      "stacksize": 6,
+      "nlocals": 13
+    }
+  },
+  {
+    "kind": "http_server",
+    "routes": 256,
+    "source_chars": 60541,
+    "portable": {
+      "co_code_bytes": 360,
+      "co_consts": 14,
+      "stacksize": 6,
+      "nlocals": 14
+    },
+    "ctypes": {
+      "co_code_bytes": 26396,
+      "co_consts": 766,
+      "stacksize": 6,
+      "nlocals": 14
+    },
+    "native": {
+      "co_code_bytes": 26298,
+      "co_consts": 762,
+      "stacksize": 6,
+      "nlocals": 13
+    }
+  },
+  {
+    "kind": "rpc_typed",
+    "routes": 64,
+    "source_chars": 12578,
+    "portable": {
+      "co_code_bytes": 388,
+      "co_consts": 13,
+      "stacksize": 6,
+      "nlocals": 12
+    },
+    "ctypes": {
+      "co_code_bytes": 6320,
+      "co_consts": 201,
+      "stacksize": 7,
+      "nlocals": 13
+    },
+    "native": {
+      "co_code_bytes": 6212,
+      "co_consts": 196,
+      "stacksize": 6,
+      "nlocals": 12
+    }
+  },
+  {
+    "kind": "state_machine",
+    "routes": 128,
+    "source_chars": 23654,
+    "portable": {
+      "co_code_bytes": 346,
+      "co_consts": 10,
+      "stacksize": 6,
+      "nlocals": 11
+    },
+    "ctypes": {
+      "co_code_bytes": 11822,
+      "co_consts": 389,
+      "stacksize": 6,
+      "nlocals": 11
+    },
+    "native": {
+      "co_code_bytes": 11724,
+      "co_consts": 385,
+      "stacksize": 6,
+      "nlocals": 10
+    }
+  },
+  {
+    "kind": "direct_control",
+    "routes": 256,
+    "source_chars": 15808,
+    "portable": {
+      "co_code_bytes": 268,
+      "co_consts": 10,
+      "stacksize": 6,
+      "nlocals": 10
+    },
+    "ctypes": {
+      "co_code_bytes": 9776,
+      "co_consts": 525,
+      "stacksize": 6,
+      "nlocals": 13
+    },
+    "native": {
+      "co_code_bytes": 9674,
+      "co_consts": 521,
+      "stacksize": 6,
+      "nlocals": 12
+    }
+  }
+]

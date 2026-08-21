@@ -29,12 +29,14 @@ jobs:
           cache: pip
       - name: Install test dependencies
         run: python -m pip install -e ".[test]"
+      - name: Native live accelerator built
+        run: python -c "import python_extensions._livegate as m; print(m.__name__)"
       - name: Repository hygiene
         run: python tools/check_repo.py --allow-dirty-build-output
       - name: Unit and regression suite
         run: python -m pytest
       - name: Compile all Python sources
-        run: python -m compileall -q src tests tools
+        run: python -m compileall -q src tests tools benchmarks/scripts
       - name: Dependency consistency
         run: python -m pip check
 

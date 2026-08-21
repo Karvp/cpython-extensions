@@ -6,12 +6,15 @@ include SECURITY.md
 include CODE_OF_CONDUCT.md
 include CITATION.cff
 include GITHUB_SETUP.md
+include setup.py
 include *.txt
 recursive-include tests *.py
-recursive-include benchmarks *.py *.json *.txt *.md
+recursive-include benchmarks *.py *.json *.csv *.txt *.md
 recursive-include tools *.py
 global-exclude *.py[cod]
 global-exclude __pycache__
 global-exclude .DS_Store
 
 recursive-include docs *.md
+
+recursive-include src/python_extensions *.c py.typed

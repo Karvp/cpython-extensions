@@ -1,0 +1,118 @@
+cpython-extensions 1.2.0 release audit
+Date: 2026-08-22
+Canonical repository: Karvp/cpython-extensions
+Live GitHub baseline: main @ 2af499ff95f20e507aa40342d09f981cfd27f63c
+
+SCOPE
+-----
+1.2.0 is a backward-compatible feature release over the live 1.1.0 GitHub
+baseline. It adds specialization/partial-evaluation APIs and a packageable,
+optional native accelerator for explicit CPython 3.13 live-switch modes.
+
+VERSION / METADATA
+------------------
+- src/python_extensions/_version.py = 1.2.0
+- CITATION.cff = 1.2.0, release date 2026-08-22, MPL-2.0
+- pyproject requires CPython >=3.13,<3.14 and bytecode>=0.17,<0.18
+- pyspecialize compatibility module is included in py-modules
+- native extension is declared by setup.py as optional
+- wheels containing _livegate are interpreter/platform-specific
+
+PUBLIC API
+----------
+Added/exported:
+- partial(...)
+- specialize(...)
+- hotpath(...)
+- enable_switch(..., live_engine="auto" | "native" | "ctypes")
+
+Canonical transformation order:
+  switch -> partial -> inline -> goto -> specialize/hotpath
+
+`specialize` and `hotpath` are mutually exclusive final layers.
+
+DOCUMENTATION
+-------------
+PASS: README, CHANGELOG, release notes, architecture, compatibility,
+comprehensive guide, security policy, contributor guide, GitHub setup,
+repository metadata, benchmark guide, and citation metadata are synchronized to
+1.2.0.
+
+New focused guides:
+- docs/LIVE_SWITCH.md
+- docs/SPECIALIZATION.md
+
+Benchmark/checkpoint filenames containing v121/v122 are explicitly documented
+as evidence identifiers rather than package-version claims.
+
+CORRECTNESS / STRESS
+--------------------
+PASS:
+- 450/450 pytest with native extension built
+- native-live focused suite 10/10
+- specialization adversarial full: 8,316,000 calls
+- live-switch compatibility full: 1,239,100 calls
+- installed exact-wheel smoke
+- compileall
+
+BENCHMARK EVIDENCE
+------------------
+PASS: the committed extensive live matrix records 30 configurations and
+202,798,080 timed dispatches, plus long-running in-frame and server/concurrency
+controls. Evidence includes both favorable and unfavorable workloads.
+
+Guidance derived from the evidence:
+- dense VM/opcode and integer parser loops: strongest native-live candidates;
+- state machines/event dispatch: benchmark first;
+- HTTP/RPC per-request routing, compact statement-template routes, sparse
+  protocols, heavy case bodies, and direct/minimal cases: portable commonly
+  ties or wins and remains the default.
+
+PACKAGING
+---------
+PASS on the certification Linux/CPython 3.13.5 host:
+- optional C extension compiles and imports;
+- wheel tag is cp313-cp313-linux_x86_64;
+- exact wheel installs into a separate target and passes smoke;
+- two fixed-epoch builds are byte-identical;
+- wheel rebuilt from the exact sdist in a different source directory is
+  byte-identical to the shipped wheel.
+
+A reproducibility defect was found during this audit: default Unix '-g' compiler
+flags embedded the checkout path in the extension binary. setup.py now adds
+'-g0' on POSIX so cross-directory sdist rebuilds are deterministic. This fix is
+part of the audited 1.2.0 tree.
+
+RELEASE TOOLING
+---------------
+The release workflow retains:
+- clean-tree/version check before local project installation;
+- dependency installation from pyproject declarations;
+- metadata validation;
+- two-build reproducibility comparison;
+- checksum verification;
+- Twine wheel/sdist validation;
+- exact wheel smoke;
+- exact-sdist test/rebuild and wheel equality check;
+- stable-tag-only protected PyPI Trusted Publishing.
+
+Local Twine/trove-classifiers execution is NOT claimed in this offline runtime:
+the packages are absent and package-index access is unavailable. Tagged GitHub
+Actions must pass those gates before publication.
+
+SUPPORT / SAFETY
+----------------
+- portable switch remains the default and fail-closed path;
+- ctypes live remains the fallback/diagnostic engine;
+- native live uses runtime layout/write self-tests before mutation;
+- free-threaded CPython does not import the native accelerator automatically and
+  live modes are unsupported there;
+- security guidance explicitly covers native memory/lifetime/gate issues and
+  specialization guard/deoptimization failures.
+
+AUDIT RESULT
+------------
+PASS as a 1.2.0 source/release candidate for CPython 3.13.5 within the documented
+support boundary. Do not treat this audit as evidence that PyPI publication has
+already occurred. Final release requires green tagged GitHub Actions, including
+metadata/Twine validation and protected publishing approval.

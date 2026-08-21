@@ -1,4 +1,4 @@
-"""CPython 3.13 extensions for switch dispatch, function inlining, and goto.
+"""CPython 3.13 extensions for switch dispatch, specialization, inlining, and goto.
 
 The inline subsystem depends on the third-party ``bytecode`` package.  It is
 lazily imported so ``import python_extensions`` and the switch/goto APIs remain
@@ -35,6 +35,17 @@ from ._core import TransformationReport, explain as explain_extensions, verify_c
 
 from ._version import __version__
 
+_SPECIALIZATION_EXPORTS = frozenset({
+    "PartialStats",
+    "SpecializationError",
+    "SpecializationLimitError",
+    "SpecializationStats",
+    "SpecializationUnsupportedError",
+    "hotpath",
+    "partial",
+    "specialize",
+})
+
 _INLINE_EXPORTS = frozenset({
     "InlineCallSiteError",
     "InlineError",
@@ -51,6 +62,19 @@ _INLINE_EXPORTS = frozenset({
 
 
 def __getattr__(name: str) -> Any:
+    if name in _SPECIALIZATION_EXPORTS:
+        try:
+            module = import_module("._specialize", __name__)
+        except ModuleNotFoundError as exc:
+            if exc.name == "bytecode":
+                raise ModuleNotFoundError(
+                    "python_extensions specialization requires the 'bytecode' package. "
+                    "Install cpython-extensions with its declared dependencies."
+                ) from exc
+            raise
+        value = getattr(module, name)
+        globals()[name] = value
+        return value
     if name not in _INLINE_EXPORTS:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
     try:
@@ -70,7 +94,7 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
-    return sorted(set(globals()) | _INLINE_EXPORTS)
+    return sorted(set(globals()) | _INLINE_EXPORTS | _SPECIALIZATION_EXPORTS)
 
 
 __all__ = [
@@ -82,6 +106,9 @@ __all__ = [
     "registered_inline_functions", "unregister_inline_function",
     "InlineError", "InlineUnsupportedError", "InlineCallSiteError",
     "InlineRecursionError", "InlineExpansionError", "InlineStats",
+    "specialize", "partial", "hotpath", "SpecializationError",
+    "SpecializationUnsupportedError", "SpecializationLimitError",
+    "SpecializationStats", "PartialStats",
     "enable_goto", "GotoError", "GotoSyntaxError", "GotoControlFlowError",
     "MissingLabelError", "DuplicateLabelError", "UnsupportedGotoRuntimeError",
     "optimize_extensions", "explain_extensions", "verify_code", "TransformationReport",

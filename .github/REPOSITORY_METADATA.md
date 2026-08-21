@@ -12,25 +12,25 @@ Use the following values when creating or editing the GitHub repository.
 - **Python import package:** `python_extensions`
 - **Primary language:** Python
 - **Supported interpreter:** CPython 3.13.x
-- **Current release:** `1.1.0`
+- **Current release:** `1.2.0`
 
 ## Recommended GitHub description
 
-> Production-oriented CPython 3.13 bytecode extensions for switch dispatch, function inlining, and validated goto.
+> CPython 3.13 extensions for fast switch/live dispatch, specialization, function inlining, and verified local goto.
 
 Shorter alternative:
 
-> CPython 3.13 switch, inline-function, and validated-goto bytecode extensions.
+> CPython 3.13 switch/live dispatch, specialization, inline-function, and validated-goto extensions.
 
 Performance-oriented alternative:
 
-> Stress-tested CPython 3.13 language extensions for fast switch dispatch, function inlining, and verified local goto.
+> Stress-tested CPython 3.13 extensions for switch/live dispatch, specialization, function inlining, and verified local goto.
 
 ## Recommended topics
 
 GitHub topics are lowercase and should be added without `#` prefixes:
 
-`python`, `cpython`, `python313`, `bytecode`, `compiler`, `optimization`, `performance`, `switch`, `function-inlining`, `goto`, `control-flow`, `metaprogramming`, `language-extensions`, `developer-tools`, `python-library`, `setuptools`, `pypi`, `mpl-2-0`
+`python`, `cpython`, `python313`, `bytecode`, `compiler`, `optimization`, `performance`, `switch`, `specialization`, `partial-evaluation`, `function-inlining`, `goto`, `control-flow`, `metaprogramming`, `language-extensions`, `developer-tools`, `python-library`, `setuptools`, `pypi`, `mpl-2-0`
 
 ## Canonical links
 
@@ -50,6 +50,7 @@ Use the PyPI project page as the GitHub repository website after the desired rel
 Suggested optional labels in addition to GitHub defaults:
 
 - `area:switch`
+- `area:specialize`
 - `area:inline`
 - `area:goto`
 - `area:bytecode`

@@ -1,0 +1,146 @@
+python_extensions / cpython-extensions 1.2.0
+RELEASE CERTIFICATION
+Date: 2026-08-22
+Canonical repository: https://github.com/Karvp/cpython-extensions
+Baseline GitHub main commit: 2af499ff95f20e507aa40342d09f981cfd27f63c
+Target runtime: CPython >=3.13,<3.14
+Certified runtime used here: CPython 3.13.5
+License: MPL-2.0
+
+STATUS
+------
+PASS for the documented 1.2.0 source/release-candidate tree on the certified
+CPython 3.13.5 host. Publication remains subject to the repository's tagged
+GitHub Actions release gates and PyPI protected-environment approval.
+
+1.2.0 is a feature/architecture release. It adds guarded partial evaluation
+and specialization, and renovates the explicit live switch backend with an
+optional fused CPython C accelerator while retaining the portable compiler and
+the previously certified ctypes live engine as semantic/fallback paths.
+
+CORRECTNESS GATES
+-----------------
+- Complete pytest suite with the native extension built: 450 passed.
+- Native live focused suite: 10 passed.
+- Installed-artifact smoke: PASS (native live + specialization + inline + goto).
+- Source-only suite before building the optional accelerator: 440 passed,
+  1 native-only module skipped as designed.
+- Python compileall over src/tests/tools/benchmarks/scripts: PASS.
+
+STRESS / DIFFERENTIAL GATES
+---------------------------
+- Specialization v121 adversarial full harness:
+    8,316,000 differential/stress calls passed
+  Run with PYTHONMALLOC=debug, CPython -X dev, warnings as errors, and a fixed
+  PYTHONHASHSEED.
+- Existing live-switch v18.2 compatibility full harness:
+    1,239,100 calls passed
+  Run with PYTHONMALLOC=debug, CPython -X dev, and a fixed PYTHONHASHSEED.
+- The live harness covers typed keys, concurrency/isolation modes, recursion,
+  generators/coroutines, tracing/monitoring-sensitive behavior, intrinsic
+  unhashables, and user hash failures.
+
+LIVE WORKLOAD QUALIFICATION
+---------------------------
+Committed real-backend evidence:
+  benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.json
+  benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.md
+
+Evidence identifiers v121/v122 are engineering checkpoint/schema identifiers,
+not package versions.
+
+Broad workload matrix:
+- 30 workload/route/traffic configurations
+- three fresh processes per configuration
+- portable, fast+ctypes, and fast+native compared from equivalent source shapes
+- 202,798,080 timed dispatches, excluding warmups and correctness calls
+- supplemental 5-10 million-dispatch sustained in-frame loops
+- VM/interpreter, parser/token, state-machine, event, HTTP/RPC, sparse protocol,
+  heavy-handler, threaded, coroutine, and one-request-per-call controls
+
+Representative CPython 3.13.5 measurements:
+- dense VM, 64 random:       native 1.70x vs portable
+- dense VM, 1024 skewed:    native 2.06x vs portable
+- dense VM, 2048 random:    native 2.47x vs portable
+- parser int, 256 skewed:   native 1.85x vs portable
+- HTTP string, 64 random:   approximately tied
+- sparse protocol, 256:     portable slightly faster (native 0.98x)
+- direct/minimal, 256:      portable faster (native 0.80x)
+
+The 10,000,384-dispatch 1024-route VM sample recorded approximately 1.95x
+native-vs-portable speedup. The corresponding long HTTP routing control remained
+approximately tied. These negative controls are intentional: 1.2.0 does not
+claim live mode is universally faster than the portable compiler.
+
+NATIVE LIVE ARCHITECTURE
+------------------------
+The optional python_extensions._livegate extension fuses route lookup and the
+verified live-gate store into a single CPython built-in call. Guarded fast paths
+cover compact/dense exact integers, sparse exact integers, and selected exact
+builtin typed-key partitions. General Python dictionary semantics remain the
+authoritative fallback where equality/hash observability requires them.
+
+The live compiler also includes the v121 EXTENDED_ARG gate-location repair for
+large/multi-site functions. Clone creation copies the original immutable native
+acceleration tables exactly once, addressing the lifecycle fault found during
+the v122 full-suite hardening pass.
+
+On free-threaded CPython builds, the native module is not imported automatically
+and live switch modes are rejected. Portable mode remains available without
+silently enabling the GIL through this extension.
+
+PACKAGING / REPRODUCIBILITY
+---------------------------
+The 1.2.0 source distribution now declares the optional C extension through
+setup.py and includes _livegate.c in the sdist. A successful native build emits
+a CPython/platform-specific wheel (for the certification host:
+cp313-cp313-linux_x86_64), rather than the historical pure-Python none-any tag.
+
+Reproducibility was checked with SOURCE_DATE_EPOCH fixed to the pinned GitHub
+baseline timestamp (1787301146):
+- two independent builds from the same source tree: wheel identical, sdist
+  identical, SHA256SUMS identical;
+- exact sdist extracted into a different path, then rebuilt: wheel and sdist
+  byte-identical to the originally built artifacts.
+
+During this check, CPython's default Unix compiler '-g' flag was found to embed
+the source directory in _livegate.so. setup.py now adds '-g0' on POSIX release
+extension builds, eliminating that build-path-dependent debug metadata. Windows
+is not passed this GCC/Clang-specific flag.
+
+The exact built wheel was installed into a separate target directory and
+passed tools/smoke_release.py with the native accelerator present.
+
+METADATA / PUBLICATION GATES
+----------------------------
+This execution environment has no package-index network access and does not
+have the optional local twine/trove-classifiers tools installed, so local
+`twine check` and `tools/check_metadata.py` could not be executed here. This is
+an environment limitation, not represented as a PASS.
+
+The repository retains both mandatory release-workflow metadata validation and
+Twine artifact checks. It also contains a dedicated Twine 7 compatibility
+candidate CI job. A stable release must not be published unless those GitHub
+Actions gates pass on the tagged clean tree.
+
+PUBLIC CONTRACT / DOCUMENTATION
+-------------------------------
+- README documents portable-vs-live workload selection instead of advertising a
+  universal live speedup.
+- docs/LIVE_SWITCH.md documents engines, runtime safety checks, concurrency,
+  free-threaded behavior, benchmark interpretation, and deployment guidance.
+- docs/SPECIALIZATION.md documents partial/specialize/hotpath guards, bounded
+  profiling, monitoring dispatch, metrics, and composition.
+- docs/ARCHITECTURE.md and docs/COMPATIBILITY.md describe the new C-extension
+  boundary and canonical transformation order.
+- Canonical composition is switch -> partial -> inline -> goto ->
+  specialize/hotpath, with specialize and hotpath mutually exclusive final
+  guarded layers.
+
+FINAL ASSESSMENT
+----------------
+The 1.2.0 source/release-candidate tree is correctness-, stress-, workload-, and
+reproducibility-qualified on CPython 3.13.5 for the documented boundary. The
+native live accelerator is an optional explicit optimization, not a replacement
+for the portable compiler. Final PyPI publication remains contingent on clean
+GitHub CI/release metadata and Twine checks for the immutable tagged artifacts.

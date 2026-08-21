@@ -2,6 +2,38 @@
 
 This document covers public releases of `cpython-extensions`. Internal benchmark/checkpoint labels are retained only where they identify historical evidence; they are not package versions.
 
+## 1.2.0 — Specialization and native live-dispatch release
+
+`1.2.0` adds a new specialization family and promotes the live-switch research backend into a substantially better documented and qualified explicit optimization path. The default switch contract remains portable and fail-closed.
+
+### New specialization APIs
+
+The package now exports `partial`, `specialize`, and `hotpath`. `partial()` freezes selected parameters into a real transformed Python function. `specialize()` creates guarded constant/exact-type fast variants with generic fallback. `hotpath()` performs bounded runtime shape discovery and promotes only variants accepted by the selected profitability policy.
+
+Adaptive profiling has finite shape and call budgets so megamorphic call sites cannot accumulate unbounded state or pay profiling overhead forever. Eligible one-variant ordinary functions can use CPython 3.13 `sys.monitoring` during warm-up and install an in-frame dispatcher after promotion.
+
+### Renovated live switch
+
+Explicit live modes now accept `live_engine="auto" | "native" | "ctypes"`. The optional native engine fuses lookup and gate mutation in C and includes guarded dense/sparse integer and exact-builtin typed fast paths. The ctypes engine remains available as fallback and comparison baseline.
+
+Large/multi-site live functions now correctly locate gates through `EXTENDED_ARG` prefixes. Runtime self-tests still validate code-object layout and reversible writes before live mutation is accepted. Live mode remains disabled on free-threaded CPython.
+
+### Performance interpretation
+
+The release intentionally does not publish “live is faster” as a universal rule. The new cross-task evidence demonstrates where each architecture wins.
+
+Dense VM/parser loops are the strongest live candidates: the committed CPython 3.13.5 evidence reaches roughly **2.47× portable-to-native speedup at 2,048 random VM routes**, and a separate 10-million-dispatch 1,024-route VM sample records about **1.95×**.
+
+HTTP/RPC routing is different. Portable statement-template/direct lowering can be extremely compact; 64-route HTTP routing is essentially tied in the long loop, and the one-router-call-per-request control favors portable once safe live isolation overhead is included. Sparse protocols and heavy server bodies can also favor portable.
+
+See [`LIVE_SWITCH.md`](LIVE_SWITCH.md) and [`../benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.md`](../benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.md). The `v122` suffix is an evidence/checkpoint identifier, not the package version.
+
+### Qualification
+
+The 1.2.0 source baseline records **450/450 tests**, the existing **1,239,100-call** full live compatibility harness under CPython dev mode, and a 30-configuration broad workload matrix totaling **202,798,080 timed dispatches** before long-run supplements.
+
+See [`PYTHON_EXTENSIONS_1.2.0_CERTIFICATION.txt`](../PYTHON_EXTENSIONS_1.2.0_CERTIFICATION.txt) and [`RELEASE_AUDIT_1.2.0.txt`](../RELEASE_AUDIT_1.2.0.txt).
+
 ## 1.1.0 — Performance evidence and verification milestone
 
 `1.1.0` promotes the project to a new minor release line after a broad switch-scaling, structural-regression, documentation, and release-quality pass. The supported transformation contracts remain compatible with 1.0.4; the milestone is about proving and preserving the optimized behavior more rigorously rather than introducing benchmark-specific semantics.

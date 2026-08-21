@@ -1,0 +1,85 @@
+CPYTHON-EXTENSIONS LIVE SWITCH EXTENDED_ARG V1.21 CERTIFICATION
+Date: 2026-08-21
+Interpreter: CPython 3.13.5
+
+Issue addressed
+---------------
+The corrective real-backend hot-loop benchmark exposed a mode="fast" compile
+failure once later switch gates used constant indexes above 255. CPython 3.13
+inserted EXTENDED_ARG before synthetic gate marker LOAD_CONST instructions, but
+_live _locate() assumed the four gate operations were adjacent and bound the
+writable gate at LOAD_CONST rather than at its prefix.
+
+Fix
+---
+- Match gate scaffolds through EXTENDED_ARG/CACHE entries.
+- Backtrack to the first EXTENDED_ARG belonging to the gate's initial LOAD_CONST.
+- Bind/patch the live gate at that prefix so JUMP_FORWARD replaces the complete
+  prefixed instruction start.
+- Accept EXTENDED_ARG before synthetic STORE_FAST marker targets.
+- Preserve existing 1/2/4-code-unit jump-width selection and forward-range checks.
+
+Regression evidence
+-------------------
+Focused switch tests: 90 passed
+Full repository pytest: 440 passed
+Live compatibility stress harness: 1,239,100 calls passed
+
+New regressions explicitly cover:
+- four 64-route switch sites (>255 synthetic constants),
+- >255 local variables (EXTENDED_ARG local indexes),
+- exact backend selection and gate counts,
+- portable/fast semantic equivalence including misses.
+
+Real-backend corrective benchmark
+---------------------------------
+Identical source is compiled separately with mode="portable" and mode="fast".
+Portable must be portable-balanced-v18 with zero direct/template plans. Fast
+must be cpython313-live-inline-v18. Timed samples contain repeated internal
+switch dispatches inside one outer Python invocation. Each committed row is an
+isolated-process median with correctness checked against an independent Python
+reference before timing.
+
+Dispatch-dominant, 1 site, random traffic:
+  routes   portable ns   fast ns   portable/fast
+      16        86.15      85.64       1.01x
+      64       105.41      79.11       1.33x
+     256       127.86      93.23       1.37x
+    1024       206.41     100.36       2.06x
+    2048       246.57     105.43       2.34x
+
+1024 routes, traffic patterns:
+  alternating  178.39 / 81.02 ns   2.20x
+  random       206.41 / 100.36 ns  2.06x
+  sequential   173.99 / 86.25 ns   2.02x
+  90/10 skew   164.52 / 79.31 ns   2.07x
+
+64 routes, random traffic, site scaling:
+   1 site       105.41 / 79.11 ns   1.33x
+   4 sites      104.41 / 88.38 ns   1.18x
+   8 sites      104.68 / 90.94 ns   1.15x
+  16 sites      108.59 / 94.54 ns   1.15x
+
+Heterogeneous whole-workload, 1 site, random traffic:
+    64 routes    195.17 / 147.85 ns  1.32x
+   256 routes    223.05 / 160.62 ns  1.39x
+  1024 routes    285.19 / 174.02 ns  1.64x
+
+Interpretation
+--------------
+Direct-value portable dispatch remains a separate, often superior workload.
+The measured live advantage applies to general heterogeneous control-flow
+switches repeatedly dispatched in-frame. No proxy timings are used in the
+committed corrective evidence.
+
+4096-route support exists in the driver, but repeated isolated-process
+compilation did not complete within this qualification environment's execution
+window, so no 4096 proxy result is substituted.
+
+Evidence
+--------
+benchmarks/scripts/benchmark_switch_live_dispatch_v121.py
+benchmarks/scripts/benchmark_switch_live_dispatch_v121_worker.py
+benchmarks/results/BENCHMARK_SWITCH_LIVE_DISPATCH_V121.json
+benchmarks/results/SWITCH_LIVE_BENCHMARK_INCIDENT_RESOLUTION_V121.md
+tests/test_switch_live_hotloop_benchmark_v121.py

@@ -1,0 +1,64 @@
+CPython Extensions specialization adversarial stress checkpoint
+Date: 2026-08-21
+Interpreter: CPython 3.13.5
+
+Scope
+-----
+This checkpoint extends the existing specialization v120 validation with an
+adversarial differential harness focused on semantic and lifecycle boundaries:
+
+- difficult Python signatures: positional-only, defaults, *args, keyword-only,
+  **kwargs, valid and intentionally invalid calls
+- explicit inline and wrapper specialization fallback equivalence
+- partial() binding and local/reassignment semantics
+- side-effecting __eq__ objects and identity-only guard behavior
+- canonical float/complex constant guards, including signed zero and NaN payloads
+- bounded high-cardinality adaptive profiling and finite profile budgets
+- 16-thread concurrent promotion races with max_variants enforcement
+- recursive closure functions on the sys.monitoring backend
+- coexistence with sys.settrace
+- staticmethod/classmethod descriptor use
+- coroutine wrapper specialization and adaptive hotpath behavior
+- sys.monitoring attach/detach lifecycle churn, weakref collection, and entry cleanup
+
+Executed validation
+-------------------
+1. Existing full specialization harness
+   PYTHONHASHSEED=0 PYTHONPATH=src python3 -X dev -W error \
+       tests/harness_specialization_v120.py --full
+   PASS: 5,600,032 calls
+
+2. New full adversarial specialization harness
+   PYTHONHASHSEED=17 PYTHONPATH=src python3 -X dev -W error \
+       tests/harness_specialization_v121_adversarial.py --full
+   PASS: 8,316,000 differential/stress calls
+
+3. New adversarial harness, independent hash seed quick confirmation
+   PYTHONHASHSEED=random PYTHONPATH=src python3 -X dev -W error \
+       tests/harness_specialization_v121_adversarial.py
+   PASS: 141,300 differential/stress calls
+
+4. Full repository test suite with third-party pytest plugin autoload disabled
+   (required because the environment's pytest-asyncio plugin emits a collection
+   deprecation when every warning is promoted to an error)
+   PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=src \
+       python3 -X dev -W error -m pytest -q
+   PASS: 437 tests
+
+5. Bytecode/source compilation
+   PYTHONPATH=src python3 -m compileall -q src tests
+   PASS
+
+Aggregate executed specialization stress traffic in this pass
+-------------------------------------------------------------
+5,600,032 + 8,316,000 + 141,300 = 14,057,332 harness calls
+plus the 437-test full repository suite.
+
+Result
+------
+No semantic divergence, crash, unbounded profiling state, promotion race,
+monitoring lifecycle leak, guard-side-effect regression, or bytecode verifier
+failure was observed in this pass.
+
+No specialization runtime source changes were made solely to satisfy the stress
+harness. The new v121 adversarial harness is retained as a regression asset.

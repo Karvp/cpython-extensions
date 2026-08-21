@@ -6,7 +6,7 @@ This document records the recommended GitHub configuration for the canonical rep
 - **Default branch:** `main`
 - **Package:** `cpython-extensions`
 - **Import package:** `python_extensions`
-- **Current release:** `1.1.0`
+- **Current release:** `1.2.0`
 
 ## Clone or connect the repository
 
@@ -42,7 +42,7 @@ git remote add origin git@github.com:Karvp/cpython-extensions.git
 
 ## PyPI Trusted Publishing
 
-The release workflow builds and certifies artifacts for validated `v*` tags. Only the exact stable tag for the package version can enter the PyPI publishing job; preview tags such as `v1.1.0-beta` create GitHub prereleases and are never eligible for PyPI.
+The release workflow builds and certifies artifacts for validated `v*` tags. Only the exact stable tag for the package version can enter the PyPI publishing job; preview tags such as `v1.2.0-beta` create GitHub prereleases and are never eligible for PyPI.
 
 Configure publishing as follows:
 
@@ -57,20 +57,20 @@ Do **not** gate that job on an environment-scoped variable in a job-level `if:` 
 
 ## Release tag
 
-The source version is `1.1.0`. After CI is green and the release commit is final:
+The source version is `1.2.0`. After CI is green and the release commit is final:
 
 ```powershell
-git tag -a v1.1.0 -m "cpython-extensions 1.1.0"
-git push origin v1.1.0
+git tag -a v1.2.0 -m "cpython-extensions 1.2.0"
+git push origin v1.2.0
 ```
 
-If `v1.1.0` already exists remotely, do not move or overwrite a published stable tag. Increment the package version and changelog instead.
+If `v1.2.0` already exists remotely, do not move or overwrite a published stable tag. Increment the package version and changelog instead.
 
 For a release-pipeline rehearsal, use an allowed preview tag such as:
 
 ```powershell
-git tag -a v1.1.0-beta -m "cpython-extensions 1.1.0 release rehearsal"
-git push origin v1.1.0-beta
+git tag -a v1.2.0-beta -m "cpython-extensions 1.2.0 release rehearsal"
+git push origin v1.2.0-beta
 ```
 
 ## Package metadata links

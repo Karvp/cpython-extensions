@@ -37,5 +37,9 @@ jobs:
         run: python tests/stress/harness_user_scenarios.py --scale "$STRESS_SCALE"
       - name: Deep generated/registry/control-flow stress
         run: python tests/stress/harness_release_deep.py
+      - name: Specialization adversarial stress
+        run: python -X dev -W error tests/harness_specialization_v121_adversarial.py --full
+      - name: Full live-switch compatibility stress
+        run: python -X dev tests/harness_switch_live_v182.py --profile full
       - name: Coordinated extension harness
         run: python tests/harness_all_extensions_v22.py --full

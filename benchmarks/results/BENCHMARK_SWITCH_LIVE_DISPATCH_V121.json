@@ -1,0 +1,4443 @@
+{
+  "benchmark": "real CPython 3.13 live-inline vs portable-balanced switch hot-loop dispatch \u2014 corrective certification",
+  "coverage": {
+    "not_certified_in_this_environment": [
+      "4096-route isolated-process row (driver supports it; compilation exceeded the current execution window)"
+    ],
+    "route_scaling_sites_1": [
+      16,
+      64,
+      256,
+      1024,
+      2048
+    ],
+    "site_scaling_routes_64": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "whole_workload_sites_1": [
+      64,
+      256,
+      1024
+    ]
+  },
+  "method": {
+    "aggregation": "median of per-process medians; at least 3 isolated CPython processes per committed row",
+    "dispatch_workload": "minimal nested-control route body keeps portable on balanced general routing",
+    "identical_source_per_backend": true,
+    "independent_reference_correctness_check": true,
+    "note": "Per-row raw_processes retain exact target dispatches, warmup, repeats, and measurements; some focused site/whole rows use smaller repeat targets to bound qualification time.",
+    "one_outer_python_call_per_timed_sample": true,
+    "portable_direct_or_template_plans_allowed": false,
+    "real_fast_backend_required": "cpython313-live-inline-v18",
+    "real_portable_backend_required": "portable-balanced-v18",
+    "timing_order": "alternated portable/fast within each worker",
+    "traffic_patterns_core": [
+      "sequential",
+      "alternating",
+      "random",
+      "skewed"
+    ],
+    "whole_workload": "heterogeneous arithmetic/control-flow route bodies"
+  },
+  "package_version": "1.1.0",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "rows": [
+    {
+      "code_bytes": {
+        "fast": 1122,
+        "portable": 1012
+      },
+      "compile_ms_median": {
+        "fast": 18.987277,
+        "portable": 26.18791
+      },
+      "correctness": {
+        "fast": 926888429,
+        "portable": 926888429,
+        "reference": 926888429
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 1122,
+            "portable": 1012
+          },
+          "compile_ms": {
+            "fast": 20.501695,
+            "portable": 26.189933
+          },
+          "correctness": {
+            "fast": 926888429,
+            "portable": 926888429,
+            "reference": 926888429
+          },
+          "routes": 16,
+          "sites": 1,
+          "source_lines": 75,
+          "source_sha256": "7e2f18eae7dc9249679f5d52d1bf0d60ac57b2d1ab819c7f188e6d1aa53a4fd5",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 16,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 16,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 74.75176140720859,
+              "fast_samples_ns": [
+                85.71533103271983,
+                74.1993944913088,
+                75.44288806876278,
+                74.75176140720859,
+                74.74128083461146
+              ],
+              "portable_ns_per_dispatch": 90.18314241436606,
+              "portable_over_fast": 1.206435015264662,
+              "portable_samples_ns": [
+                90.181860301636,
+                90.167102025818,
+                90.18314241436606,
+                90.53118609406953,
+                90.45046491564418
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 15.43138100715747,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 81.09671363752557,
+              "fast_samples_ns": [
+                94.236871325409,
+                80.67167129984662,
+                80.68510752172801,
+                81.10743385736197,
+                81.09671363752557
+              ],
+              "portable_ns_per_dispatch": 86.15065423696319,
+              "portable_over_fast": 1.0623199186840913,
+              "portable_samples_ns": [
+                88.79752604166667,
+                93.72198523773007,
+                86.15065423696319,
+                85.40440471625767,
+                86.1458972392638
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 5.053940599437624,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250000,
+              "fast_ns_per_dispatch": 83.175912,
+              "fast_samples_ns": [
+                84.780932,
+                83.175912,
+                82.406972,
+                81.528232,
+                88.199076
+              ],
+              "portable_ns_per_dispatch": 92.84706,
+              "portable_over_fast": 1.1162734230073728,
+              "portable_samples_ns": [
+                92.84706,
+                92.5474,
+                93.253084,
+                92.976636,
+                90.572556
+              ],
+              "rounds": 15625,
+              "saved_ns_per_dispatch": 9.671148000000002,
+              "sequence_length": 16
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 77.21855029396728,
+              "fast_samples_ns": [
+                74.78539989135992,
+                78.05985589212679,
+                76.08713573619632,
+                88.47286394427402,
+                77.21855029396728
+              ],
+              "portable_ns_per_dispatch": 83.1734606658998,
+              "portable_over_fast": 1.077117614216564,
+              "portable_samples_ns": [
+                82.49261087678937,
+                84.7133020194274,
+                83.1734606658998,
+                82.89669606339469,
+                89.22949418456032
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 5.954910371932513,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 1122,
+            "portable": 1012
+          },
+          "compile_ms": {
+            "fast": 18.465379,
+            "portable": 26.112117
+          },
+          "correctness": {
+            "fast": 926888429,
+            "portable": 926888429,
+            "reference": 926888429
+          },
+          "routes": 16,
+          "sites": 1,
+          "source_lines": 75,
+          "source_sha256": "7e2f18eae7dc9249679f5d52d1bf0d60ac57b2d1ab819c7f188e6d1aa53a4fd5",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 16,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 16,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 76.24569833205521,
+              "fast_samples_ns": [
+                75.04920357234151,
+                79.29409509202453,
+                75.31980524667689,
+                76.24569833205521,
+                76.727105700409
+              ],
+              "portable_ns_per_dispatch": 92.08214707949898,
+              "portable_over_fast": 1.207702848736134,
+              "portable_samples_ns": [
+                92.0258020194274,
+                102.24656505623722,
+                90.9861883307771,
+                92.6629321638548,
+                92.08214707949898
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 15.836448747443768,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 85.64233048951942,
+              "fast_samples_ns": [
+                124.45006550357873,
+                85.64233048951942,
+                84.88493737218813,
+                115.32320424335379,
+                80.18282687883436
+              ],
+              "portable_ns_per_dispatch": 91.86848159509202,
+              "portable_over_fast": 1.0726994591341081,
+              "portable_samples_ns": [
+                91.86848159509202,
+                95.39864519427402,
+                86.72289989135992,
+                96.44929463829243,
+                86.822265625
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 6.2261511055725975,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250000,
+              "fast_ns_per_dispatch": 85.984236,
+              "fast_samples_ns": [
+                85.40906,
+                85.984236,
+                90.669416,
+                83.173792,
+                87.348896
+              ],
+              "portable_ns_per_dispatch": 92.206332,
+              "portable_over_fast": 1.0723632178344877,
+              "portable_samples_ns": [
+                103.09014,
+                92.206332,
+                91.776776,
+                91.515752,
+                94.513232
+              ],
+              "rounds": 15625,
+              "saved_ns_per_dispatch": 6.222096000000008,
+              "sequence_length": 16
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 74.80944050357873,
+              "fast_samples_ns": [
+                76.11073699514314,
+                74.62723670756647,
+                74.80944050357873,
+                84.24203172929448,
+                74.05034988496932
+              ],
+              "portable_ns_per_dispatch": 86.95350444146217,
+              "portable_over_fast": 1.1623333078838158,
+              "portable_samples_ns": [
+                88.2735772942229,
+                82.60693459228017,
+                82.96909748849693,
+                87.48915196830266,
+                86.95350444146217
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 12.144063937883445,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 1122,
+            "portable": 1012
+          },
+          "compile_ms": {
+            "fast": 18.987277,
+            "portable": 26.18791
+          },
+          "correctness": {
+            "fast": 926888429,
+            "portable": 926888429,
+            "reference": 926888429
+          },
+          "routes": 16,
+          "sites": 1,
+          "source_lines": 75,
+          "source_sha256": "7e2f18eae7dc9249679f5d52d1bf0d60ac57b2d1ab819c7f188e6d1aa53a4fd5",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 16,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 16,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 90.94871149667689,
+              "fast_samples_ns": [
+                89.52009442101227,
+                89.57521328604294,
+                92.21860621165644,
+                91.51223798568508,
+                90.94871149667689
+              ],
+              "portable_ns_per_dispatch": 88.76052850204499,
+              "portable_over_fast": 0.9759404728376844,
+              "portable_samples_ns": [
+                88.76052850204499,
+                89.05817037321063,
+                87.4949114902863,
+                86.81934192868098,
+                92.92169526457056
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": -2.1881829946319016,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 97.82383132029652,
+              "fast_samples_ns": [
+                96.15661346497956,
+                98.47964196702453,
+                97.82383132029652,
+                95.96804703476482,
+                101.80739950792433
+              ],
+              "portable_ns_per_dispatch": 84.75315934943762,
+              "portable_over_fast": 0.8663856056908805,
+              "portable_samples_ns": [
+                84.7211145194274,
+                85.22512461656441,
+                86.02357330010224,
+                84.75315934943762,
+                83.39590522750511
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": -13.070671970858896,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250000,
+              "fast_ns_per_dispatch": 98.342304,
+              "fast_samples_ns": [
+                131.37442,
+                96.7995,
+                98.342304,
+                96.971916,
+                100.064252
+              ],
+              "portable_ns_per_dispatch": 89.692688,
+              "portable_over_fast": 0.9120458271955882,
+              "portable_samples_ns": [
+                91.554208,
+                89.692688,
+                89.61922,
+                89.341208,
+                92.979276
+              ],
+              "rounds": 15625,
+              "saved_ns_per_dispatch": -8.649615999999995,
+              "sequence_length": 16
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 91.96268293072598,
+              "fast_samples_ns": [
+                94.41713397878323,
+                90.736547801636,
+                91.96268293072598,
+                92.02724389698363,
+                91.6289581735685
+              ],
+              "portable_ns_per_dispatch": 80.46327006646217,
+              "portable_over_fast": 0.8749556613857588,
+              "portable_samples_ns": [
+                80.46327006646217,
+                81.48423919989776,
+                80.01854470219837,
+                80.59202853399796,
+                80.11194321958078
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": -11.499412864263803,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 16,
+      "sites": 1,
+      "source_lines": 75,
+      "source_sha256": "7e2f18eae7dc9249679f5d52d1bf0d60ac57b2d1ab819c7f188e6d1aa53a4fd5",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 16,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 16,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "alternating": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 76.24569833205521,
+          "fast_process_medians_ns": [
+            74.75176140720859,
+            76.24569833205521,
+            90.94871149667689
+          ],
+          "portable_median_ns_per_dispatch": 90.18314241436606,
+          "portable_over_fast": 1.1827964644197018,
+          "portable_process_medians_ns": [
+            90.18314241436606,
+            92.08214707949898,
+            88.76052850204499
+          ],
+          "saved_ns_per_dispatch": 13.937444082310847,
+          "sequence_length": 512
+        },
+        "random": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 85.64233048951942,
+          "fast_process_medians_ns": [
+            81.09671363752557,
+            85.64233048951942,
+            97.82383132029652
+          ],
+          "portable_median_ns_per_dispatch": 86.15065423696319,
+          "portable_over_fast": 1.0059354263778002,
+          "portable_process_medians_ns": [
+            86.15065423696319,
+            91.86848159509202,
+            84.75315934943762
+          ],
+          "saved_ns_per_dispatch": 0.5083237474437681,
+          "sequence_length": 512
+        },
+        "sequential": {
+          "dispatch_count_per_timed_call": 250000,
+          "fast_median_ns_per_dispatch": 85.984236,
+          "fast_process_medians_ns": [
+            83.175912,
+            85.984236,
+            98.342304
+          ],
+          "portable_median_ns_per_dispatch": 92.206332,
+          "portable_over_fast": 1.0723632178344877,
+          "portable_process_medians_ns": [
+            92.84706,
+            92.206332,
+            89.692688
+          ],
+          "saved_ns_per_dispatch": 6.222096000000008,
+          "sequence_length": 16
+        },
+        "skewed": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 77.21855029396728,
+          "fast_process_medians_ns": [
+            77.21855029396728,
+            74.80944050357873,
+            91.96268293072598
+          ],
+          "portable_median_ns_per_dispatch": 83.1734606658998,
+          "portable_over_fast": 1.077117614216564,
+          "portable_process_medians_ns": [
+            83.1734606658998,
+            86.95350444146217,
+            80.46327006646217
+          ],
+          "saved_ns_per_dispatch": 5.954910371932513,
+          "sequence_length": 512
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 3810,
+        "portable": 3516
+      },
+      "compile_ms_median": {
+        "fast": 101.018068,
+        "portable": 69.044215
+      },
+      "correctness": {
+        "fast": 926878941,
+        "portable": 926878941,
+        "reference": 926878941
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 3810,
+            "portable": 3516
+          },
+          "compile_ms": {
+            "fast": 101.018068,
+            "portable": 65.887529
+          },
+          "correctness": {
+            "fast": 926878941,
+            "portable": 926878941,
+            "reference": 926878941
+          },
+          "routes": 64,
+          "sites": 1,
+          "source_lines": 267,
+          "source_sha256": "ba8bcc0f11f5ca631739cd44060d806ae89fb8211975f0041a762e0dfc961c6d",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 64,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 64,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 75.18656537576688,
+              "fast_samples_ns": [
+                75.18656537576688,
+                74.21183617714723,
+                79.72532032847649,
+                74.0542761055726,
+                75.23944353911043
+              ],
+              "portable_ns_per_dispatch": 119.8368920948364,
+              "portable_over_fast": 1.5938604389749211,
+              "portable_samples_ns": [
+                119.8368920948364,
+                121.15038663087934,
+                135.469836400818,
+                108.24451607234151,
+                111.97953412576688
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 44.650326719069525,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 77.86027367714723,
+              "fast_samples_ns": [
+                77.56083445168711,
+                82.85945488241309,
+                78.49839036937628,
+                76.75730524667689,
+                77.86027367714723
+              ],
+              "portable_ns_per_dispatch": 105.41140241564418,
+              "portable_over_fast": 1.3538534792818673,
+              "portable_samples_ns": [
+                121.50535212167689,
+                104.02904125127812,
+                103.53798009330266,
+                110.36301763803681,
+                105.41140241564418
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 27.551128738496942,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250048,
+              "fast_ns_per_dispatch": 80.43591230483747,
+              "fast_samples_ns": [
+                80.55670911185052,
+                80.58278410545175,
+                79.13820146531866,
+                80.43591230483747,
+                78.594373880215
+              ],
+              "portable_ns_per_dispatch": 104.01825249552085,
+              "portable_over_fast": 1.2931817333196969,
+              "portable_samples_ns": [
+                104.01825249552085,
+                104.25147171743025,
+                102.88463015101101,
+                105.46646243921167,
+                103.92438651778859
+              ],
+              "rounds": 3907,
+              "saved_ns_per_dispatch": 23.582340190683382,
+              "sequence_length": 64
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 74.42879681109407,
+              "fast_samples_ns": [
+                74.42879681109407,
+                74.32767366436606,
+                74.21971657719837,
+                75.69192947980572,
+                74.69960218558282
+              ],
+              "portable_ns_per_dispatch": 100.70472264826176,
+              "portable_over_fast": 1.3530344028516004,
+              "portable_samples_ns": [
+                100.70472264826176,
+                102.50000798824131,
+                100.18366165005112,
+                102.81597089084867,
+                100.13462183665644
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 26.27592583716769,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 3810,
+            "portable": 3516
+          },
+          "compile_ms": {
+            "fast": 97.480011,
+            "portable": 69.044215
+          },
+          "correctness": {
+            "fast": 926878941,
+            "portable": 926878941,
+            "reference": 926878941
+          },
+          "routes": 64,
+          "sites": 1,
+          "source_lines": 267,
+          "source_sha256": "ba8bcc0f11f5ca631739cd44060d806ae89fb8211975f0041a762e0dfc961c6d",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 64,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 64,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 75.26052850204499,
+              "fast_samples_ns": [
+                76.6603839148773,
+                75.2878882285276,
+                75.23316877556238,
+                75.26052850204499,
+                75.05140433282209
+              ],
+              "portable_ns_per_dispatch": 108.4567157144683,
+              "portable_over_fast": 1.4410836313954571,
+              "portable_samples_ns": [
+                122.4688019235685,
+                107.69411026968302,
+                108.01891216129857,
+                108.4567157144683,
+                108.77048185071574
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 33.19618721242331,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 79.10877188778119,
+              "fast_samples_ns": [
+                83.21754377556238,
+                79.10877188778119,
+                79.11864934815951,
+                79.04276904396728,
+                78.97117043711657
+              ],
+              "portable_ns_per_dispatch": 101.30751533742331,
+              "portable_over_fast": 1.2806103914889728,
+              "portable_samples_ns": [
+                103.8678265593047,
+                101.0083117650818,
+                100.9754681109407,
+                102.36344500894683,
+                101.30751533742331
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 22.198743449642123,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250048,
+              "fast_ns_per_dispatch": 84.91164496416688,
+              "fast_samples_ns": [
+                83.9714734770924,
+                84.91164496416688,
+                84.99387317635014,
+                84.8568954760686,
+                84.97953592910162
+              ],
+              "portable_ns_per_dispatch": 103.16655202201177,
+              "portable_over_fast": 1.2149870852878724,
+              "portable_samples_ns": [
+                103.05208200025595,
+                103.5369928973637,
+                103.19991361658562,
+                103.1452041208088,
+                103.16655202201177
+              ],
+              "rounds": 3907,
+              "saved_ns_per_dispatch": 18.25490705784489,
+              "sequence_length": 64
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 76.15377364519428,
+              "fast_samples_ns": [
+                76.4080193954499,
+                76.15377364519428,
+                75.15236771472392,
+                82.18328620270961,
+                75.92769443379346
+              ],
+              "portable_ns_per_dispatch": 100.92130783486708,
+              "portable_over_fast": 1.3252305565981073,
+              "portable_samples_ns": [
+                102.5620886055726,
+                100.92130783486708,
+                99.45645210250511,
+                101.83995957949898,
+                99.29864838957056
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 24.7675341896728,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 3810,
+            "portable": 3516
+          },
+          "compile_ms": {
+            "fast": 120.861508,
+            "portable": 77.765547
+          },
+          "correctness": {
+            "fast": 926878941,
+            "portable": 926878941,
+            "reference": 926878941
+          },
+          "routes": 64,
+          "sites": 1,
+          "source_lines": 267,
+          "source_sha256": "ba8bcc0f11f5ca631739cd44060d806ae89fb8211975f0041a762e0dfc961c6d",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 64,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 64,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 75.3724078156953,
+              "fast_samples_ns": [
+                78.48616436605317,
+                75.3724078156953,
+                75.82341593174847,
+                75.14624872188139,
+                74.72948220219837
+              ],
+              "portable_ns_per_dispatch": 113.75865925357873,
+              "portable_over_fast": 1.5092878488338541,
+              "portable_samples_ns": [
+                119.3026025690184,
+                113.75865925357873,
+                163.494244472137,
+                109.25492874488752,
+                112.8737298696319
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 38.38625143788343,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 85.2630847392638,
+              "fast_samples_ns": [
+                88.52156026329243,
+                80.46595012142127,
+                85.2630847392638,
+                81.02267462295501,
+                87.12460458205521
+              ],
+              "portable_ns_per_dispatch": 110.37639794222903,
+              "portable_over_fast": 1.2945391112667604,
+              "portable_samples_ns": [
+                103.50530019810839,
+                130.41053569146217,
+                182.44839196702455,
+                107.43652942868098,
+                110.37639794222903
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 25.11331320296523,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250048,
+              "fast_ns_per_dispatch": 82.59409793319682,
+              "fast_samples_ns": [
+                81.41950345533658,
+                85.08635142052727,
+                85.25452713079089,
+                82.59409793319682,
+                80.44104331968262
+              ],
+              "portable_ns_per_dispatch": 108.79901858843103,
+              "portable_over_fast": 1.3172735257237034,
+              "portable_samples_ns": [
+                112.63252255566931,
+                107.65001519708215,
+                128.67137109674943,
+                108.79901858843103,
+                102.6888997312516
+              ],
+              "rounds": 3907,
+              "saved_ns_per_dispatch": 26.204920655234204,
+              "sequence_length": 64
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 76.44750127811861,
+              "fast_samples_ns": [
+                81.2818371357362,
+                78.0127612154908,
+                76.44750127811861,
+                75.76232985046012,
+                74.07155067740287
+              ],
+              "portable_ns_per_dispatch": 106.94522063522494,
+              "portable_over_fast": 1.398936771604275,
+              "portable_samples_ns": [
+                106.94522063522494,
+                113.22123434304703,
+                144.13181796395705,
+                104.16554431876278,
+                99.0634466065951
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 30.497719357106334,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 64,
+      "sites": 1,
+      "source_lines": 267,
+      "source_sha256": "ba8bcc0f11f5ca631739cd44060d806ae89fb8211975f0041a762e0dfc961c6d",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 64,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 64,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "alternating": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 75.26052850204499,
+          "fast_process_medians_ns": [
+            75.18656537576688,
+            75.26052850204499,
+            75.3724078156953
+          ],
+          "portable_median_ns_per_dispatch": 113.75865925357873,
+          "portable_over_fast": 1.5115314962276363,
+          "portable_process_medians_ns": [
+            119.8368920948364,
+            108.4567157144683,
+            113.75865925357873
+          ],
+          "saved_ns_per_dispatch": 38.498130751533736,
+          "sequence_length": 512
+        },
+        "random": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 79.10877188778119,
+          "fast_process_medians_ns": [
+            77.86027367714723,
+            79.10877188778119,
+            85.2630847392638
+          ],
+          "portable_median_ns_per_dispatch": 105.41140241564418,
+          "portable_over_fast": 1.3324869025292703,
+          "portable_process_medians_ns": [
+            105.41140241564418,
+            101.30751533742331,
+            110.37639794222903
+          ],
+          "saved_ns_per_dispatch": 26.302630527862988,
+          "sequence_length": 512
+        },
+        "sequential": {
+          "dispatch_count_per_timed_call": 250048,
+          "fast_median_ns_per_dispatch": 82.59409793319682,
+          "fast_process_medians_ns": [
+            80.43591230483747,
+            84.91164496416688,
+            82.59409793319682
+          ],
+          "portable_median_ns_per_dispatch": 104.01825249552085,
+          "portable_over_fast": 1.2593908656724135,
+          "portable_process_medians_ns": [
+            104.01825249552085,
+            103.16655202201177,
+            108.79901858843103
+          ],
+          "saved_ns_per_dispatch": 21.424154562324034,
+          "sequence_length": 64
+        },
+        "skewed": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 76.15377364519428,
+          "fast_process_medians_ns": [
+            74.42879681109407,
+            76.15377364519428,
+            76.44750127811861
+          ],
+          "portable_median_ns_per_dispatch": 100.92130783486708,
+          "portable_over_fast": 1.3252305565981073,
+          "portable_process_medians_ns": [
+            100.70472264826176,
+            100.92130783486708,
+            106.94522063522494
+          ],
+          "saved_ns_per_dispatch": 24.7675341896728,
+          "sequence_length": 512
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 15364,
+        "portable": 13550
+      },
+      "compile_ms_median": {
+        "fast": 255.318941,
+        "portable": 297.5366
+      },
+      "correctness": {
+        "fast": 926879069,
+        "portable": 926879069,
+        "reference": 926879069
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 15364,
+            "portable": 13550
+          },
+          "compile_ms": {
+            "fast": 255.318941,
+            "portable": 286.596672
+          },
+          "correctness": {
+            "fast": 926879069,
+            "portable": 926879069,
+            "reference": 926879069
+          },
+          "routes": 256,
+          "sites": 1,
+          "source_lines": 1035,
+          "source_sha256": "f25357e4714c14e0e6bacb822a67870edc673bbd207de43e8b78da4f773fa304",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 76.5031793200409,
+              "fast_samples_ns": [
+                76.81830345731083,
+                87.51219405035788,
+                76.5031793200409,
+                76.3212591065951,
+                75.62369392254601
+              ],
+              "portable_ns_per_dispatch": 140.8160987027096,
+              "portable_over_fast": 1.8406568191581183,
+              "portable_samples_ns": [
+                143.17360445424336,
+                141.28074274667688,
+                134.82294861963192,
+                131.81327086528628,
+                140.8160987027096
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 64.31291938266871,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 93.23429911170757,
+              "fast_samples_ns": [
+                110.43826287704499,
+                91.12781585506134,
+                99.59529572469326,
+                93.23429911170757,
+                90.26146312627812
+              ],
+              "portable_ns_per_dispatch": 132.94644683026584,
+              "portable_over_fast": 1.4259392530100712,
+              "portable_samples_ns": [
+                150.83065727249488,
+                133.868377747955,
+                132.16265656952964,
+                131.68803121804703,
+                132.94644683026584
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 39.71214771855827,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250112,
+              "fast_ns_per_dispatch": 81.87079788254862,
+              "fast_samples_ns": [
+                87.29793052712385,
+                85.68093494114636,
+                81.86975435005118,
+                81.87079788254862,
+                81.60407737333675
+              ],
+              "portable_ns_per_dispatch": 127.17549337896622,
+              "portable_over_fast": 1.5533681931549204,
+              "portable_samples_ns": [
+                127.97660248208803,
+                138.30944936668374,
+                127.17549337896622,
+                126.32425473387923,
+                126.69779938587513
+              ],
+              "rounds": 977,
+              "saved_ns_per_dispatch": 45.30469549641761,
+              "sequence_length": 256
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 78.60476578476482,
+              "fast_samples_ns": [
+                77.2489495462679,
+                78.5114032144683,
+                90.66966625127812,
+                81.62464452326176,
+                78.60476578476482
+              ],
+              "portable_ns_per_dispatch": 126.596569849182,
+              "portable_over_fast": 1.610545729451419,
+              "portable_samples_ns": [
+                126.596569849182,
+                130.65414110429447,
+                125.93512349821063,
+                125.31455297801637,
+                127.60962263548058
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 47.99180406441718,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 15364,
+            "portable": 13550
+          },
+          "compile_ms": {
+            "fast": 312.606468,
+            "portable": 311.550684
+          },
+          "correctness": {
+            "fast": 926879069,
+            "portable": 926879069,
+            "reference": 926879069
+          },
+          "routes": 256,
+          "sites": 1,
+          "source_lines": 1035,
+          "source_sha256": "f25357e4714c14e0e6bacb822a67870edc673bbd207de43e8b78da4f773fa304",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 80.778430150818,
+              "fast_samples_ns": [
+                91.39096050613497,
+                76.68634170501022,
+                80.778430150818,
+                85.0258020194274,
+                79.90690104166667
+              ],
+              "portable_ns_per_dispatch": 141.35302834228017,
+              "portable_over_fast": 1.7498858058811726,
+              "portable_samples_ns": [
+                141.35302834228017,
+                136.41892733895705,
+                142.12039078476482,
+                141.13586400817996,
+                172.4056908231084
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 60.57459819146217,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 93.30293807515338,
+              "fast_samples_ns": [
+                93.4747411809816,
+                93.30293807515338,
+                85.59952949258691,
+                90.3505639698364,
+                100.08614120015338
+              ],
+              "portable_ns_per_dispatch": 127.85502540260737,
+              "portable_over_fast": 1.3703215358515621,
+              "portable_samples_ns": [
+                127.85502540260737,
+                128.71151664749488,
+                126.13668679703477,
+                195.05689624872187,
+                127.57230157208589
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 34.55208732745399,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250112,
+              "fast_ns_per_dispatch": 83.92544140225179,
+              "fast_samples_ns": [
+                84.68090695368475,
+                80.40848499872057,
+                83.92544140225179,
+                93.81491091990789,
+                80.8328428863869
+              ],
+              "portable_ns_per_dispatch": 132.61552024692938,
+              "portable_over_fast": 1.5801587460387332,
+              "portable_samples_ns": [
+                132.61552024692938,
+                137.31209618091094,
+                126.08063987333675,
+                148.11598803735927,
+                130.34693257420676
+              ],
+              "rounds": 977,
+              "saved_ns_per_dispatch": 48.690078844677586,
+              "sequence_length": 256
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 78.14612091002044,
+              "fast_samples_ns": [
+                78.14612091002044,
+                80.32202597776073,
+                79.30461161170757,
+                76.90154492586912,
+                76.45374009458078
+              ],
+              "portable_ns_per_dispatch": 132.56543967280163,
+              "portable_over_fast": 1.6963790157343965,
+              "portable_samples_ns": [
+                133.33160787321063,
+                132.56543967280163,
+                136.09108192740285,
+                129.31908231083844,
+                119.97045149539878
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 54.41931876278119,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 15364,
+            "portable": 13550
+          },
+          "compile_ms": {
+            "fast": 251.68779,
+            "portable": 297.5366
+          },
+          "correctness": {
+            "fast": 926879069,
+            "portable": 926879069,
+            "reference": 926879069
+          },
+          "routes": 256,
+          "sites": 1,
+          "source_lines": 1035,
+          "source_sha256": "f25357e4714c14e0e6bacb822a67870edc673bbd207de43e8b78da4f773fa304",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 75.88073555725971,
+              "fast_samples_ns": [
+                78.16924287448876,
+                74.8261199514315,
+                75.88073555725971,
+                75.34885049207567,
+                77.84323875255623
+              ],
+              "portable_ns_per_dispatch": 136.66953045117586,
+              "portable_over_fast": 1.801109721031168,
+              "portable_samples_ns": [
+                130.35369536042944,
+                130.1519323555726,
+                140.95050086273005,
+                136.66953045117586,
+                136.73729070807772
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 60.78879489391615,
+              "sequence_length": 512
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 89.18749201175869,
+              "fast_samples_ns": [
+                88.16115877428426,
+                89.18749201175869,
+                88.47804431876278,
+                94.52263468174847,
+                91.57715842280163
+              ],
+              "portable_ns_per_dispatch": 126.16812851482618,
+              "portable_over_fast": 1.4146392691274676,
+              "portable_samples_ns": [
+                124.64443139698363,
+                130.5352161618098,
+                126.16812851482618,
+                128.78103831160533,
+                126.1505663663088
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 36.98063650306749,
+              "sequence_length": 512
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 250112,
+              "fast_ns_per_dispatch": 81.48539854145343,
+              "fast_samples_ns": [
+                81.48539854145343,
+                79.81579052584442,
+                81.30132500639714,
+                84.59363405194473,
+                85.27323359135107
+              ],
+              "portable_ns_per_dispatch": 125.39829356448311,
+              "portable_over_fast": 1.5389050775850377,
+              "portable_samples_ns": [
+                123.49264329580348,
+                124.01178272134084,
+                125.39829356448311,
+                130.97594677584442,
+                130.96573135235414
+              ],
+              "rounds": 977,
+              "saved_ns_per_dispatch": 43.91289502302968,
+              "sequence_length": 256
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 250368,
+              "fast_ns_per_dispatch": 79.31509617842536,
+              "fast_samples_ns": [
+                75.63256885864008,
+                79.31509617842536,
+                98.49994008819019,
+                77.96915740030674,
+                85.41448587678937
+              ],
+              "portable_ns_per_dispatch": 128.44819226099182,
+              "portable_over_fast": 1.619467143707899,
+              "portable_samples_ns": [
+                128.516711400818,
+                127.56998498210633,
+                132.377600172546,
+                128.44819226099182,
+                123.9311413599182
+              ],
+              "rounds": 489,
+              "saved_ns_per_dispatch": 49.13309608256645,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 256,
+      "sites": 1,
+      "source_lines": 1035,
+      "source_sha256": "f25357e4714c14e0e6bacb822a67870edc673bbd207de43e8b78da4f773fa304",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 256,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 256,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "alternating": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 76.5031793200409,
+          "fast_process_medians_ns": [
+            76.5031793200409,
+            80.778430150818,
+            75.88073555725971
+          ],
+          "portable_median_ns_per_dispatch": 140.8160987027096,
+          "portable_over_fast": 1.8406568191581183,
+          "portable_process_medians_ns": [
+            140.8160987027096,
+            141.35302834228017,
+            136.66953045117586
+          ],
+          "saved_ns_per_dispatch": 64.31291938266871,
+          "sequence_length": 512
+        },
+        "random": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 93.23429911170757,
+          "fast_process_medians_ns": [
+            93.23429911170757,
+            93.30293807515338,
+            89.18749201175869
+          ],
+          "portable_median_ns_per_dispatch": 127.85502540260737,
+          "portable_over_fast": 1.3713303646914252,
+          "portable_process_medians_ns": [
+            132.94644683026584,
+            127.85502540260737,
+            126.16812851482618
+          ],
+          "saved_ns_per_dispatch": 34.620726290899796,
+          "sequence_length": 512
+        },
+        "sequential": {
+          "dispatch_count_per_timed_call": 250112,
+          "fast_median_ns_per_dispatch": 81.87079788254862,
+          "fast_process_medians_ns": [
+            81.87079788254862,
+            83.92544140225179,
+            81.48539854145343
+          ],
+          "portable_median_ns_per_dispatch": 127.17549337896622,
+          "portable_over_fast": 1.5533681931549204,
+          "portable_process_medians_ns": [
+            127.17549337896622,
+            132.61552024692938,
+            125.39829356448311
+          ],
+          "saved_ns_per_dispatch": 45.30469549641761,
+          "sequence_length": 256
+        },
+        "skewed": {
+          "dispatch_count_per_timed_call": 250368,
+          "fast_median_ns_per_dispatch": 78.60476578476482,
+          "fast_process_medians_ns": [
+            78.60476578476482,
+            78.14612091002044,
+            79.31509617842536
+          ],
+          "portable_median_ns_per_dispatch": 128.44819226099182,
+          "portable_over_fast": 1.634101838210523,
+          "portable_process_medians_ns": [
+            126.596569849182,
+            132.56543967280163,
+            128.44819226099182
+          ],
+          "saved_ns_per_dispatch": 49.843426476226995,
+          "sequence_length": 512
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 62980,
+        "portable": 56656
+      },
+      "compile_ms_median": {
+        "fast": 1248.825209,
+        "portable": 1193.337077
+      },
+      "correctness": {
+        "fast": 926878557,
+        "portable": 926878557,
+        "reference": 926878557
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 62980,
+            "portable": 56656
+          },
+          "compile_ms": {
+            "fast": 1243.807876,
+            "portable": 1184.930061
+          },
+          "correctness": {
+            "fast": 926878557,
+            "portable": 926878557,
+            "reference": 926878557
+          },
+          "routes": 1024,
+          "sites": 1,
+          "source_lines": 4107,
+          "source_sha256": "b39d2669613fda4c3c0eb3301bb9437b43bbe0a42c5afedff325a78355c12ade",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 80.36813084608843,
+              "fast_samples_ns": [
+                79.13037773703232,
+                81.00646723533163,
+                79.92210087159864,
+                80.36813084608843,
+                81.09302256058673
+              ],
+              "portable_ns_per_dispatch": 174.1588674532313,
+              "portable_over_fast": 2.167014034291277,
+              "portable_samples_ns": [
+                173.80445498511904,
+                175.68519810267858,
+                179.66061795812075,
+                171.98016648065476,
+                174.1588674532313
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 93.79073660714286,
+              "sequence_length": 2048
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 98.58569169855443,
+              "fast_samples_ns": [
+                98.58569169855443,
+                102.54290896045919,
+                98.47202181653911,
+                96.2117845184949,
+                98.64154509460035
+              ],
+              "portable_ns_per_dispatch": 206.4104618409864,
+              "portable_over_fast": 2.093716220728337,
+              "portable_samples_ns": [
+                209.25697544642858,
+                204.68640385841837,
+                198.29150390625,
+                206.4104618409864,
+                214.2127677242772
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 107.82477014243196,
+              "sequence_length": 2048
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 300032,
+              "fast_ns_per_dispatch": 86.25133652410409,
+              "fast_samples_ns": [
+                85.11460444219283,
+                91.70967763438567,
+                87.23832791168942,
+                86.25133652410409,
+                83.51110214910409
+              ],
+              "portable_ns_per_dispatch": 171.45623466830205,
+              "portable_over_fast": 1.9878675691058574,
+              "portable_samples_ns": [
+                173.05266104948805,
+                168.8480162116041,
+                171.46484708297783,
+                171.45623466830205,
+                171.1176707817833
+              ],
+              "rounds": 293,
+              "saved_ns_per_dispatch": 85.20489814419795,
+              "sequence_length": 1024
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 76.74413398171768,
+              "fast_samples_ns": [
+                77.51546223958333,
+                77.01654509460035,
+                76.68994140625,
+                76.74413398171768,
+                76.57201318027211
+              ],
+              "portable_ns_per_dispatch": 159.7387230282738,
+              "portable_over_fast": 2.0814453788263143,
+              "portable_samples_ns": [
+                166.02081672512756,
+                164.5972443664966,
+                159.7387230282738,
+                155.3516754357993,
+                158.95920692495747
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 82.99458904655611,
+              "sequence_length": 2048
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 62980,
+            "portable": 56656
+          },
+          "compile_ms": {
+            "fast": 1248.825209,
+            "portable": 1193.337077
+          },
+          "correctness": {
+            "fast": 926878557,
+            "portable": 926878557,
+            "reference": 926878557
+          },
+          "routes": 1024,
+          "sites": 1,
+          "source_lines": 4107,
+          "source_sha256": "b39d2669613fda4c3c0eb3301bb9437b43bbe0a42c5afedff325a78355c12ade",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 81.01784385629252,
+              "fast_samples_ns": [
+                81.1325069090136,
+                80.95094600340136,
+                81.01784385629252,
+                80.95493529443027,
+                81.80337877338435
+              ],
+              "portable_ns_per_dispatch": 178.39212970344389,
+              "portable_over_fast": 2.2018869080232686,
+              "portable_samples_ns": [
+                179.78722563244048,
+                177.39449139030611,
+                186.10311702806123,
+                178.39212970344389,
+                177.54146072491497
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 97.37428584715137,
+              "sequence_length": 2048
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 100.35515983737245,
+              "fast_samples_ns": [
+                96.31201504039116,
+                101.33972417091837,
+                98.7275689572704,
+                100.35515983737245,
+                101.56416746386054
+              ],
+              "portable_ns_per_dispatch": 205.79897095556973,
+              "portable_over_fast": 2.0507064239553907,
+              "portable_samples_ns": [
+                213.5007473692602,
+                202.1005261479592,
+                205.79897095556973,
+                203.7211316167092,
+                212.97168965242346
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 105.44381111819727,
+              "sequence_length": 2048
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 300032,
+              "fast_ns_per_dispatch": 85.9607041915529,
+              "fast_samples_ns": [
+                87.14870413822526,
+                86.54971136412117,
+                85.9607041915529,
+                84.88532223229522,
+                84.52536062819966
+              ],
+              "portable_ns_per_dispatch": 173.9851815806314,
+              "portable_over_fast": 2.024008332841559,
+              "portable_samples_ns": [
+                174.5883739067833,
+                175.24528050341297,
+                173.70956431313994,
+                173.9851815806314,
+                172.00305300767917
+              ],
+              "rounds": 293,
+              "saved_ns_per_dispatch": 88.0244773890785,
+              "sequence_length": 1024
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 79.31264283056973,
+              "fast_samples_ns": [
+                79.94991629464286,
+                78.46972324085884,
+                79.93061755952381,
+                79.01611328125,
+                79.31264283056973
+              ],
+              "portable_ns_per_dispatch": 164.52219520620747,
+              "portable_over_fast": 2.074350183458962,
+              "portable_samples_ns": [
+                164.52219520620747,
+                167.1053093112245,
+                166.4661092952806,
+                150.33198142538265,
+                149.06103183460885
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 85.20955237563774,
+              "sequence_length": 2048
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 62980,
+            "portable": 56656
+          },
+          "compile_ms": {
+            "fast": 1282.616053,
+            "portable": 1268.444237
+          },
+          "correctness": {
+            "fast": 926878557,
+            "portable": 926878557,
+            "reference": 926878557
+          },
+          "routes": 1024,
+          "sites": 1,
+          "source_lines": 4107,
+          "source_sha256": "b39d2669613fda4c3c0eb3301bb9437b43bbe0a42c5afedff325a78355c12ade",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 82.5410455197704,
+              "fast_samples_ns": [
+                81.73162468112245,
+                82.47148703231292,
+                82.5410455197704,
+                88.45392219387755,
+                84.30788624043367
+              ],
+              "portable_ns_per_dispatch": 195.3760994632228,
+              "portable_over_fast": 2.3670175030243095,
+              "portable_samples_ns": [
+                195.4182809842687,
+                194.5889967315051,
+                194.5645826690051,
+                195.3760994632228,
+                214.71803916879253
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 112.8350539434524,
+              "sequence_length": 2048
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 100.3687287414966,
+              "fast_samples_ns": [
+                100.3687287414966,
+                97.93870575573979,
+                101.65082243835035,
+                111.24112457482993,
+                98.16438137755102
+              ],
+              "portable_ns_per_dispatch": 214.4682152157738,
+              "portable_over_fast": 2.136803144813607,
+              "portable_samples_ns": [
+                207.0810314360119,
+                220.85663796768708,
+                222.13996731505102,
+                214.4682152157738,
+                207.88223785607994
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 114.0994864742772,
+              "sequence_length": 2048
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 300032,
+              "fast_ns_per_dispatch": 88.76803140998294,
+              "fast_samples_ns": [
+                88.76803140998294,
+                87.48903783596417,
+                89.12355348762799,
+                85.18950978562286,
+                93.63166928860922
+              ],
+              "portable_ns_per_dispatch": 187.8588883852389,
+              "portable_over_fast": 2.116289900781917,
+              "portable_samples_ns": [
+                189.59407329884812,
+                186.80071459044368,
+                187.8588883852389,
+                194.44706564633105,
+                182.51171875
+              ],
+              "rounds": 293,
+              "saved_ns_per_dispatch": 99.09085697525597,
+              "sequence_length": 1024
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 301056,
+              "fast_ns_per_dispatch": 88.65103834502551,
+              "fast_samples_ns": [
+                92.80331234056122,
+                100.27239450467687,
+                88.65103834502551,
+                79.74073926445578,
+                79.19754464285714
+              ],
+              "portable_ns_per_dispatch": 184.6936649659864,
+              "portable_over_fast": 2.0833784737767838,
+              "portable_samples_ns": [
+                193.46815874787416,
+                173.43076703337584,
+                184.6936649659864,
+                174.5627823394983,
+                199.00156117134352
+              ],
+              "rounds": 147,
+              "saved_ns_per_dispatch": 96.04262662096087,
+              "sequence_length": 2048
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 1024,
+      "sites": 1,
+      "source_lines": 4107,
+      "source_sha256": "b39d2669613fda4c3c0eb3301bb9437b43bbe0a42c5afedff325a78355c12ade",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 1024,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 1024,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "alternating": {
+          "dispatch_count_per_timed_call": 301056,
+          "fast_median_ns_per_dispatch": 81.01784385629252,
+          "fast_process_medians_ns": [
+            80.36813084608843,
+            81.01784385629252,
+            82.5410455197704
+          ],
+          "portable_median_ns_per_dispatch": 178.39212970344389,
+          "portable_over_fast": 2.2018869080232686,
+          "portable_process_medians_ns": [
+            174.1588674532313,
+            178.39212970344389,
+            195.3760994632228
+          ],
+          "saved_ns_per_dispatch": 97.37428584715137,
+          "sequence_length": 2048
+        },
+        "random": {
+          "dispatch_count_per_timed_call": 301056,
+          "fast_median_ns_per_dispatch": 100.35515983737245,
+          "fast_process_medians_ns": [
+            98.58569169855443,
+            100.35515983737245,
+            100.3687287414966
+          ],
+          "portable_median_ns_per_dispatch": 206.4104618409864,
+          "portable_over_fast": 2.0567996919687905,
+          "portable_process_medians_ns": [
+            206.4104618409864,
+            205.79897095556973,
+            214.4682152157738
+          ],
+          "saved_ns_per_dispatch": 106.05530200361393,
+          "sequence_length": 2048
+        },
+        "sequential": {
+          "dispatch_count_per_timed_call": 300032,
+          "fast_median_ns_per_dispatch": 86.25133652410409,
+          "fast_process_medians_ns": [
+            86.25133652410409,
+            85.9607041915529,
+            88.76803140998294
+          ],
+          "portable_median_ns_per_dispatch": 173.9851815806314,
+          "portable_over_fast": 2.0171882383759807,
+          "portable_process_medians_ns": [
+            171.45623466830205,
+            173.9851815806314,
+            187.8588883852389
+          ],
+          "saved_ns_per_dispatch": 87.73384505652731,
+          "sequence_length": 1024
+        },
+        "skewed": {
+          "dispatch_count_per_timed_call": 301056,
+          "fast_median_ns_per_dispatch": 79.31264283056973,
+          "fast_process_medians_ns": [
+            76.74413398171768,
+            79.31264283056973,
+            88.65103834502551
+          ],
+          "portable_median_ns_per_dispatch": 164.52219520620747,
+          "portable_over_fast": 2.074350183458962,
+          "portable_process_medians_ns": [
+            159.7387230282738,
+            164.52219520620747,
+            184.6936649659864
+          ],
+          "saved_ns_per_dispatch": 85.20955237563774,
+          "sequence_length": 2048
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 126468,
+        "portable": 114128
+      },
+      "compile_ms_median": {
+        "fast": 2915.260935,
+        "portable": 2930.363035
+      },
+      "correctness": {
+        "fast": 926876509,
+        "portable": 926876509,
+        "reference": 926876509
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 126468,
+            "portable": 114128
+          },
+          "compile_ms": {
+            "fast": 2885.873424,
+            "portable": 2930.363035
+          },
+          "correctness": {
+            "fast": 926876509,
+            "portable": 926876509,
+            "reference": 926876509
+          },
+          "routes": 2048,
+          "sites": 1,
+          "source_lines": 8203,
+          "source_sha256": "e56405b5bc2e80927d165a821800cc13b1295a0c033680eef2a4a6419ebd13bf",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 2048,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 2048,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 84.69869896673387,
+              "fast_samples_ns": [
+                84.69869896673387,
+                88.97428254158267,
+                85.01816878780242,
+                84.61730169480846,
+                83.45814169606855
+              ],
+              "portable_ns_per_dispatch": 198.26008852066533,
+              "portable_over_fast": 2.3407689957378643,
+              "portable_samples_ns": [
+                198.26008852066533,
+                198.9681199596774,
+                207.36971553679436,
+                190.41478310861896,
+                193.7801277406754
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 113.56138955393146,
+              "sequence_length": 4096
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 105.42991982736895,
+              "fast_samples_ns": [
+                103.39979602444556,
+                105.42991982736895,
+                105.68408203125,
+                108.82444320186492,
+                104.31474451864919
+              ],
+              "portable_ns_per_dispatch": 236.18098695816533,
+              "portable_over_fast": 2.240170412202611,
+              "portable_samples_ns": [
+                236.18098695816533,
+                240.87706338205646,
+                253.49009655367942,
+                235.49933845766128,
+                232.16060909148186
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 130.7510671307964,
+              "sequence_length": 4096
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 251904,
+              "fast_ns_per_dispatch": 89.50860645325203,
+              "fast_samples_ns": [
+                89.5622419651931,
+                88.38731421493902,
+                89.50860645325203,
+                87.59850577997967,
+                100.3408004636687
+              ],
+              "portable_ns_per_dispatch": 184.00773707444105,
+              "portable_over_fast": 2.0557546851155974,
+              "portable_samples_ns": [
+                182.7807339303862,
+                199.345703125,
+                182.11870792047765,
+                184.00773707444105,
+                189.71002445376016
+              ],
+              "rounds": 123,
+              "saved_ns_per_dispatch": 94.49913062118902,
+              "sequence_length": 2048
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 84.7849633001512,
+              "fast_samples_ns": [
+                80.32108823714718,
+                84.32549458165323,
+                87.24903918850806,
+                84.7849633001512,
+                94.21295362903226
+              ],
+              "portable_ns_per_dispatch": 166.47006520917338,
+              "portable_over_fast": 1.9634385477038534,
+              "portable_samples_ns": [
+                184.19478877898186,
+                166.3304207094254,
+                166.47006520917338,
+                164.99519594254033,
+                179.66796875
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 81.68510190902218,
+              "sequence_length": 4096
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 126468,
+            "portable": 114128
+          },
+          "compile_ms": {
+            "fast": 2915.260935,
+            "portable": 8780.050485
+          },
+          "correctness": {
+            "fast": 926876509,
+            "portable": 926876509,
+            "reference": 926876509
+          },
+          "routes": 2048,
+          "sites": 1,
+          "source_lines": 8203,
+          "source_sha256": "e56405b5bc2e80927d165a821800cc13b1295a0c033680eef2a4a6419ebd13bf",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 2048,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 2048,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 81.00467017389113,
+              "fast_samples_ns": [
+                86.63990832913306,
+                81.30564437373992,
+                80.65806924143145,
+                81.00467017389113,
+                80.51191957535282
+              ],
+              "portable_ns_per_dispatch": 184.6213615171371,
+              "portable_over_fast": 2.2791446606820824,
+              "portable_samples_ns": [
+                190.56424442414314,
+                187.8967521421371,
+                184.6213615171371,
+                180.55035203503024,
+                179.77547331779235
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 103.61669134324598,
+              "sequence_length": 4096
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 103.2152335874496,
+              "fast_samples_ns": [
+                103.2152335874496,
+                104.11212748865927,
+                101.81860745337701,
+                103.58944209929436,
+                100.96127220892137
+              ],
+              "portable_ns_per_dispatch": 246.56932412424396,
+              "portable_over_fast": 2.3888850080965707,
+              "portable_samples_ns": [
+                238.89481476814515,
+                246.56932412424396,
+                250.59332866053427,
+                237.48272901965726,
+                246.78389616935485
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 143.35409053679436,
+              "sequence_length": 4096
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 251904,
+              "fast_ns_per_dispatch": 95.42907615599593,
+              "fast_samples_ns": [
+                88.2760376969004,
+                95.42907615599593,
+                106.78168667428862,
+                96.65735756478658,
+                90.04102753429878
+              ],
+              "portable_ns_per_dispatch": 206.2289959667175,
+              "portable_over_fast": 2.161070863031297,
+              "portable_samples_ns": [
+                206.5385027629573,
+                191.75167921112805,
+                219.83321424034554,
+                206.2289959667175,
+                199.8789181592988
+              ],
+              "rounds": 123,
+              "saved_ns_per_dispatch": 110.79991981072156,
+              "sequence_length": 2048
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 78.78379378780242,
+              "fast_samples_ns": [
+                78.78379378780242,
+                79.00597750756049,
+                82.86376165574596,
+                77.89187326738912,
+                78.46708826864919
+              ],
+              "portable_ns_per_dispatch": 165.89532273815524,
+              "portable_over_fast": 2.105703657594612,
+              "portable_samples_ns": [
+                161.99783029863912,
+                165.89532273815524,
+                170.24384529359878,
+                166.0770066784274,
+                163.40308798513104
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 87.11152895035282,
+              "sequence_length": 4096
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 126468,
+            "portable": 114128
+          },
+          "compile_ms": {
+            "fast": 2997.313744,
+            "portable": 2811.622198
+          },
+          "correctness": {
+            "fast": 926876509,
+            "portable": 926876509,
+            "reference": 926876509
+          },
+          "routes": 2048,
+          "sites": 1,
+          "source_lines": 8203,
+          "source_sha256": "e56405b5bc2e80927d165a821800cc13b1295a0c033680eef2a4a6419ebd13bf",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 2048,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 2048,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "alternating": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 82.00488675025201,
+              "fast_samples_ns": [
+                80.09890845514113,
+                82.39202683971774,
+                82.00488675025201,
+                81.12625220514113,
+                100.13236753402218
+              ],
+              "portable_ns_per_dispatch": 190.40890404485887,
+              "portable_over_fast": 2.321921431642898,
+              "portable_samples_ns": [
+                190.80533329133064,
+                190.79541803175402,
+                189.36893979964717,
+                182.57546701738912,
+                190.40890404485887
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 108.40401729460686,
+              "sequence_length": 4096
+            },
+            "random": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 114.30099388860887,
+              "fast_samples_ns": [
+                114.30099388860887,
+                116.92178836945564,
+                105.64677576864919,
+                142.65394641507058,
+                112.19527312247983
+              ],
+              "portable_ns_per_dispatch": 254.5489541330645,
+              "portable_over_fast": 2.2270056057529404,
+              "portable_samples_ns": [
+                254.5489541330645,
+                237.06596915952622,
+                245.598392609627,
+                259.62447627898183,
+                267.2553947202621
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 140.24796024445564,
+              "sequence_length": 4096
+            },
+            "sequential": {
+              "dispatch_count_per_timed_call": 251904,
+              "fast_ns_per_dispatch": 87.95802369156505,
+              "fast_samples_ns": [
+                87.32720401422765,
+                89.47620522103658,
+                87.95802369156505,
+                89.05343702362805,
+                87.57405598958333
+              ],
+              "portable_ns_per_dispatch": 192.56852213541666,
+              "portable_over_fast": 2.189322975362434,
+              "portable_samples_ns": [
+                205.62767562245935,
+                190.4400724085366,
+                199.3834714811992,
+                191.3668381605691,
+                192.56852213541666
+              ],
+              "rounds": 123,
+              "saved_ns_per_dispatch": 104.61049844385161,
+              "sequence_length": 2048
+            },
+            "skewed": {
+              "dispatch_count_per_timed_call": 253952,
+              "fast_ns_per_dispatch": 79.61727806829637,
+              "fast_samples_ns": [
+                78.56741431451613,
+                79.8643798828125,
+                79.61727806829637,
+                79.70562941028226,
+                78.45501905871976
+              ],
+              "portable_ns_per_dispatch": 170.192142609627,
+              "portable_over_fast": 2.137628247773489,
+              "portable_samples_ns": [
+                178.29995825982863,
+                178.35791015625,
+                167.03622338079637,
+                170.192142609627,
+                166.5885482295867
+              ],
+              "rounds": 62,
+              "saved_ns_per_dispatch": 90.57486454133064,
+              "sequence_length": 4096
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 2048,
+      "sites": 1,
+      "source_lines": 8203,
+      "source_sha256": "e56405b5bc2e80927d165a821800cc13b1295a0c033680eef2a4a6419ebd13bf",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 2048,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 2048,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "alternating": {
+          "dispatch_count_per_timed_call": 253952,
+          "fast_median_ns_per_dispatch": 82.00488675025201,
+          "fast_process_medians_ns": [
+            84.69869896673387,
+            81.00467017389113,
+            82.00488675025201
+          ],
+          "portable_median_ns_per_dispatch": 190.40890404485887,
+          "portable_over_fast": 2.321921431642898,
+          "portable_process_medians_ns": [
+            198.26008852066533,
+            184.6213615171371,
+            190.40890404485887
+          ],
+          "saved_ns_per_dispatch": 108.40401729460686,
+          "sequence_length": 4096
+        },
+        "random": {
+          "dispatch_count_per_timed_call": 253952,
+          "fast_median_ns_per_dispatch": 105.42991982736895,
+          "fast_process_medians_ns": [
+            105.42991982736895,
+            103.2152335874496,
+            114.30099388860887
+          ],
+          "portable_median_ns_per_dispatch": 246.56932412424396,
+          "portable_over_fast": 2.338703515358608,
+          "portable_process_medians_ns": [
+            236.18098695816533,
+            246.56932412424396,
+            254.5489541330645
+          ],
+          "saved_ns_per_dispatch": 141.139404296875,
+          "sequence_length": 4096
+        },
+        "sequential": {
+          "dispatch_count_per_timed_call": 251904,
+          "fast_median_ns_per_dispatch": 89.50860645325203,
+          "fast_process_medians_ns": [
+            89.50860645325203,
+            95.42907615599593,
+            87.95802369156505
+          ],
+          "portable_median_ns_per_dispatch": 192.56852213541666,
+          "portable_over_fast": 2.151396717766912,
+          "portable_process_medians_ns": [
+            184.00773707444105,
+            206.2289959667175,
+            192.56852213541666
+          ],
+          "saved_ns_per_dispatch": 103.05991568216463,
+          "sequence_length": 2048
+        },
+        "skewed": {
+          "dispatch_count_per_timed_call": 253952,
+          "fast_median_ns_per_dispatch": 79.61727806829637,
+          "fast_process_medians_ns": [
+            84.7849633001512,
+            78.78379378780242,
+            79.61727806829637
+          ],
+          "portable_median_ns_per_dispatch": 166.47006520917338,
+          "portable_over_fast": 2.090878628962597,
+          "portable_process_medians_ns": [
+            166.47006520917338,
+            165.89532273815524,
+            170.192142609627
+          ],
+          "saved_ns_per_dispatch": 86.85278714087701,
+          "sequence_length": 4096
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 14818,
+        "portable": 13420
+      },
+      "compile_ms_median": {
+        "fast": 312.792053,
+        "portable": 287.732154
+      },
+      "correctness": {
+        "fast": 926876203,
+        "portable": 926876203,
+        "reference": 926876203
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 14818,
+            "portable": 13420
+          },
+          "compile_ms": {
+            "fast": 306.394654,
+            "portable": 287.732154
+          },
+          "correctness": {
+            "fast": 926876203,
+            "portable": 926876203,
+            "reference": 926876203
+          },
+          "routes": 64,
+          "sites": 4,
+          "source_lines": 1050,
+          "source_sha256": "0efc69f71fcb4f47b2911e2f56829c7e3adfd16c9470a1030cd8ce2474bf9e5d",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 4,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 4,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 4,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200704,
+              "fast_ns_per_dispatch": 89.50786232461735,
+              "fast_samples_ns": [
+                89.50786232461735,
+                89.26401068239795,
+                89.62742147640306
+              ],
+              "portable_ns_per_dispatch": 104.40552754304846,
+              "portable_over_fast": 1.1664397387170513,
+              "portable_samples_ns": [
+                105.70523258131378,
+                104.40552754304846,
+                103.83882732780613
+              ],
+              "rounds": 98,
+              "saved_ns_per_dispatch": 14.897665218431115,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 14818,
+            "portable": 13420
+          },
+          "compile_ms": {
+            "fast": 312.792053,
+            "portable": 281.694028
+          },
+          "correctness": {
+            "fast": 926876203,
+            "portable": 926876203,
+            "reference": 926876203
+          },
+          "routes": 64,
+          "sites": 4,
+          "source_lines": 1050,
+          "source_sha256": "0efc69f71fcb4f47b2911e2f56829c7e3adfd16c9470a1030cd8ce2474bf9e5d",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 4,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 4,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 4,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200704,
+              "fast_ns_per_dispatch": 86.7603535554847,
+              "fast_samples_ns": [
+                91.30540995695154,
+                86.7603535554847,
+                86.46285574776786
+              ],
+              "portable_ns_per_dispatch": 103.49447444993622,
+              "portable_over_fast": 1.1928775092387074,
+              "portable_samples_ns": [
+                106.68109753667092,
+                103.34397919323979,
+                103.49447444993622
+              ],
+              "rounds": 98,
+              "saved_ns_per_dispatch": 16.73412089445152,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 14818,
+            "portable": 13420
+          },
+          "compile_ms": {
+            "fast": 319.360635,
+            "portable": 298.262145
+          },
+          "correctness": {
+            "fast": 926876203,
+            "portable": 926876203,
+            "reference": 926876203
+          },
+          "routes": 64,
+          "sites": 4,
+          "source_lines": 1050,
+          "source_sha256": "0efc69f71fcb4f47b2911e2f56829c7e3adfd16c9470a1030cd8ce2474bf9e5d",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 4,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 4,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 4,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200704,
+              "fast_ns_per_dispatch": 88.37905572385205,
+              "fast_samples_ns": [
+                88.10795998086735,
+                90.15165617028062,
+                88.37905572385205
+              ],
+              "portable_ns_per_dispatch": 106.09344108737245,
+              "portable_over_fast": 1.2004364633502143,
+              "portable_samples_ns": [
+                106.09344108737245,
+                104.73645268654337,
+                106.33589764030613
+              ],
+              "rounds": 98,
+              "saved_ns_per_dispatch": 17.714385363520407,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 64,
+      "sites": 4,
+      "source_lines": 1050,
+      "source_sha256": "0efc69f71fcb4f47b2911e2f56829c7e3adfd16c9470a1030cd8ce2474bf9e5d",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 256,
+          "gate_count": 4,
+          "gate_offsets": [
+            88,
+            3610,
+            7132,
+            10710
+          ],
+          "gate_units": [
+            2,
+            2,
+            2,
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 4,
+          "binary_route_plan_count": 0,
+          "case_count": 256,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 4,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "random": {
+          "dispatch_count_per_timed_call": 200704,
+          "fast_median_ns_per_dispatch": 88.37905572385205,
+          "fast_process_medians_ns": [
+            89.50786232461735,
+            86.7603535554847,
+            88.37905572385205
+          ],
+          "portable_median_ns_per_dispatch": 104.40552754304846,
+          "portable_over_fast": 1.181337893779636,
+          "portable_process_medians_ns": [
+            104.40552754304846,
+            103.49447444993622,
+            106.09344108737245
+          ],
+          "saved_ns_per_dispatch": 16.026471819196416,
+          "sequence_length": 512
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 29822,
+        "portable": 26604
+      },
+      "compile_ms_median": {
+        "fast": 955.466679,
+        "portable": 552.221161
+      },
+      "correctness": {
+        "fast": 926902647,
+        "portable": 926902647,
+        "reference": 926902647
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 29822,
+            "portable": 26604
+          },
+          "compile_ms": {
+            "fast": 934.414408,
+            "portable": 552.221161
+          },
+          "correctness": {
+            "fast": 926902647,
+            "portable": 926902647,
+            "reference": 926902647
+          },
+          "routes": 64,
+          "sites": 8,
+          "source_lines": 2094,
+          "source_sha256": "3ebe354ce4725d123f691feab0952babc84b11286e7af1be7a22661eeb842f31",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 512,
+              "gate_count": 8,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710,
+                14378,
+                18048,
+                21720,
+                25394
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 8,
+              "binary_route_plan_count": 0,
+              "case_count": 512,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 8,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 163840,
+              "fast_ns_per_dispatch": 91.30734252929688,
+              "fast_samples_ns": [
+                91.30734252929688,
+                90.8050048828125,
+                92.40797119140625
+              ],
+              "portable_ns_per_dispatch": 105.75250854492188,
+              "portable_over_fast": 1.1582037721773595,
+              "portable_samples_ns": [
+                104.791552734375,
+                105.95214233398437,
+                105.75250854492188
+              ],
+              "rounds": 40,
+              "saved_ns_per_dispatch": 14.445166015625006,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 29822,
+            "portable": 26604
+          },
+          "compile_ms": {
+            "fast": 955.466679,
+            "portable": 540.871204
+          },
+          "correctness": {
+            "fast": 926902647,
+            "portable": 926902647,
+            "reference": 926902647
+          },
+          "routes": 64,
+          "sites": 8,
+          "source_lines": 2094,
+          "source_sha256": "3ebe354ce4725d123f691feab0952babc84b11286e7af1be7a22661eeb842f31",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 512,
+              "gate_count": 8,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710,
+                14378,
+                18048,
+                21720,
+                25394
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 8,
+              "binary_route_plan_count": 0,
+              "case_count": 512,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 8,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 163840,
+              "fast_ns_per_dispatch": 89.36396484375,
+              "fast_samples_ns": [
+                91.75960693359374,
+                89.2398193359375,
+                89.36396484375
+              ],
+              "portable_ns_per_dispatch": 103.4684814453125,
+              "portable_over_fast": 1.1578322607577205,
+              "portable_samples_ns": [
+                106.49927978515625,
+                103.4684814453125,
+                103.12416381835938
+              ],
+              "rounds": 40,
+              "saved_ns_per_dispatch": 14.104516601562509,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 29822,
+            "portable": 26604
+          },
+          "compile_ms": {
+            "fast": 967.3598,
+            "portable": 577.104808
+          },
+          "correctness": {
+            "fast": 926902647,
+            "portable": 926902647,
+            "reference": 926902647
+          },
+          "routes": 64,
+          "sites": 8,
+          "source_lines": 2094,
+          "source_sha256": "3ebe354ce4725d123f691feab0952babc84b11286e7af1be7a22661eeb842f31",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 512,
+              "gate_count": 8,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710,
+                14378,
+                18048,
+                21720,
+                25394
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 8,
+              "binary_route_plan_count": 0,
+              "case_count": 512,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 8,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 163840,
+              "fast_ns_per_dispatch": 90.93862915039062,
+              "fast_samples_ns": [
+                90.93862915039062,
+                90.5608154296875,
+                91.33233642578125
+              ],
+              "portable_ns_per_dispatch": 104.6790771484375,
+              "portable_over_fast": 1.1510958338213289,
+              "portable_samples_ns": [
+                104.6790771484375,
+                104.50242309570312,
+                107.12948608398438
+              ],
+              "rounds": 40,
+              "saved_ns_per_dispatch": 13.740447998046875,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 64,
+      "sites": 8,
+      "source_lines": 2094,
+      "source_sha256": "3ebe354ce4725d123f691feab0952babc84b11286e7af1be7a22661eeb842f31",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 512,
+          "gate_count": 8,
+          "gate_offsets": [
+            88,
+            3610,
+            7132,
+            10710,
+            14378,
+            18048,
+            21720,
+            25394
+          ],
+          "gate_units": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 8,
+          "binary_route_plan_count": 0,
+          "case_count": 512,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 8,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "random": {
+          "dispatch_count_per_timed_call": 163840,
+          "fast_median_ns_per_dispatch": 90.93862915039062,
+          "fast_process_medians_ns": [
+            91.30734252929688,
+            89.36396484375,
+            90.93862915039062
+          ],
+          "portable_median_ns_per_dispatch": 104.6790771484375,
+          "portable_over_fast": 1.1510958338213289,
+          "portable_process_medians_ns": [
+            105.75250854492188,
+            103.4684814453125,
+            104.6790771484375
+          ],
+          "saved_ns_per_dispatch": 13.740447998046875,
+          "sequence_length": 512
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 59926,
+        "portable": 52972
+      },
+      "compile_ms_median": {
+        "fast": 3152.244288,
+        "portable": 1250.869373
+      },
+      "correctness": {
+        "fast": 926896687,
+        "portable": 926896687,
+        "reference": 926896687
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 59926,
+            "portable": 52972
+          },
+          "compile_ms": {
+            "fast": 3108.875353,
+            "portable": 1254.19142
+          },
+          "correctness": {
+            "fast": 926896687,
+            "portable": 926896687,
+            "reference": 926896687
+          },
+          "routes": 64,
+          "sites": 16,
+          "source_lines": 4182,
+          "source_sha256": "2929ea42d849947041b0b64699738f820fa97b6827c052e75f07b269b0128ceb",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 16,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710,
+                14378,
+                18048,
+                21720,
+                25394,
+                29070,
+                32748,
+                36428,
+                40110,
+                43794,
+                47480,
+                51168,
+                54858
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 16,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 16,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 204800,
+              "fast_ns_per_dispatch": 90.7984912109375,
+              "fast_samples_ns": [
+                90.7984912109375,
+                92.9653271484375,
+                90.1319287109375
+              ],
+              "portable_ns_per_dispatch": 108.591455078125,
+              "portable_over_fast": 1.1959610080508052,
+              "portable_samples_ns": [
+                173.3885107421875,
+                107.1446337890625,
+                108.591455078125
+              ],
+              "rounds": 25,
+              "saved_ns_per_dispatch": 17.792963867187495,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 59926,
+            "portable": 52972
+          },
+          "compile_ms": {
+            "fast": 3152.244288,
+            "portable": 1187.920668
+          },
+          "correctness": {
+            "fast": 926896687,
+            "portable": 926896687,
+            "reference": 926896687
+          },
+          "routes": 64,
+          "sites": 16,
+          "source_lines": 4182,
+          "source_sha256": "2929ea42d849947041b0b64699738f820fa97b6827c052e75f07b269b0128ceb",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 16,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710,
+                14378,
+                18048,
+                21720,
+                25394,
+                29070,
+                32748,
+                36428,
+                40110,
+                43794,
+                47480,
+                51168,
+                54858
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 16,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 16,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 204800,
+              "fast_ns_per_dispatch": 94.5388232421875,
+              "fast_samples_ns": [
+                94.5388232421875,
+                101.03279296875,
+                92.13025390625
+              ],
+              "portable_ns_per_dispatch": 109.17640625,
+              "portable_over_fast": 1.1548314491953666,
+              "portable_samples_ns": [
+                109.17640625,
+                108.01193359375,
+                109.6707861328125
+              ],
+              "rounds": 25,
+              "saved_ns_per_dispatch": 14.637583007812495,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        },
+        {
+          "code_bytes": {
+            "fast": 59926,
+            "portable": 52972
+          },
+          "compile_ms": {
+            "fast": 3212.161958,
+            "portable": 1250.869373
+          },
+          "correctness": {
+            "fast": 926896687,
+            "portable": 926896687,
+            "reference": 926896687
+          },
+          "routes": 64,
+          "sites": 16,
+          "source_lines": 4182,
+          "source_sha256": "2929ea42d849947041b0b64699738f820fa97b6827c052e75f07b269b0128ceb",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 16,
+              "gate_offsets": [
+                88,
+                3610,
+                7132,
+                10710,
+                14378,
+                18048,
+                21720,
+                25394,
+                29070,
+                32748,
+                36428,
+                40110,
+                43794,
+                47480,
+                51168,
+                54858
+              ],
+              "gate_units": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 16,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 16,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 204800,
+              "fast_ns_per_dispatch": 95.2870751953125,
+              "fast_samples_ns": [
+                91.2470556640625,
+                112.1879443359375,
+                95.2870751953125
+              ],
+              "portable_ns_per_dispatch": 108.0214697265625,
+              "portable_over_fast": 1.1336424116822557,
+              "portable_samples_ns": [
+                108.6078369140625,
+                107.41525390625,
+                108.0214697265625
+              ],
+              "rounds": 25,
+              "saved_ns_per_dispatch": 12.734394531250004,
+              "sequence_length": 512
+            }
+          },
+          "workload": "dispatch"
+        }
+      ],
+      "routes": 64,
+      "sites": 16,
+      "source_lines": 4182,
+      "source_sha256": "2929ea42d849947041b0b64699738f820fa97b6827c052e75f07b269b0128ceb",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 1024,
+          "gate_count": 16,
+          "gate_offsets": [
+            88,
+            3610,
+            7132,
+            10710,
+            14378,
+            18048,
+            21720,
+            25394,
+            29070,
+            32748,
+            36428,
+            40110,
+            43794,
+            47480,
+            51168,
+            54858
+          ],
+          "gate_units": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 16,
+          "binary_route_plan_count": 0,
+          "case_count": 1024,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 16,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "random": {
+          "dispatch_count_per_timed_call": 204800,
+          "fast_median_ns_per_dispatch": 94.5388232421875,
+          "fast_process_medians_ns": [
+            90.7984912109375,
+            94.5388232421875,
+            95.2870751953125
+          ],
+          "portable_median_ns_per_dispatch": 108.591455078125,
+          "portable_over_fast": 1.1486440316687438,
+          "portable_process_medians_ns": [
+            108.591455078125,
+            109.17640625,
+            108.0214697265625
+          ],
+          "saved_ns_per_dispatch": 14.05263183593749,
+          "sequence_length": 512
+        }
+      },
+      "workload": "dispatch"
+    },
+    {
+      "code_bytes": {
+        "fast": 5376,
+        "portable": 5090
+      },
+      "compile_ms_median": {
+        "fast": 83.412879,
+        "portable": 136.430295
+      },
+      "correctness": {
+        "fast": 3216127384,
+        "portable": 3216127384,
+        "reference": 3216127384
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 5376,
+            "portable": 5090
+          },
+          "compile_ms": {
+            "fast": 83.319717,
+            "portable": 141.152982
+          },
+          "correctness": {
+            "fast": 3216127384,
+            "portable": 3216127384,
+            "reference": 3216127384
+          },
+          "routes": 64,
+          "sites": 1,
+          "source_lines": 298,
+          "source_sha256": "58623e1148762e0007938a65c6243c3f6e8a89afdd4b6001ed22890e058505cc",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 64,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 64,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200192,
+              "fast_ns_per_dispatch": 147.19218050671356,
+              "fast_samples_ns": [
+                147.86848625319692,
+                147.10068833919436,
+                147.19218050671356
+              ],
+              "portable_ns_per_dispatch": 198.0668458280051,
+              "portable_over_fast": 1.3456342935212589,
+              "portable_samples_ns": [
+                196.6197350543478,
+                201.64581501758312,
+                198.0668458280051
+              ],
+              "rounds": 391,
+              "saved_ns_per_dispatch": 50.87466532129156,
+              "sequence_length": 512
+            }
+          },
+          "workload": "whole"
+        },
+        {
+          "code_bytes": {
+            "fast": 5376,
+            "portable": 5090
+          },
+          "compile_ms": {
+            "fast": 84.348661,
+            "portable": 136.430295
+          },
+          "correctness": {
+            "fast": 3216127384,
+            "portable": 3216127384,
+            "reference": 3216127384
+          },
+          "routes": 64,
+          "sites": 1,
+          "source_lines": 298,
+          "source_sha256": "58623e1148762e0007938a65c6243c3f6e8a89afdd4b6001ed22890e058505cc",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 64,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 64,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200192,
+              "fast_ns_per_dispatch": 147.8458280051151,
+              "fast_samples_ns": [
+                146.4487991528133,
+                147.8458280051151,
+                148.27219868925832
+              ],
+              "portable_ns_per_dispatch": 194.02282808503836,
+              "portable_over_fast": 1.3123321144937932,
+              "portable_samples_ns": [
+                194.3053768382353,
+                194.02282808503836,
+                193.24712276214834
+              ],
+              "rounds": 391,
+              "saved_ns_per_dispatch": 46.17700007992326,
+              "sequence_length": 512
+            }
+          },
+          "workload": "whole"
+        },
+        {
+          "code_bytes": {
+            "fast": 5376,
+            "portable": 5090
+          },
+          "compile_ms": {
+            "fast": 83.412879,
+            "portable": 133.54823
+          },
+          "correctness": {
+            "fast": 3216127384,
+            "portable": 3216127384,
+            "reference": 3216127384
+          },
+          "routes": 64,
+          "sites": 1,
+          "source_lines": 298,
+          "source_sha256": "58623e1148762e0007938a65c6243c3f6e8a89afdd4b6001ed22890e058505cc",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 64,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 64,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200192,
+              "fast_ns_per_dispatch": 151.1752217870844,
+              "fast_samples_ns": [
+                151.1752217870844,
+                152.08979879315856,
+                148.94099664322252
+              ],
+              "portable_ns_per_dispatch": 195.16860314098466,
+              "portable_over_fast": 1.291009206626868,
+              "portable_samples_ns": [
+                198.42483216112532,
+                194.89293278452686,
+                195.16860314098466
+              ],
+              "rounds": 391,
+              "saved_ns_per_dispatch": 43.99338135390025,
+              "sequence_length": 512
+            }
+          },
+          "workload": "whole"
+        }
+      ],
+      "routes": 64,
+      "sites": 1,
+      "source_lines": 298,
+      "source_sha256": "58623e1148762e0007938a65c6243c3f6e8a89afdd4b6001ed22890e058505cc",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 64,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 64,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "random": {
+          "dispatch_count_per_timed_call": 200192,
+          "fast_median_ns_per_dispatch": 147.8458280051151,
+          "fast_process_medians_ns": [
+            147.19218050671356,
+            147.8458280051151,
+            151.1752217870844
+          ],
+          "portable_median_ns_per_dispatch": 195.16860314098466,
+          "portable_over_fast": 1.3200819108283008,
+          "portable_process_medians_ns": [
+            198.0668458280051,
+            194.02282808503836,
+            195.16860314098466
+          ],
+          "saved_ns_per_dispatch": 47.32277513586956,
+          "sequence_length": 512
+        }
+      },
+      "workload": "whole"
+    },
+    {
+      "code_bytes": {
+        "fast": 21838,
+        "portable": 19866
+      },
+      "compile_ms_median": {
+        "fast": 360.37394,
+        "portable": 411.951547
+      },
+      "correctness": {
+        "fast": 3091477912,
+        "portable": 3091477912,
+        "reference": 3091477912
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 21838,
+            "portable": 19866
+          },
+          "compile_ms": {
+            "fast": 375.547987,
+            "portable": 411.951547
+          },
+          "correctness": {
+            "fast": 3091477912,
+            "portable": 3091477912,
+            "reference": 3091477912
+          },
+          "routes": 256,
+          "sites": 1,
+          "source_lines": 1162,
+          "source_sha256": "c9c3497389376c8e84a74bfb43dc0298a7b27eedcf97bb575c345bcceb947197",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200192,
+              "fast_ns_per_dispatch": 161.97676730338875,
+              "fast_samples_ns": [
+                161.97676730338875,
+                187.69326946131713,
+                159.30776954124042
+              ],
+              "portable_ns_per_dispatch": 230.17098585358056,
+              "portable_over_fast": 1.4210123444583962,
+              "portable_samples_ns": [
+                230.17098585358056,
+                230.13997062819692,
+                246.23261169277492
+              ],
+              "rounds": 391,
+              "saved_ns_per_dispatch": 68.1942185501918,
+              "sequence_length": 512
+            }
+          },
+          "workload": "whole"
+        },
+        {
+          "code_bytes": {
+            "fast": 21838,
+            "portable": 19866
+          },
+          "compile_ms": {
+            "fast": 355.873147,
+            "portable": 408.550774
+          },
+          "correctness": {
+            "fast": 3091477912,
+            "portable": 3091477912,
+            "reference": 3091477912
+          },
+          "routes": 256,
+          "sites": 1,
+          "source_lines": 1162,
+          "source_sha256": "c9c3497389376c8e84a74bfb43dc0298a7b27eedcf97bb575c345bcceb947197",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200192,
+              "fast_ns_per_dispatch": 155.82494804987212,
+              "fast_samples_ns": [
+                155.82494804987212,
+                154.4143122602302,
+                157.25207300991048
+              ],
+              "portable_ns_per_dispatch": 220.09211656809464,
+              "portable_over_fast": 1.4124318302204963,
+              "portable_samples_ns": [
+                220.09211656809464,
+                218.23859594789002,
+                280.85929507672637
+              ],
+              "rounds": 391,
+              "saved_ns_per_dispatch": 64.26716851822252,
+              "sequence_length": 512
+            }
+          },
+          "workload": "whole"
+        },
+        {
+          "code_bytes": {
+            "fast": 21838,
+            "portable": 19866
+          },
+          "compile_ms": {
+            "fast": 360.37394,
+            "portable": 464.088973
+          },
+          "correctness": {
+            "fast": 3091477912,
+            "portable": 3091477912,
+            "reference": 3091477912
+          },
+          "routes": 256,
+          "sites": 1,
+          "source_lines": 1162,
+          "source_sha256": "c9c3497389376c8e84a74bfb43dc0298a7b27eedcf97bb575c345bcceb947197",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 256,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 256,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200192,
+              "fast_ns_per_dispatch": 160.61735733695653,
+              "fast_samples_ns": [
+                160.61735733695653,
+                163.1042049632353,
+                159.01566496163682
+              ],
+              "portable_ns_per_dispatch": 223.04820871962914,
+              "portable_over_fast": 1.3886930554566401,
+              "portable_samples_ns": [
+                219.39084478900256,
+                224.96545816016624,
+                223.04820871962914
+              ],
+              "rounds": 391,
+              "saved_ns_per_dispatch": 62.430851382672614,
+              "sequence_length": 512
+            }
+          },
+          "workload": "whole"
+        }
+      ],
+      "routes": 256,
+      "sites": 1,
+      "source_lines": 1162,
+      "source_sha256": "c9c3497389376c8e84a74bfb43dc0298a7b27eedcf97bb575c345bcceb947197",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 256,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 256,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "random": {
+          "dispatch_count_per_timed_call": 200192,
+          "fast_median_ns_per_dispatch": 160.61735733695653,
+          "fast_process_medians_ns": [
+            161.97676730338875,
+            155.82494804987212,
+            160.61735733695653
+          ],
+          "portable_median_ns_per_dispatch": 223.04820871962914,
+          "portable_over_fast": 1.3886930554566401,
+          "portable_process_medians_ns": [
+            230.17098585358056,
+            220.09211656809464,
+            223.04820871962914
+          ],
+          "saved_ns_per_dispatch": 62.430851382672614,
+          "sequence_length": 512
+        }
+      },
+      "workload": "whole"
+    },
+    {
+      "code_bytes": {
+        "fast": 89416,
+        "portable": 83028
+      },
+      "compile_ms_median": {
+        "fast": 1684.240761,
+        "portable": 1731.629612
+      },
+      "correctness": {
+        "fast": 3108910488,
+        "portable": 3108910488,
+        "reference": 3108910488
+      },
+      "raw_processes": [
+        {
+          "code_bytes": {
+            "fast": 89416,
+            "portable": 83028
+          },
+          "compile_ms": {
+            "fast": 1659.323333,
+            "portable": 1755.900321
+          },
+          "correctness": {
+            "fast": 3108910488,
+            "portable": 3108910488,
+            "reference": 3108910488
+          },
+          "routes": 1024,
+          "sites": 1,
+          "source_lines": 4618,
+          "source_sha256": "cf5ae0e2034047d47b783883ac835878e43c3f7e36dce30adc25c2d399995400",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200704,
+              "fast_ns_per_dispatch": 170.5776815609056,
+              "fast_samples_ns": [
+                172.20946269132654,
+                168.60778559470663,
+                170.5776815609056
+              ],
+              "portable_ns_per_dispatch": 282.0430534518495,
+              "portable_over_fast": 1.6534581245972948,
+              "portable_samples_ns": [
+                282.90220424107144,
+                282.0430534518495,
+                277.83685427295916
+              ],
+              "rounds": 98,
+              "saved_ns_per_dispatch": 111.46537189094391,
+              "sequence_length": 2048
+            }
+          },
+          "workload": "whole"
+        },
+        {
+          "code_bytes": {
+            "fast": 89416,
+            "portable": 83028
+          },
+          "compile_ms": {
+            "fast": 1684.240761,
+            "portable": 1721.350322
+          },
+          "correctness": {
+            "fast": 3108910488,
+            "portable": 3108910488,
+            "reference": 3108910488
+          },
+          "routes": 1024,
+          "sites": 1,
+          "source_lines": 4618,
+          "source_sha256": "cf5ae0e2034047d47b783883ac835878e43c3f7e36dce30adc25c2d399995400",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200704,
+              "fast_ns_per_dispatch": 174.02292928890307,
+              "fast_samples_ns": [
+                175.34459203603316,
+                174.02292928890307,
+                172.73604910714286
+              ],
+              "portable_ns_per_dispatch": 285.1876145966199,
+              "portable_over_fast": 1.6387933231670146,
+              "portable_samples_ns": [
+                288.8722696109694,
+                285.1876145966199,
+                285.02993463010205
+              ],
+              "rounds": 98,
+              "saved_ns_per_dispatch": 111.16468530771681,
+              "sequence_length": 2048
+            }
+          },
+          "workload": "whole"
+        },
+        {
+          "code_bytes": {
+            "fast": 89416,
+            "portable": 83028
+          },
+          "compile_ms": {
+            "fast": 1808.707576,
+            "portable": 1731.629612
+          },
+          "correctness": {
+            "fast": 3108910488,
+            "portable": 3108910488,
+            "reference": 3108910488
+          },
+          "routes": 1024,
+          "sites": 1,
+          "source_lines": 4618,
+          "source_sha256": "cf5ae0e2034047d47b783883ac835878e43c3f7e36dce30adc25c2d399995400",
+          "telemetry": {
+            "fast": {
+              "backend": "cpython313-live-inline-v18",
+              "case_count": 1024,
+              "gate_count": 1,
+              "gate_offsets": [
+                88
+              ],
+              "gate_units": [
+                2
+              ]
+            },
+            "portable": {
+              "backend": "portable-balanced-v18",
+              "balanced_plan_count": 1,
+              "binary_route_plan_count": 0,
+              "case_count": 1024,
+              "direct_plan_count": 0,
+              "statement_template_plan_count": 0,
+              "switch_count": 1,
+              "template_plan_count": 0
+            }
+          },
+          "timings": {
+            "random": {
+              "dispatch_count_per_timed_call": 200704,
+              "fast_ns_per_dispatch": 177.41632952008928,
+              "fast_samples_ns": [
+                177.41632952008928,
+                175.02449378188774,
+                177.57819973692602
+              ],
+              "portable_ns_per_dispatch": 286.032640106824,
+              "portable_over_fast": 1.612211462611934,
+              "portable_samples_ns": [
+                301.7697953204719,
+                286.032640106824,
+                282.08611686862247
+              ],
+              "rounds": 98,
+              "saved_ns_per_dispatch": 108.6163105867347,
+              "sequence_length": 2048
+            }
+          },
+          "workload": "whole"
+        }
+      ],
+      "routes": 1024,
+      "sites": 1,
+      "source_lines": 4618,
+      "source_sha256": "cf5ae0e2034047d47b783883ac835878e43c3f7e36dce30adc25c2d399995400",
+      "telemetry": {
+        "fast": {
+          "backend": "cpython313-live-inline-v18",
+          "case_count": 1024,
+          "gate_count": 1,
+          "gate_offsets": [
+            88
+          ],
+          "gate_units": [
+            2
+          ]
+        },
+        "portable": {
+          "backend": "portable-balanced-v18",
+          "balanced_plan_count": 1,
+          "binary_route_plan_count": 0,
+          "case_count": 1024,
+          "direct_plan_count": 0,
+          "statement_template_plan_count": 0,
+          "switch_count": 1,
+          "template_plan_count": 0
+        }
+      },
+      "timings": {
+        "random": {
+          "dispatch_count_per_timed_call": 200704,
+          "fast_median_ns_per_dispatch": 174.02292928890307,
+          "fast_process_medians_ns": [
+            170.5776815609056,
+            174.02292928890307,
+            177.41632952008928
+          ],
+          "portable_median_ns_per_dispatch": 285.1876145966199,
+          "portable_over_fast": 1.6387933231670146,
+          "portable_process_medians_ns": [
+            282.0430534518495,
+            285.1876145966199,
+            286.032640106824
+          ],
+          "saved_ns_per_dispatch": 111.16468530771681,
+          "sequence_length": 2048
+        }
+      },
+      "workload": "whole"
+    }
+  ],
+  "schema": 1
+}

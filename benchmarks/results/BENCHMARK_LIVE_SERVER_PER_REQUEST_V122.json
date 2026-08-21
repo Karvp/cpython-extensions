@@ -1,0 +1,174 @@
+{
+  "processes": [
+    {
+      "seed": 1,
+      "telemetry": {
+        "portable": {
+          "backend": "portable-expression-template-v18",
+          "mode": "portable",
+          "engine": null
+        },
+        "fast_native": {
+          "backend": "cpython313-live-inline-v18",
+          "mode": "fast",
+          "engine": "native-fused-v1"
+        },
+        "thread_local_native": {
+          "backend": "cpython313-thread-local-v18",
+          "mode": "thread_local",
+          "engine": null
+        }
+      },
+      "timing": {
+        "portable": {
+          "median_ns_per_request": 135.8569482421875,
+          "samples": [
+            139.54513671875,
+            135.8569482421875,
+            136.914150390625,
+            133.3817724609375,
+            128.177880859375
+          ],
+          "checksum": 0
+        },
+        "fast_native": {
+          "median_ns_per_request": 140.9541845703125,
+          "samples": [
+            140.9541845703125,
+            144.3734912109375,
+            135.0813232421875,
+            131.4442431640625,
+            157.4677490234375
+          ],
+          "checksum": 0
+        },
+        "thread_local_native": {
+          "median_ns_per_request": 246.191748046875,
+          "samples": [
+            237.2643701171875,
+            247.666513671875,
+            246.191748046875,
+            218.877646484375,
+            336.5353857421875
+          ],
+          "checksum": 0
+        }
+      }
+    },
+    {
+      "seed": 2,
+      "telemetry": {
+        "portable": {
+          "backend": "portable-expression-template-v18",
+          "mode": "portable",
+          "engine": null
+        },
+        "fast_native": {
+          "backend": "cpython313-live-inline-v18",
+          "mode": "fast",
+          "engine": "native-fused-v1"
+        },
+        "thread_local_native": {
+          "backend": "cpython313-thread-local-v18",
+          "mode": "thread_local",
+          "engine": null
+        }
+      },
+      "timing": {
+        "portable": {
+          "median_ns_per_request": 145.583544921875,
+          "samples": [
+            145.583544921875,
+            173.4984130859375,
+            126.3406298828125,
+            140.1052734375,
+            151.442705078125
+          ],
+          "checksum": 0
+        },
+        "fast_native": {
+          "median_ns_per_request": 144.581455078125,
+          "samples": [
+            202.1333544921875,
+            134.7068408203125,
+            142.9692626953125,
+            144.581455078125,
+            144.9514111328125
+          ],
+          "checksum": 0
+        },
+        "thread_local_native": {
+          "median_ns_per_request": 338.996123046875,
+          "samples": [
+            693.027724609375,
+            236.9409912109375,
+            241.7832373046875,
+            348.5473974609375,
+            338.996123046875
+          ],
+          "checksum": 0
+        }
+      }
+    },
+    {
+      "seed": 3,
+      "telemetry": {
+        "portable": {
+          "backend": "portable-expression-template-v18",
+          "mode": "portable",
+          "engine": null
+        },
+        "fast_native": {
+          "backend": "cpython313-live-inline-v18",
+          "mode": "fast",
+          "engine": "native-fused-v1"
+        },
+        "thread_local_native": {
+          "backend": "cpython313-thread-local-v18",
+          "mode": "thread_local",
+          "engine": null
+        }
+      },
+      "timing": {
+        "portable": {
+          "median_ns_per_request": 131.982158203125,
+          "samples": [
+            134.8524169921875,
+            131.982158203125,
+            129.5646728515625,
+            133.742998046875,
+            124.75015625
+          ],
+          "checksum": 0
+        },
+        "fast_native": {
+          "median_ns_per_request": 138.844267578125,
+          "samples": [
+            150.241474609375,
+            138.844267578125,
+            134.563974609375,
+            134.974345703125,
+            141.34015625
+          ],
+          "checksum": 0
+        },
+        "thread_local_native": {
+          "median_ns_per_request": 213.4151220703125,
+          "samples": [
+            212.208466796875,
+            220.0294287109375,
+            213.4151220703125,
+            210.209462890625,
+            223.56255859375
+          ],
+          "checksum": 0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "portable": 135.8569482421875,
+    "fast_native": 140.9541845703125,
+    "thread_local_native": 246.191748046875
+  }
+}

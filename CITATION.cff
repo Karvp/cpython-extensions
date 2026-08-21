@@ -4,12 +4,13 @@ title: "cpython-extensions"
 type: software
 authors:
   - name: "Mch Stephen"
-version: "1.1.0"
-date-released: "2026-08-21"
+version: "1.2.0"
+date-released: "2026-08-22"
 license: MPL-2.0
 abstract: >-
-  Production-oriented CPython 3.13 language extensions for table-backed
-  switch dispatch, bytecode-level function inlining, and validated local
-  goto, with fail-closed verification and reproducible performance evidence.
+  Production-oriented CPython 3.13 language extensions for table-backed and
+  optional native live switch dispatch, guarded specialization and partial
+  evaluation, bytecode-level function inlining, and validated local goto,
+  with fail-closed verification and reproducible performance evidence.
 repository-code: "https://github.com/Karvp/cpython-extensions"
 url: "https://github.com/Karvp/cpython-extensions"

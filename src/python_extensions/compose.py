@@ -32,8 +32,11 @@ def optimize_extensions(func: F, /) -> F: ...
 def optimize_extensions(
     *,
     switch: bool | Mapping[str, Any] = False,
+    partial: Mapping[str, Any] | bool = False,
     inline: bool | Mapping[str, Any] = False,
     goto: bool | Mapping[str, Any] = False,
+    specialize: bool | Mapping[str, Any] = False,
+    hotpath: bool | Mapping[str, Any] = False,
 ) -> Callable[[F], F]: ...
 
 
@@ -42,23 +45,46 @@ def optimize_extensions(
     /,
     *,
     switch: bool | Mapping[str, Any] = False,
+    partial: Mapping[str, Any] | bool = False,
     inline: bool | Mapping[str, Any] = False,
     goto: bool | Mapping[str, Any] = False,
+    specialize: bool | Mapping[str, Any] = False,
+    hotpath: bool | Mapping[str, Any] = False,
 ):
     """Apply python_extensions transforms in their canonical safe order.
 
-    The order is intentionally fixed as ``switch -> inline -> goto``:
+    The order is intentionally fixed as
+    ``switch -> partial -> inline -> goto -> specialize/hotpath``:
 
-    * switch may recompile source and therefore must run before bytecode-only passes;
-    * inline merges registered callee bytecode into that lowered function;
-    * goto is offset-preserving and resolves pseudo labels after all code growth.
+    * switch may recompile source and therefore runs before bytecode-only passes;
+    * partial removes explicitly frozen parameters and exposes constant/dead-code
+      opportunities before interprocedural optimization;
+    * inline merges registered callee bytecode into that statically simplified body;
+    * goto resolves pseudo labels only after static code growth is complete;
+    * specialize/hotpath wrap the final verified function with guarded variants.
 
-    Each feature accepts ``True`` for defaults or a mapping of decorator options.
+    ``specialize`` and ``hotpath`` are alternatives and cannot both be enabled in
+    one pipeline. Boolean/mapping options follow the individual decorators;
+    ``partial`` accepts a mapping of parameter names to frozen values.
     """
 
     switch_options = _options(switch, "switch")
+    if partial is True:
+        raise TypeError("partial must be False or a mapping of parameter names to frozen values")
+    if partial is False:
+        partial_options = None
+    elif isinstance(partial, Mapping):
+        partial_options = dict(partial)
+        if not partial_options:
+            raise ValueError("partial mapping must bind at least one parameter")
+    else:
+        raise TypeError("partial must be False or a mapping of parameter names to frozen values")
     inline_options = _options(inline, "inline")
     goto_options = _options(goto, "goto")
+    specialize_options = _options(specialize, "specialize")
+    hotpath_options = _options(hotpath, "hotpath")
+    if specialize_options is not None and hotpath_options is not None:
+        raise ValueError("specialize and hotpath are alternative final dispatch layers")
 
     def decorate(target: F) -> F:
         result: F = target
@@ -69,6 +95,12 @@ def optimize_extensions(
 
             result = enable_switch(**switch_options)(result)
             pipeline.append("switch")
+
+        if partial_options is not None:
+            from ._specialize import partial as partial_function
+
+            result = partial_function(result, **partial_options)
+            pipeline.append("partial")
 
         if inline_options is not None:
             try:
@@ -88,6 +120,18 @@ def optimize_extensions(
 
             result = enable_goto(**goto_options)(result)
             pipeline.append("goto")
+
+        if specialize_options is not None:
+            from ._specialize import specialize as specialize_function
+
+            result = specialize_function(**specialize_options)(result)
+            pipeline.append("specialize")
+
+        if hotpath_options is not None:
+            from ._specialize import hotpath as hotpath_function
+
+            result = hotpath_function(**hotpath_options)(result)
+            pipeline.append("hotpath")
 
         final_function = _function_target(result)
         verify_code(final_function.__code__)

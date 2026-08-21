@@ -1,14 +1,15 @@
-# cpython-extensions / `python_extensions` 1.1.0 — Comprehensive Guide
+# cpython-extensions / `python_extensions` 1.2.0 — Comprehensive Guide
 
-`cpython-extensions` is a CPython 3.13 library that adds three opt-in transformation tools while keeping ordinary Python syntax and callables at the boundary:
+`cpython-extensions` is a CPython 3.13 library that adds switch/live dispatch, specialization/partial evaluation, function inlining, and validated local goto while keeping ordinary Python syntax and callables at the boundary:
 
 - **switch** — compiled multi-way dispatch with portable semantics-safe backends and optional live backends.
+- **specialize / partial / hotpath** — static and guarded bytecode partial evaluation with bounded adaptive promotion.
 - **inline** — direct-call bytecode inlining plus local/CFG/dataflow optimization.
 - **goto** — explicit local jumps using `goto .name` / `label .name`, with strict control-flow validation by default.
 
 The distribution name is **`cpython-extensions`**; the import package is **`python_extensions`**.
 
-Version 1.1.0 preserves the production transformation contracts of 1.0.4 and strengthens benchmark evidence, structural regression coverage, release metadata, and documentation. The semantic contracts described here are the supported 1.1.0 behavior; benchmark harnesses measure those contracts but do not redefine them.
+Version 1.2.0 adds specialization/partial evaluation and a renovated optional native live-switch engine while preserving the portable fail-closed defaults. The semantic contracts described here are the supported 1.2.0 behavior; benchmark harnesses measure those contracts but do not redefine them.
 
 ## 1. Installation
 
@@ -25,13 +26,14 @@ py -3.13 -m pip install -e ".[dev]"
 py -3.13 -m pytest
 ```
 
-The supported release line is CPython 3.13.x. The inliner depends on `bytecode>=0.17,<0.18`; switch and goto are lazily usable even when that dependency is not imported yet.
+The supported release line is CPython 3.13.x. Inline and specialization use `bytecode>=0.17,<0.18`. The optional `_livegate` C extension accelerates explicit live switch modes; portable switch and goto remain available without importing it.
 
 ## 2. Start with the safe production defaults
 
 ```python
 from python_extensions import (
     switch, case, fallthrough, enable_switch,
+    partial, specialize, hotpath,
     inline_function, inline_calls,
     enable_goto,
     optimize_extensions,
@@ -45,11 +47,13 @@ Recommended defaults:
 |---|---|---|
 | switch | `@enable_switch` / `mode="auto"` | portable, thread/recursion safe; live mutation is not used unless explicitly requested |
 | switch key semantics | `case_key_mode="python"` | matches ordinary Python dict equality/hash behavior |
+| partial/specialize | explicit bindings/guards | keep frozen assumptions visible and retain generic fallback where required |
+| hotpath | `policy="speed"`, bounded profiling | adapts only when static simplification justifies dispatch overhead |
 | inline policy | `policy="speed"` | skips expansions that do not have a conservative static benefit |
 | inline binding | `binding="frozen"` for immutable hot paths; `binding="guarded"` for mutable targets | choose speed/density versus dynamic rebinding fidelity explicitly |
 | shared inline bodies | `shared_regions="auto"` | activates only for callees explicitly marked `shared_region=True` |
 | goto | `mode="strict"` | rejects invalid jumps across exception-protection boundaries |
-| composition | `switch -> inline -> goto` | this is the library's canonical verified order |
+| composition | `switch -> partial -> inline -> goto -> specialize/hotpath` | this is the library's canonical verified order |
 
 ## 3. Switch: readable multi-way dispatch
 
@@ -143,9 +147,59 @@ def generated(x):
 
 For production, define transformed functions in real modules whenever possible; source files give the best debugger, traceback, coverage, and deployment behavior.
 
-## 4. Inline: remove calls without giving up control
+### 3.6 Live engine selection and workload fit
 
-### 4.1 Register a helper, transform a caller
+Explicit live modes accept `live_engine="auto"`, `"native"`, or `"ctypes"`. `auto` runs the required CPython layout/write self-tests and prefers the optional fused C dispatcher; if the accelerator is unavailable it retains the historical ctypes engine. `native` requires the accelerator and fails explicitly.
+
+The native dispatcher is strongest when one outer call performs many dispatches among many heterogeneous inline bodies, especially dense integer VM/parser workloads. Do **not** infer that live is universally faster from route count alone. Portable direct/expression/statement templates can be both smaller and faster for HTTP/RPC routing, sparse template-friendly protocols, and trivial direct-value switches.
+
+See [`LIVE_SWITCH.md`](LIVE_SWITCH.md) for concurrency contracts, free-threaded restrictions, real-backend benchmark evidence, and server/async guidance.
+
+## 4. Specialization and partial evaluation
+
+### 4.1 Freeze configuration with `partial()`
+
+```python
+from python_extensions import partial
+
+fast_parse = partial(parse, mode="fast")
+```
+
+`partial()` creates a transformed Python function rather than a wrapper. Bound parameters disappear from the effective signature, are re-created as locals in the transformed frame, and can expose safe constant/dead-branch simplification. Use this when the configuration is intentionally fixed when the transformed callable is created.
+
+### 4.2 Declare guarded variants with `specialize()`
+
+```python
+from python_extensions import specialize
+
+@specialize(constants={"mode": "fast"}, types={"value": int})
+def convert(value, mode="safe"):
+    ...
+```
+
+Exact-type and constant guards select a specialized bytecode variant; a guard miss executes the original generic function. `dispatch="auto"` prefers an in-code guard for supported explicit ordinary-function specializations and otherwise uses a wrapper. Bare `@specialize` creates an initially generic dispatcher whose `register_specialization(...)` method can add variants.
+
+### 4.3 Discover runtime shapes with `hotpath()`
+
+```python
+from python_extensions import hotpath
+
+@hotpath(threshold=64, max_variants=1, policy="speed")
+def decode(value, mode):
+    ...
+```
+
+Adaptive discovery is bounded by both `max_profiled_shapes` and a finite `profile_budget`. Megamorphic traffic cannot grow state forever. On eligible one-variant ordinary functions, `backend="auto"` can use CPython 3.13 `sys.monitoring` for warm-up and later install a verified in-frame dispatcher; wrapper fallback handles polymorphism, coroutines, metrics, tool-slot conflicts, and unsupported guard forms.
+
+### 4.4 Semantic guard policy
+
+The optimizer is deliberately conservative around operations that can execute user code. Shadowed `type`/`isinstance`, custom metaclass behavior, arbitrary equality, and unsupported object constants block unsafe folding. Float/complex constant guards preserve signed-zero/NaN-sensitive identities without using arbitrary user equality.
+
+See [`SPECIALIZATION.md`](SPECIALIZATION.md) for the full contract, metrics, limitations, and adversarial qualification coverage.
+
+## 5. Inline: remove calls without giving up control
+
+### 5.1 Register a helper, transform a caller
 
 ```python
 from python_extensions import inline_function, inline_calls
@@ -161,14 +215,14 @@ def hot_path(x):
 
 `register_only=True` makes the helper available to callers but does not rewrite the helper itself. `inline_calls` transforms registered direct calls found in the caller.
 
-### 4.2 `policy="speed"` versus `policy="always"`
+### 5.2 `policy="speed"` versus `policy="always"`
 
 - `speed`: production default. Uses conservative static profitability checks and may leave a normal CALL in place.
 - `always`: prioritize call elimination/code density experiments even when a runtime speed win is not proven.
 
 Do not assume every inlined function is faster. Small calls can already be efficient on modern CPython, and guard/setup/code-cache costs matter.
 
-### 4.3 Frozen versus guarded binding (introduced in 1.0.2)
+### 5.3 Frozen versus guarded binding (introduced in 1.0.2)
 
 #### Frozen binding
 
@@ -213,7 +267,7 @@ Mutable objects *inside* a default remain live when their identity is unchanged,
 For a public library or plugin architecture where monkey-patching/reconfiguration is expected, prefer guarded binding. With `policy="speed"`, a trivial call may intentionally remain uninlined because the guard costs more than the expected benefit.
 
 
-### 4.3.1 Guarded binding is semantic hardening, not a synchronization primitive
+### 5.3.1 Guarded binding is semantic hardening, not a synchronization primitive
 
 Guarded mode protects the *call decision* against stale decoration-time state. It is designed for changes that occur between calls. It does not make arbitrary concurrent mutation of a function, descriptor, partial, or its dependencies transactional. If one thread rewrites a target while another thread is executing that target, use the same application-level synchronization you would need for ordinary Python calls.
 
@@ -232,13 +286,13 @@ A practical matrix:
 | helper dependencies are intentionally frozen | `frozen` or guarded + explicit freeze | snapshot is intentional |
 | target changes continuously under contention | ordinary CALL or external synchronization | guards are not a transaction protocol |
 
-### 4.4 Defaults and argument semantics
+### 5.4 Defaults and argument semantics
 
 The inliner supports positional-only, positional, keyword-only, variadic, defaults, and selected partial/bound-call shapes when it can preserve evaluation order and binding semantics. It deliberately fails closed for unsupported shapes.
 
 A useful rule: **do not rewrite code merely to trick the inliner**. If a shape is left as CALL, treat that as a semantics safeguard unless profiling demonstrates a reason to restructure it.
 
-### 4.5 Closures and foreign globals
+### 5.5 Closures and foreign globals
 
 By default, functions whose closure/global environment cannot be safely merged are rejected or left ordinary.
 
@@ -254,7 +308,7 @@ def helper_from_other_namespace(x): ...
 
 These are snapshot semantics. Use them only when capture is intentional.
 
-### 4.6 Shared inline regions for repeated large helpers
+### 5.6 Shared inline regions for repeated large helpers
 
 Repeatedly duplicating a large helper can increase decoration time and code size. Mark it shareable:
 
@@ -281,7 +335,7 @@ Shared regions append one cloned body and route eligible call sites through fram
 
 Eligibility is deliberately conservative. Statement-separated calls are easier to share than multiple calls buried in one compound expression. If sharing is rejected, the transformer falls back to duplicated inlining or ordinary CALL rather than weakening semantics.
 
-### 4.7 Expansion safety limits
+### 5.7 Expansion safety limits
 
 Inlining has hard limits:
 
@@ -291,7 +345,7 @@ Inlining has hard limits:
 
 Tune them downward in build systems that process untrusted/generated code. Tune upward only after measuring decoration time, code size, import latency, and instruction-cache behavior.
 
-## 5. Goto: structured low-level control flow
+## 6. Goto: structured low-level control flow
 
 ```python
 from python_extensions import enable_goto
@@ -317,7 +371,7 @@ Goto supports generator/coroutine suspension patterns when the resulting edge is
 
 The source-level `goto .name` / `label .name` idea was inspired in part by [Entian's “goto for Python”](https://entrian.com/goto/). This project does not reuse that implementation: `cpython-extensions` performs its own CPython 3.13 lowering and applies strict CFG, exception-region, and final bytecode verification.
 
-## 6. Compose the three extensions safely
+## 7. Compose extensions safely
 
 Use the canonical pipeline rather than manually guessing decorator order:
 
@@ -326,8 +380,10 @@ from python_extensions import optimize_extensions
 
 @optimize_extensions(
     switch={"mode": "auto", "case_key_mode": "typed"},
+    partial={"mode": "fast"},
     inline={"policy": "speed", "binding": "guarded"},
     goto={"mode": "strict"},
+    specialize={"types": {"value": int}},
 )
 def execute(opcode, value):
     ...
@@ -336,13 +392,17 @@ def execute(opcode, value):
 The fixed order is:
 
 1. switch — source-level lowering may rebuild code;
-2. inline — merges registered callee bytecode into the lowered caller;
-3. goto — resolves pseudo labels after code growth;
-4. final verifier — validates the resulting code object.
+2. partial — frozen parameters expose constants/dead branches;
+3. inline — merges registered callee bytecode into the simplified caller;
+4. goto — resolves pseudo labels after static code growth;
+5. specialize/hotpath — alternative guarded final dispatch layers;
+6. final verifier — validates the resulting code object.
+
+`specialize` and `hotpath` cannot both be enabled in one pipeline.
 
 Bare `@optimize_extensions` is validation-only; it does not guess which transformations you wanted.
 
-## 7. Inspect what happened
+## 8. Inspect what happened
 
 ### Verify generated bytecode
 
@@ -371,7 +431,7 @@ Useful questions:
 - How did final code size compare with original code size?
 - Which binding/policy/backend was recorded?
 
-## 8. Registry lifecycle
+## 9. Registry lifecycle
 
 ```python
 from python_extensions import (
@@ -385,7 +445,7 @@ The registry uses weak-reference lifecycle cleanup and transactional registratio
 
 Avoid calling `clear_inline_registry()` from a generic per-test fixture in a large suite if other imported test modules rely on module-level registered helpers; clearing is process-global by design.
 
-## 9. Production patterns
+## 10. Production patterns
 
 ### Command router
 
@@ -452,7 +512,7 @@ def scan(data):
 
 Good fit: generated parsers/interpreters where explicit CFG structure is useful and verified.
 
-## 10. Performance methodology
+## 11. Performance methodology
 
 Measure **three** costs separately:
 
@@ -473,19 +533,22 @@ Interleave variants in separate processes for serious work, pin the same Python 
 
 Do not optimize based solely on generated bytecode length. Smaller code can be slower and larger code can be faster depending on branch prediction, cache behavior, CALL specialization, and workload distribution.
 
-For switch specifically, 1.1.0 includes a generated scaling harness from 2 through 1,024 integer/string routes rather than a fixed-size anecdote. On the committed CPython 3.13.5 run, integer routing reaches about 9.94× over `if/elif` at 64 routes, 38.96× at 256, 71.33× at 512, and 142.90× at 1,024; the 1,024-route string case reaches 83.86×. Two-route native branching remains faster, which is why the public results show the crossover rather than presenting a universal speedup claim. Structural tests guard the mechanism behind the scaling result: direct-value, expression-template, and statement-template executable bytecode remains bounded as route count grows. Guarded/fallthrough-heavy switches may select different backends and should be benchmarked separately.
+The historical 1.1.0 switch-scaling harness remains the portable direct-value reference. Version 1.2.0 adds a separate **real-backend live workload matrix** because direct-value routing and repeated heterogeneous in-frame dispatch are different performance problems. The 1.2.0 evidence compares identical-source portable, ctypes-live, and native-live functions across VM, parser, state-machine, HTTP/RPC, sparse protocol, event, server, threaded, async, and per-request controls.
 
-Use `benchmarks/scripts/benchmark_switch_scaling_v110.py` for route-count sweeps and `benchmarks/scripts/benchmark_extension_benefits_v110.py` for the frozen-inline and explicit-state-machine goto examples. Treat the committed JSON files as release evidence and reproduce the measurements on your own target hardware before making application-specific latency claims.
+On the committed CPython 3.13.5 host, dense integer VM/parser loops show the strongest native-live gains (up to about 2.47× portable at 2,048 random VM routes), while HTTP string routing is approximately tied and direct/template-friendly cases can favor portable. A 10-million-dispatch 1,024-route VM sample remains about 1.95× faster native; a comparable HTTP loop remains essentially tied.
 
-## 11. Threading, async, recursion, and multiprocessing
+Use `benchmark_switch_scaling_v110.py` for portable direct-value scaling, `benchmark_switch_live_dispatch_v121.py` for identical-source live-vs-portable general routing, and the `benchmark_live_*_v122.py` drivers for cross-task qualification. `v121`/`v122` are engineering evidence identifiers, not package versions. Reproduce measurements on your own target hardware before making application-specific latency claims.
 
-- Portable switch is the default for shared/threaded/recursive/async code.
+## 12. Threading, async, recursion, and multiprocessing
+
+- Portable switch is the default for shared/threaded/recursive/async code. Live mode is rejected on free-threaded CPython 3.13.
 - Guarded inline calls add no registry lock to the runtime fast path; registration/decorating is synchronized separately.
 - A transformed ordinary function can be called concurrently when its own Python logic is thread-safe.
-- Explicit live switch modes have different re-entry/concurrency contracts; use `isolated` when you truly need live dispatch in concurrent environments.
+- Explicit live switch modes have different re-entry/concurrency contracts; use `isolated` when you truly need live dispatch in concurrent environments. `fast` requires a proven single-active-call model.
+- `hotpath()` profiling is bounded by shape count and a finite profiling budget; adaptive state does not grow without bound.
 - Multiprocessing works like normal Python module import: build transformed functions at import time or import pre-transformed module definitions in workers. Ensure dynamically generated source is reproducible in each worker.
 
-## 12. Debugging and failure modes
+## 13. Debugging and failure modes
 
 ### Switch errors
 
@@ -507,7 +570,7 @@ Common reasons a call remains ordinary or raises during decoration:
 
 Strict mode rejects missing/duplicate labels, invalid stack edges, and cross-region exception semantics. Fix the control flow rather than switching to `unsafe` unless you are intentionally experimenting with raw behavior.
 
-## 13. Compatibility imports
+## 14. Compatibility imports
 
 The preferred API is:
 
@@ -515,9 +578,9 @@ The preferred API is:
 import python_extensions as pe
 ```
 
-Compatibility modules `pyswitch`, `inline_function`, and `pygoto` remain available for older code. New applications should prefer the unified package so composition/reporting/version behavior stays consistent.
+Compatibility modules `pyswitch`, `inline_function`, `pygoto`, and `pyspecialize` remain available for direct/older imports. New applications should prefer the unified package so composition/reporting/version behavior stays consistent.
 
-## 14. Release checklist for applications using the package
+## 15. Release checklist for applications using the package
 
 Before deploying a transformed module:
 
@@ -526,7 +589,7 @@ Before deploying a transformed module:
 3. Benchmark representative runtime traffic and record decoration/import time.
 4. Use `binding="guarded"` anywhere targets may be rebound, monkey-patched, hot-reloaded, or have defaults/code replaced.
 5. Use `binding="frozen"` only where snapshot semantics are intentional.
-6. Keep switch on `auto`/`portable` unless a live mode has a demonstrated benefit and its concurrency contract is proven.
+6. Keep switch on `auto`/`portable` unless the real workload demonstrates a live benefit and its concurrency/re-entry contract is proven; do not use route count alone.
 7. Keep goto on `strict`.
 8. Mark large repeated inline helpers `shared_region=True` and confirm `calls_shared` in stats.
 9. Keep expansion/code-size limits finite.
@@ -534,7 +597,7 @@ Before deploying a transformed module:
 11. Pin the package version and the supported `bytecode` dependency range in reproducible deployments.
 12. Keep the wheel/sdist hashes used for production deployment.
 
-## 15. Decision cheat sheet
+## 16. Decision cheat sheet
 
 If you want **readable multi-way dispatch**, start with `@enable_switch`.
 
@@ -550,7 +613,7 @@ If a function uses multiple extensions, use `@optimize_extensions(...)` instead 
 
 If a transformation is skipped, inspect the report/stats first. A conservative non-transform is normally preferable to an optimization that changes Python semantics.
 
-## 16. Historical migration note: 1.0.1 to 1.0.2
+## 17. Historical migration note: 1.0.1 to 1.0.2
 
 1.0.2 is source-compatible with the normal 1.0.1 API. Existing callers continue to use `binding="frozen"` unless they opt in to guarded semantics, so upgrading does not silently add runtime target checks.
 
@@ -565,9 +628,9 @@ Recommended migration audit:
 
 No import rename is required: the distribution installed by pip is `cpython-extensions`, while code still imports `python_extensions`.
 
-## 17. Public API reference
+## 18. Public API reference
 
-These signatures are the 1.1.0 production surface. Defaults shown here matter because several options deliberately select different semantic/performance contracts.
+These signatures are the 1.2.0 production surface. Defaults shown here matter because several options deliberately select different semantic/performance contracts.
 
 ### Switch
 
@@ -583,10 +646,41 @@ enable_switch(
     expose_debug=False,
     case_key_mode="python",
     compact_routes=False,
+    live_engine="auto",
 )
 ```
 
 Marker API inside a transformed function: `with switch(subject):`, `case(*keys, when=...)`, `case()` for default, and `fallthrough()` for explicit continuation. Prefer `mode="auto"`, `case_key_mode="python"`, and `compact_routes=False` until a representative benchmark justifies another choice.
+
+### Partial evaluation and specialization
+
+```python
+partial(function=None, /, *args, **kwargs)
+
+specialize(
+    function=None, /, *,
+    constants=None,
+    types=None,
+    policy="always",
+    max_variants=4,
+    dispatch="auto",
+)
+
+hotpath(
+    function=None, /, *,
+    threshold=64,
+    max_variants=1,
+    types=True,
+    constants="auto",
+    policy="speed",
+    max_profiled_shapes=64,
+    profile_budget=None,
+    metrics=False,
+    backend="auto",
+)
+```
+
+See [`SPECIALIZATION.md`](SPECIALIZATION.md) for exact guard/profiling semantics.
 
 ### Inline registration / transformation
 
@@ -650,27 +744,32 @@ Markers are `label .name` and `goto .name`. Keep strict mode unless the applicat
 optimize_extensions(
     func=None, /, *,
     switch=False,
+    partial=False,
     inline=False,
     goto=False,
+    specialize=False,
+    hotpath=False,
 )
 
 verify_code(code, *, raise_on_error=True)
 explain_extensions(function) -> str
 ```
 
-Each `switch` / `inline` / `goto` argument to `optimize_extensions` is either `False`, `True` for that extension's defaults, or an option mapping. Example:
+Each transform argument to `optimize_extensions` is `False`, `True` where supported, or an option mapping. `partial` specifically accepts a mapping of frozen parameter values. `specialize` and `hotpath` are mutually exclusive. Example:
 
 ```python
 @optimize_extensions(
     switch={"mode": "auto", "case_key_mode": "typed"},
+    partial={"mode": "fast"},
     inline={"policy": "speed", "binding": "guarded"},
     goto={"mode": "strict"},
+    specialize={"types": {"value": int}},
 )
 def execute(opcode, value):
     ...
 ```
 
-## 18. Troubleshooting quick table
+## 19. Troubleshooting quick table
 
 | Symptom | Likely reason | Preferred response |
 |---|---|---|
@@ -682,10 +781,12 @@ def execute(opcode, value):
 | shared region did not activate | call shape/body below eligibility threshold | inspect stats; use statement-separated calls; do not weaken semantics merely to force sharing |
 | cross-module helper is declined | global namespace cannot be merged safely | keep ordinary CALL or intentionally use `freeze_globals=True` with snapshot semantics |
 | strict goto rejects a jump | stack/exception-region edge is unsafe | restructure control flow; do not paper over it with unsafe mode |
-| optional bytecode dependency missing | inline subsystem requested without dependency | install `bytecode>=0.17,<0.18` / normal distribution dependencies |
+| optional bytecode dependency missing | inline/specialization subsystem requested without dependency | install `bytecode>=0.17,<0.18` / normal distribution dependencies |
+| `live_engine="native"` unavailable | platform wheel/source build lacks `_livegate` or self-test failed | use `auto`/`ctypes`, install a wheel with the accelerator, or rebuild with a C compiler |
+| hotpath never promotes | shape is not inferred/profitable or profiling budget ends first | inspect specialization stats; declare an explicit `specialize()` variant when appropriate |
 | transformed behavior differs only under tracing/profiling | aggressive optimization changed observability | return to conservative fusion/stack settings and test with your instrumentation |
 
-## 19. What not to do
+## 20. What not to do
 
 - Do not use `fast` live switch mode in shared/reentrant code simply because its name sounds best.
 - Do not choose `policy="always"` globally; forced inlining can increase runtime and import cost.

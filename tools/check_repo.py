@@ -170,51 +170,67 @@ def main() -> int:
                     f"broken local markdown link in {path.relative_to(ROOT)}: {href}"
                 )
 
-    version_token = "V" + "".join(version.split("."))
-    benchmark_evidence = ROOT / f"benchmarks/results/BENCHMARK_SWITCH_SCALING_{version_token}.json"
-    if benchmark_evidence.is_file():
+    # Release 1.2.0 introduces a new real-backend evidence schema.  Keep the
+    # historical portable scaling files immutable, but require the extensive
+    # live workload matrix for the current release instead of fabricating a
+    # V120 copy of older evidence.
+    live_evidence = ROOT / "benchmarks/results/BENCHMARK_LIVE_EXTENSIVE_V122.json"
+    if not live_evidence.is_file():
+        errors.append(f"current-release live benchmark evidence is missing: {live_evidence.relative_to(ROOT)}")
+    else:
         try:
-            benchmark = json.loads(benchmark_evidence.read_text(encoding="utf-8"))
+            live = json.loads(live_evidence.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            errors.append(f"cannot read switch benchmark evidence: {exc}")
+            errors.append(f"cannot read live benchmark evidence: {exc}")
         else:
-            if benchmark.get("package_version") != version:
-                errors.append("switch benchmark evidence package_version does not match release version")
-            rows = {
-                (row.get("key_kind"), row.get("size")): row
-                for row in benchmark.get("rows", [])
+            if live.get("schema") != "cpython-extensions-live-v122-extensive-certification":
+                errors.append("unexpected live benchmark evidence schema")
+            if int(live.get("broad_timed_dispatches", 0)) < 200_000_000:
+                errors.append("live benchmark evidence does not contain the certified broad workload volume")
+            correctness = live.get("correctness", {})
+            if correctness.get("pytest") != "450 passed":
+                errors.append("live benchmark evidence does not record the 450-test correctness gate")
+            if int(correctness.get("live_harness_full_calls", 0)) < 1_239_100:
+                errors.append("live benchmark evidence does not record the full live compatibility harness")
+
+            rows = [row for row in live.get("broad_matrix", []) if isinstance(row, dict)]
+            row_keys = {(row.get("kind"), row.get("routes"), row.get("pattern")) for row in rows}
+            required_rows = {
+                ("vm_dense", 64, "random"),
+                ("vm_dense", 1024, "random"),
+                ("parser_int", 256, "skewed"),
+                ("http_server", 64, "random"),
+                ("protocol_sparse", 256, "random"),
+                ("direct_control", 256, "random"),
+            }
+            for row_key in sorted(required_rows):
+                if row_key not in row_keys:
+                    errors.append(f"live benchmark evidence missing workload row: {row_key}")
+            vm_2048 = {
+                (row.get("routes"), row.get("pattern")): row
+                for row in live.get("vm_2048", [])
                 if isinstance(row, dict)
             }
-            for key_kind in ("int", "str"):
-                for size in (2, 4, 8, 16, 32, 64, 128, 256, 512, 1024):
-                    if (key_kind, size) not in rows:
-                        errors.append(f"switch benchmark evidence missing {key_kind}/{size} row")
-            readme = (ROOT / "README.md").read_text(encoding="utf-8")
-            int_1024 = rows.get(("int", 1024))
-            str_1024 = rows.get(("str", 1024))
-            if int_1024:
-                speedup = f"{float(int_1024['speedup_vs_if_elif']):.2f}×"
-                if speedup not in readme:
-                    errors.append(f"README switch benchmark is not synchronized with evidence ({speedup})")
-            if str_1024:
-                speedup = f"{float(str_1024['speedup_vs_if_elif']):.2f}×"
-                if speedup not in readme:
-                    errors.append(f"README string benchmark is not synchronized with evidence ({speedup})")
-    else:
-        errors.append(f"current-release switch benchmark evidence is missing: {benchmark_evidence.relative_to(ROOT)}")
+            if (2048, "random") not in vm_2048:
+                errors.append("live benchmark evidence missing 2048-route VM random row")
 
-    for stem in ("BENCHMARK_EXTENSION_BENEFITS", "BENCHMARK_README_BASELINE"):
-        evidence = ROOT / f"benchmarks/results/{stem}_{version_token}.json"
+            readme = (ROOT / "README.md").read_text(encoding="utf-8")
+            if "202,798,080" not in readme:
+                errors.append("README live benchmark volume is not synchronized with evidence")
+            if "2.47×" not in readme:
+                errors.append("README 2048-route live VM result is not synchronized with evidence")
+
+    # These are intentionally historical evidence IDs.  Their package_version
+    # fields remain tied to the release that generated them; 1.2.0 docs point
+    # to them as controls rather than rewriting their provenance.
+    for rel in (
+        "benchmarks/results/BENCHMARK_SWITCH_SCALING_V110.json",
+        "benchmarks/results/BENCHMARK_EXTENSION_BENEFITS_V110.json",
+        "benchmarks/results/BENCHMARK_README_BASELINE_V110.json",
+    ):
+        evidence = ROOT / rel
         if not evidence.is_file():
-            errors.append(f"current-release benchmark evidence is missing: {evidence.relative_to(ROOT)}")
-            continue
-        try:
-            payload = json.loads(evidence.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            errors.append(f"cannot read {evidence.relative_to(ROOT)}: {exc}")
-            continue
-        if payload.get("package_version") != version:
-            errors.append(f"benchmark evidence package_version does not match release version: {evidence.relative_to(ROOT)}")
+            errors.append(f"historical benchmark control is missing: {rel}")
 
     license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
     if not license_text.startswith("Mozilla Public License Version 2.0"):

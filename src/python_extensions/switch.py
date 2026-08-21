@@ -44,6 +44,7 @@ import linecache
 import os
 import platform
 import sys
+import sysconfig
 import struct
 import textwrap
 import threading
@@ -57,6 +58,25 @@ from typing import Any, TypeVar, overload
 from ._core import attach_report, make_report, verify_code
 
 from ._version import __version__
+
+_FREE_THREADED_BUILD = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
+if _FREE_THREADED_BUILD:
+    # Importing a C extension which does not declare free-threading support may
+    # enable the GIL as a side effect on 3.13.  Do not let an optional fast-path
+    # accelerator silently change interpreter-wide threading behavior merely
+    # because python_extensions.switch was imported.
+    _native_livegate = None
+    _NATIVE_LIVE_IMPORT_ERROR = "disabled on free-threaded CPython build"
+else:
+    try:
+        from . import _livegate as _native_livegate
+    except Exception as _native_livegate_import_exc:  # optional binary accelerator
+        _native_livegate = None
+        _NATIVE_LIVE_IMPORT_ERROR = (
+            f"{type(_native_livegate_import_exc).__name__}: {_native_livegate_import_exc}"
+        )
+    else:
+        _NATIVE_LIVE_IMPORT_ERROR = None
 
 __all__ = [
     "SwitchError", "SwitchSyntaxError", "DuplicateCaseError",
@@ -136,7 +156,7 @@ def _live_runtime_reason() -> str | None:
         return f"live backend requires CPython 3.13.x, got {sys.version.split()[0]}"
     if _EXTENDED_ARG < 0 or _JUMP_OPCODE < 0:
         return "required CPython jump opcodes are unavailable"
-    if hasattr(sys, "_is_gil_enabled") and not sys._is_gil_enabled():
+    if _FREE_THREADED_BUILD:
         return "live backend is disabled on free-threaded CPython; use mode='portable'"
     return None
 
@@ -144,6 +164,9 @@ def _live_runtime_reason() -> str | None:
 _LIVE_SELF_TESTED = False
 _LIVE_SELF_TEST_ERROR: str | None = None
 _LIVE_SELF_TEST_LOCK = threading.Lock()
+_NATIVE_LIVE_SELF_TESTED = False
+_NATIVE_LIVE_SELF_TEST_ERROR: str | None = None
+_NATIVE_LIVE_SELF_TEST_LOCK = threading.Lock()
 
 
 def _self_test_live_layout() -> None:
@@ -237,8 +260,73 @@ def _self_test_live_layout() -> None:
             _LIVE_SELF_TESTED = True
 
 
+def _self_test_native_livegate() -> None:
+    """Validate the optional fused C dispatcher before binding it to code bytes."""
+    global _NATIVE_LIVE_SELF_TESTED, _NATIVE_LIVE_SELF_TEST_ERROR
+    if _NATIVE_LIVE_SELF_TESTED:
+        if _NATIVE_LIVE_SELF_TEST_ERROR is not None:
+            raise UnsupportedRuntimeError(_NATIVE_LIVE_SELF_TEST_ERROR)
+        return
+    with _NATIVE_LIVE_SELF_TEST_LOCK:
+        if _NATIVE_LIVE_SELF_TESTED:
+            if _NATIVE_LIVE_SELF_TEST_ERROR is not None:
+                raise UnsupportedRuntimeError(_NATIVE_LIVE_SELF_TEST_ERROR)
+            return
+        try:
+            if _native_livegate is None:
+                detail = _NATIVE_LIVE_IMPORT_ERROR or "extension was not built"
+                raise UnsupportedRuntimeError(
+                    f"native live dispatcher is unavailable: {detail}"
+                )
+            for width in _CELL_TYPES:
+                raw = (ctypes.c_ubyte * (width * 2))()
+                sample_arg = min(0x55AA, _MAX_ARGS[width])
+                encoded = _encode_jump(sample_arg, width)
+                dispatcher = _native_livegate.make_dispatcher(
+                    {0: encoded}, width, encoded, False, False, False
+                )
+                _native_livegate.bind_dispatcher(
+                    dispatcher, ctypes.addressof(raw)
+                )
+                dispatcher(0)
+                expected = encoded.to_bytes(width * 2, sys.byteorder)
+                if bytes(raw) != expected:
+                    raise UnsupportedRuntimeError(
+                        f"native live-dispatch store self-test failed for width {width}"
+                    )
+        except Exception as exc:
+            _NATIVE_LIVE_SELF_TEST_ERROR = str(exc)
+            _NATIVE_LIVE_SELF_TESTED = True
+            if isinstance(exc, UnsupportedRuntimeError):
+                raise
+            raise UnsupportedRuntimeError(_NATIVE_LIVE_SELF_TEST_ERROR) from exc
+        else:
+            _NATIVE_LIVE_SELF_TEST_ERROR = None
+            _NATIVE_LIVE_SELF_TESTED = True
+
+
 def _require_runtime() -> None:
     _self_test_live_layout()
+
+
+def _resolve_live_engine(requested: str) -> str:
+    """Resolve the hot-path mutation engine with a semantics-safe fallback."""
+    if requested not in {"auto", "native", "ctypes"}:
+        raise ValueError("live_engine must be 'auto', 'native', or 'ctypes'")
+    _require_runtime()
+    if requested == "ctypes":
+        return "ctypes"
+    if requested == "native":
+        _self_test_native_livegate()
+        return "native"
+    if _native_livegate is not None:
+        try:
+            _self_test_native_livegate()
+        except UnsupportedRuntimeError:
+            pass
+        else:
+            return "native"
+    return "ctypes"
 
 
 def _live_address(code: types.CodeType, byte_offset: int = 0) -> int:
@@ -300,6 +388,7 @@ class _Plan:
         "table_marker", "getter_marker", "pointer_marker", "default_marker", "gate_marker_a", "gate_marker_b",
         "gate_temp_a", "gate_temp_b", "index_name", "key_groups", "has_default",
         "case_markers", "fallback_marker", "target_temp", "extra_constants",
+        "native_fused",
     )
 
     def __init__(
@@ -319,6 +408,7 @@ class _Plan:
         fallback_marker: bytes,
         target_temp: str,
         extra_constants: dict[bytes, Any] | None = None,
+        native_fused: bool = False,
     ) -> None:
         self.table_marker = table_marker
         self.getter_marker = getter_marker
@@ -335,6 +425,7 @@ class _Plan:
         self.fallback_marker = fallback_marker
         self.target_temp = target_temp
         self.extra_constants = extra_constants or {}
+        self.native_fused = native_fused
 
 
 def _name(node: ast.AST) -> str | None:
@@ -613,10 +704,14 @@ def _portable_lookup_call(
 
 
 class _Transformer(ast.NodeTransformer):
-    def __init__(self, func: Callable[..., Any], case_key_mode: str = "python") -> None:
+    def __init__(
+        self, func: Callable[..., Any], case_key_mode: str = "python", *,
+        native_fused: bool = False,
+    ) -> None:
         self.plans: list[_Plan] = []
         self.environment = _closure_environment(func)
         self.case_key_mode = _validate_case_key_mode(case_key_mode)
+        self.native_fused = native_fused
         self._root_seen = False
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.AST:
@@ -726,6 +821,14 @@ class _Transformer(ast.NodeTransformer):
             ctx=ast.Store(),
         )
         subject_expr = self.visit(call.args[0])
+        native_dispatch = ast.Expr(
+            ast.Call(
+                func=ast.Constant(getter_marker),
+                args=[copy.deepcopy(subject_expr)],
+                keywords=[],
+            )
+        )
+        ast.copy_location(native_dispatch, node)
         subject_assign = ast.Assign(
             [ast.Name(subject_temp, ast.Store())],
             subject_expr,
@@ -791,9 +894,11 @@ class _Transformer(ast.NodeTransformer):
         cleanup_subject = ast.Delete([ast.Name(subject_temp, ast.Del())])
         ast.copy_location(cleanup_subject, node)
 
-        # Reserve four consecutive code units without runtime padding:
-        # LOAD_CONST/STORE_FAST + LOAD_CONST/STORE_FAST. Finalization overwrites
-        # the leading 1, 2, or 4 units with a computed unconditional jump.
+        # Reserve at least four code units without runtime padding:
+        # LOAD_CONST/STORE_FAST + LOAD_CONST/STORE_FAST. Large functions may
+        # add EXTENDED_ARG prefixes for marker/local operands; finalization
+        # deliberately treats those prefixes as part of the writable gate and
+        # overwrites the leading 1, 2, or 4 units with an unconditional jump.
         gate_reserve = [
             ast.Assign(
                 [ast.Name(gate_temp_a, ast.Store())],
@@ -850,13 +955,25 @@ class _Transformer(ast.NodeTransformer):
                 case_markers,
                 fallback_marker,
                 target_temp,
-                extra_constants={
-                    typeerror_marker: TypeError,
-                    unhashable_marker: _hash_is_disabled,
-                    **({type_marker: type} if self.case_key_mode == "typed" else {}),
-                },
+                extra_constants=(
+                    {}
+                    if self.native_fused
+                    else {
+                        typeerror_marker: TypeError,
+                        unhashable_marker: _hash_is_disabled,
+                        **({type_marker: type} if self.case_key_mode == "typed" else {}),
+                    }
+                ),
+                native_fused=self.native_fused,
             )
         )
+        if self.native_fused:
+            # The fused native METH_O dispatcher owns lookup, intrinsic-
+            # unhashable recovery, and the raw gate store in one C call.  Its
+            # argument keeps the exact evaluated subject alive while errors are
+            # classified, so no synthetic staging local or Python exception
+            # scaffold is needed on this engine.
+            return [native_dispatch, *gate_reserve, scaffold]
         return [subject_assign, patch_stmt, cleanup_subject, *gate_reserve, scaffold]
 
 
@@ -898,7 +1015,7 @@ def _contains_direct_self_call(fn_node: ast.FunctionDef | ast.AsyncFunctionDef) 
 
 def _locate(
     code: types.CodeType, plan: _Plan
-) -> tuple[int, list[int], int, int, int, int]:
+) -> tuple[int, list[int], int, int, int | None, int | None]:
     """Return gate prefix offset, body targets, fallback, and marker indexes."""
     ins = list(dis.get_instructions(code, show_caches=True, adaptive=False))
     getter_const_index = None
@@ -914,27 +1031,53 @@ def _locate(
         elif op.opname == "LOAD_CONST" and op.argval == plan.default_marker:
             default_const_index = op.arg
 
+    def _next_effective(index: int) -> int:
+        # Large functions may need EXTENDED_ARG prefixes for the synthetic
+        # marker constants or temporary-local indexes.  Those prefixes are
+        # real code units, not semantic instructions in the gate pattern.
+        # CACHE entries are likewise transparent while matching the scaffold.
+        while index < len(ins) and ins[index].opname in {"EXTENDED_ARG", "CACHE"}:
+            index += 1
+        return index
+
+    def _instruction_prefix_start(index: int) -> int:
+        # A live jump must overwrite any EXTENDED_ARG units that prefix the
+        # first reserved LOAD_CONST.  Starting at the LOAD_CONST itself would
+        # leave a stale prefix executing immediately before JUMP_FORWARD and
+        # corrupt its argument on functions with >255 constants.
+        while (
+            index > 0
+            and ins[index - 1].opname == "EXTENDED_ARG"
+            and ins[index - 1].offset + _WORD == ins[index].offset
+        ):
+            index -= 1
+        return index
+
     for i, op in enumerate(ins):
         if op.opname != "LOAD_CONST" or op.argval != plan.gate_marker_a:
             continue
-        if i + 3 >= len(ins):
-            continue
+        store_a = _next_effective(i + 1)
+        load_b = _next_effective(store_a + 1) if store_a < len(ins) else len(ins)
+        store_b = _next_effective(load_b + 1) if load_b < len(ins) else len(ins)
         if (
-            ins[i + 1].opname == "STORE_FAST"
-            and ins[i + 1].argval == plan.gate_temp_a
-            and ins[i + 2].opname == "LOAD_CONST"
-            and ins[i + 2].argval == plan.gate_marker_b
-            and ins[i + 3].opname == "STORE_FAST"
-            and ins[i + 3].argval == plan.gate_temp_b
+            store_b < len(ins)
+            and ins[store_a].opname == "STORE_FAST"
+            and ins[store_a].argval == plan.gate_temp_a
+            and ins[load_b].opname == "LOAD_CONST"
+            and ins[load_b].argval == plan.gate_marker_b
+            and ins[store_b].opname == "STORE_FAST"
+            and ins[store_b].argval == plan.gate_temp_b
         ):
-            gate_prefix = op.offset
+            gate_prefix = ins[_instruction_prefix_start(i)].offset
             break
 
     if (
         gate_prefix is None
         or getter_const_index is None
-        or pointer_const_index is None
-        or default_const_index is None
+        or (
+            not plan.native_fused
+            and (pointer_const_index is None or default_const_index is None)
+        )
     ):
         raise SwitchError(
             "failed to locate inline switch gate or constant markers"
@@ -945,9 +1088,7 @@ def _locate(
     for i, op in enumerate(ins):
         if op.opname != "LOAD_CONST" or op.argval not in wanted:
             continue
-        j = i + 1
-        while j < len(ins) and ins[j].opname == "CACHE":
-            j += 1
+        j = _next_effective(i + 1)
         if (
             j >= len(ins)
             or ins[j].opname != "STORE_FAST"
@@ -3898,8 +4039,10 @@ def _compile(
     allow_direct_recursion: bool = False,
     explicit_source: str | None = None,
     case_key_mode: str = "python",
+    live_engine: str = "auto",
 ) -> F:
-    _require_runtime()
+    resolved_live_engine = _resolve_live_engine(live_engine)
+    use_native_fused = resolved_live_engine == "native"
     source, first_line = _source_for_function(func, explicit_source)
     module = ast.parse(source, func.__code__.co_filename)
     fn_node = _find_function(module, func.__name__)
@@ -3908,7 +4051,9 @@ def _compile(
             "direct recursion requires enable_switch(mode='isolated')"
         )
     fn_node.decorator_list = []
-    transformer = _Transformer(func, case_key_mode)
+    transformer = _Transformer(
+        func, case_key_mode, native_fused=use_native_fused
+    )
     transformer.visit(fn_node)
     if not transformer.plans:
         raise SwitchSyntaxError("function contains no switch block")
@@ -3922,7 +4067,11 @@ def _compile(
     for location_node in ast.walk(module):
         lineno = getattr(location_node, "lineno", None)
         end_lineno = getattr(location_node, "end_lineno", None)
-        if lineno is not None and lineno <= 0 and (end_lineno is None or end_lineno <= 0):
+        if (
+            lineno is not None
+            and lineno <= 0
+            and (end_lineno is None or end_lineno <= 0)
+        ):
             location_node.end_lineno = 1
     generated = _execute_transformed_function(func, module, fn_node)
 
@@ -3945,11 +4094,13 @@ def _compile(
         _rebind_recursive_self_closure(previous_generated, generated)
 
     constants = list(generated.__code__.co_consts)
-    installs: list[tuple[_Plan, int, Any, int]] = []
+    ctypes_installs: list[tuple[_Plan, int, Any, int]] = []
+    native_installs: list[tuple[_Plan, int, Any, int]] = []
     metadata_tables: list[dict[Hashable, int]] = []
     gate_offsets: list[int] = []
     gate_widths: list[int] = []
     pointer_indexes: list[int] = []
+    dispatcher_indexes: list[int] = []
 
     for plan in transformer.plans:
         (
@@ -3970,15 +4121,43 @@ def _compile(
             )
             for key in keys:
                 table[_case_identity(key, case_key_mode)] = encoded
-        pointer = _new_rebindable_cell(gate_width)
-        for index, marker, value, label in (
-            (getter_index, plan.getter_marker, _make_case_getter(table, case_key_mode), "jump-getter"),
-            (pointer_index, plan.pointer_marker, pointer, "live-pointer"),
-            (default_index, plan.default_marker, default_jump, "default-jump"),
-        ):
-            if constants[index] != marker:
-                raise SwitchError(f"{label} marker mismatch")
-            constants[index] = value
+
+        if constants[getter_index] != plan.getter_marker:
+            raise SwitchError("jump-getter marker mismatch")
+
+        if use_native_fused:
+            assert _native_livegate is not None
+            dispatcher = _native_livegate.make_dispatcher(
+                table,
+                gate_width,
+                default_jump,
+                case_key_mode == "typed",
+                False,  # write elision stays off until separately certified
+                True,   # semantics-guarded dense exact-int lane
+            )
+            constants[getter_index] = dispatcher
+            native_installs.append((plan, gate_prefix, dispatcher, gate_width))
+            dispatcher_indexes.append(getter_index)
+        else:
+            if pointer_index is None or default_index is None:
+                raise SwitchError("ctypes live plan is missing pointer/default markers")
+            pointer = _new_rebindable_cell(gate_width)
+            for index, marker, value, label in (
+                (
+                    getter_index,
+                    plan.getter_marker,
+                    _make_case_getter(table, case_key_mode),
+                    "jump-getter",
+                ),
+                (pointer_index, plan.pointer_marker, pointer, "live-pointer"),
+                (default_index, plan.default_marker, default_jump, "default-jump"),
+            ):
+                if constants[index] != marker:
+                    raise SwitchError(f"{label} marker mismatch")
+                constants[index] = value
+            ctypes_installs.append((plan, gate_prefix, pointer, gate_width))
+            pointer_indexes.append(pointer_index)
+
         for marker, replacement in plan.extra_constants.items():
             replaced = False
             for constant_index, constant_value in enumerate(constants):
@@ -3988,24 +4167,30 @@ def _compile(
             if not replaced:
                 raise SwitchError("failed to locate live switch helper constant")
 
-        installs.append((plan, gate_prefix, pointer, gate_width))
         metadata_tables.append(table)
         gate_offsets.append(gate_prefix)
         gate_widths.append(gate_width)
-        pointer_indexes.append(pointer_index)
 
+    # Dispatchers are deliberately created unbound.  Replacing co_consts makes
+    # a new code object (and therefore a new adaptive bytecode buffer), so the
+    # raw addresses are bound only after this final replacement.
     final_code = generated.__code__.replace(co_consts=tuple(constants))
     machine = platform.machine().lower()
     unaligned_safe = machine in {"x86_64", "amd64", "i386", "i686", "x86"}
-    for _plan, gate_prefix, pointer, width in installs:
+    for _plan, gate_prefix, pointer, width in ctypes_installs:
         address = _live_address(final_code, gate_prefix)
         byte_width = width * 2
         if not unaligned_safe and address % byte_width:
             raise UnsupportedRuntimeError(
                 f"live gate at {address:#x} is not {byte_width}-byte aligned on {machine}; "
-                "use mode='portable'"
+                "use live_engine='native' or mode='portable'"
             )
         _bind_cell(pointer, address)
+    for _plan, gate_prefix, dispatcher, _width in native_installs:
+        assert _native_livegate is not None
+        _native_livegate.bind_dispatcher(
+            dispatcher, _live_address(final_code, gate_prefix)
+        )
 
     previous_generated = generated
     generated = types.FunctionType(
@@ -4025,7 +4210,13 @@ def _compile(
     generated.__doc__ = func.__doc__
     if hasattr(func, "__type_params__"):
         generated.__type_params__ = func.__type_params__
+    # Keep the historical backend identifier stable for compatibility while
+    # exposing the renovated mutation engine independently.
     generated.__pyswitch_backend__ = "cpython313-live-inline-v18"
+    generated.__pyswitch_live_engine__ = (
+        "native-fused-v1" if use_native_fused else "ctypes-store-v1"
+    )
+    generated.__pyswitch_native_accelerated__ = use_native_fused
     generated.__pyswitch_gate_offsets__ = tuple(gate_offsets)
     generated.__pyswitch_case_count__ = sum(
         sum(len(group) for group in plan.key_groups) for plan in transformer.plans
@@ -4033,11 +4224,23 @@ def _compile(
     generated.__pyswitch_gate_units__ = tuple(gate_widths)
     generated.__pyswitch_jump_tables__ = tuple(metadata_tables)
     generated.__pyswitch_pointer_indexes__ = tuple(pointer_indexes)
+    generated.__pyswitch_dispatcher_indexes__ = tuple(dispatcher_indexes)
     generated.__pyswitch_synthetic_line_locations_removed__ = stripped_line_locations
     generated.__pyswitch_line_location_fallback__ = line_location_fallback
     generated.__pyswitch_clone_descriptors__ = tuple(
         zip(pointer_indexes, gate_offsets, gate_widths)
     )
+    generated.__pyswitch_native_clone_descriptors__ = tuple(
+        zip(dispatcher_indexes, gate_offsets, gate_widths)
+    )
+    if use_native_fused:
+        assert _native_livegate is not None
+        generated.__pyswitch_native_dispatch_info__ = tuple(
+            _native_livegate.dispatcher_info(dispatcher)
+            for _plan, _offset, dispatcher, _width in native_installs
+        )
+    else:
+        generated.__pyswitch_native_dispatch_info__ = ()
     if len(gate_offsets) == 1:
         generated.__pyswitch_gate_offset__ = gate_offsets[0]
         generated.__pyswitch_jump_table__ = metadata_tables[0]
@@ -4071,27 +4274,43 @@ def _copy_function_metadata(
 
 
 def _clone_isolated_instance(template: F) -> F:
-    """Clone a decorated function and rebind every live gate to its own code object.
-
-    A shallow FunctionType clone is insufficient because it would share the same
-    code object and the same ctypes pointer constants.  This routine creates a
-    distinct code object, replaces each pointer constant, then binds the new
-    pointers to the clone's adaptive instruction buffer.
-    """
-    descriptors = getattr(template, "__pyswitch_clone_descriptors__", None)
-    if not descriptors:
+    """Clone a live function and rebind every mutable gate to clone-local code."""
+    native_descriptors = getattr(
+        template, "__pyswitch_native_clone_descriptors__", ()
+    )
+    ctypes_descriptors = getattr(template, "__pyswitch_clone_descriptors__", ())
+    if not native_descriptors and not ctypes_descriptors:
         raise SwitchError("missing switch clone descriptors")
 
     constants = list(template.__code__.co_consts)
-    bindings: list[tuple[Any, int]] = []
-    for pointer_index, gate_offset, gate_width in descriptors:
+    ctypes_bindings: list[tuple[Any, int]] = []
+    native_bindings: list[tuple[Any, int]] = []
+
+    if native_descriptors:
+        if _native_livegate is None:
+            raise UnsupportedRuntimeError(
+                "native live dispatcher disappeared after template compilation"
+            )
+        for dispatcher_index, gate_offset, _gate_width in native_descriptors:
+            dispatcher = _native_livegate.clone_dispatcher(
+                constants[dispatcher_index]
+            )
+            constants[dispatcher_index] = dispatcher
+            native_bindings.append((dispatcher, gate_offset))
+
+    for pointer_index, gate_offset, gate_width in ctypes_descriptors:
         pointer = _new_rebindable_cell(gate_width)
         constants[pointer_index] = pointer
-        bindings.append((pointer, gate_offset))
+        ctypes_bindings.append((pointer, gate_offset))
 
     cloned_code = template.__code__.replace(co_consts=tuple(constants))
-    for pointer, gate_offset in bindings:
+    for pointer, gate_offset in ctypes_bindings:
         _bind_cell(pointer, _live_address(cloned_code, gate_offset))
+    for dispatcher, gate_offset in native_bindings:
+        assert _native_livegate is not None
+        _native_livegate.bind_dispatcher(
+            dispatcher, _live_address(cloned_code, gate_offset)
+        )
 
     clone = types.FunctionType(
         cloned_code,
@@ -4102,8 +4321,10 @@ def _clone_isolated_instance(template: F) -> F:
     )
     _copy_function_metadata(template, clone, expose_wrapped=False)
     clone.__pyswitch_backend__ = "cpython313-isolated-instance-v18"
+    clone.__pyswitch_live_engine__ = getattr(
+        template, "__pyswitch_live_engine__", "ctypes-store-v1"
+    )
     return clone
-
 
 
 def _signature_ast(func: Callable[..., Any]) -> tuple[ast.arguments, list[ast.expr], list[ast.keyword]]:
@@ -4554,6 +4775,7 @@ def enable_switch(
     expose_debug: bool = False,
     case_key_mode: str = "python",
     compact_routes: bool | str = False,
+    live_engine: str = "auto",
 ) -> Callable[[F], F]: ...
 
 
@@ -4570,6 +4792,7 @@ def enable_switch(
     expose_debug: bool = False,
     case_key_mode: str = "python",
     compact_routes: bool | str = False,
+    live_engine: str = "auto",
 ):
     """Enable switch syntax with portable and O(1)-style live backends.
 
@@ -4592,6 +4815,13 @@ def enable_switch(
         thread_local: one live clone per thread; not re-entry safe.
         fast: one shared live code object; only for proven single-active-call
             execution.
+
+    ``live_engine="auto"`` uses the optional fused native dispatcher when its
+    runtime self-test passes, otherwise retaining the historical ctypes gate.
+    ``"native"`` requires that accelerator; ``"ctypes"`` forces the legacy
+    engine for diagnostics and reproducible comparisons.  The native engine
+    combines dictionary routing and gate mutation into one C call and adds a
+    semantics-guarded dense exact-int lane for integer state-machine selectors.
 
     ``case_key_mode="python"`` uses ordinary Python equality and hashing, so
     ``1``, ``1.0``, and ``True`` collide. ``case_key_mode="typed"`` includes
@@ -4619,6 +4849,10 @@ def enable_switch(
     """
     if not isinstance(mode, str):
         raise TypeError("mode must be a string")
+    if not isinstance(live_engine, str):
+        raise TypeError("live_engine must be a string")
+    if live_engine not in {"auto", "native", "ctypes"}:
+        raise ValueError("live_engine must be 'auto', 'native', or 'ctypes'")
     if unsafe_shared_slot is not None and not isinstance(unsafe_shared_slot, bool):
         raise TypeError("unsafe_shared_slot must be bool or None")
     if source is not None and not isinstance(source, str):
@@ -4684,6 +4918,9 @@ def enable_switch(
                 result.__code__,
                 details=(("mode", actual_mode),
                          ("backend", getattr(result, "__pyswitch_backend__", "unknown")),
+                         ("live_engine", getattr(
+                             result, "__pyswitch_live_engine__", "portable"
+                         )),
                          ("case_count", getattr(result, "__pyswitch_case_count__", None)),
                          ("case_key_mode", case_key_mode),
                          ("typed_partition_plans", getattr(
@@ -4766,6 +5003,7 @@ def enable_switch(
                 allow_direct_recursion=(selected_mode in {"isolated", "per_call"}),
                 explicit_source=recovered_source,
                 case_key_mode=case_key_mode,
+                live_engine=live_engine,
             )
         except SwitchError:
             if mode == "auto":
