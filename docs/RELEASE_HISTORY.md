@@ -6,11 +6,9 @@ A focused **CPython 3.13** library containing exactly three language extensions:
 - `python_extensions.inline` — profitability-aware bytecode inlining, including optional shared appended inline regions.
 - `python_extensions.goto` — offset-preserving native jumps with strict control-flow validation by default.
 
-
-
 ## Production hardening (1.0.2)
 
-Version 1.0.2 adds opt-in **guarded inline binding** for code that may mutate or rebind inline targets after decoration. Use `binding="guarded"` when preserving ordinary dynamic Python call semantics is more important than eliminating every target check; keep `binding="frozen"` for intentionally static hot paths. See [the comprehensive guide](docs/COMPREHENSIVE_GUIDE.md) for decision tables, patterns, diagnostics, composition, and production deployment guidance.
+Version 1.0.2 adds opt-in **guarded inline binding** for code that may mutate or rebind inline targets after decoration. Use `binding="guarded"` when preserving ordinary dynamic Python call semantics is more important than eliminating every target check; keep `binding="frozen"` for intentionally static hot paths. See [the comprehensive guide](COMPREHENSIVE_GUIDE.md) for decision tables, patterns, diagnostics, composition, and production deployment guidance.
 
 
 ## Production hardening (1.0.1)
