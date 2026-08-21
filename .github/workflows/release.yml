@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: reproducible build and artifact certification
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install release dependencies
+        run: python -m pip install -U "setuptools>=75" "pytest>=8,<10" "twine>=5,<7" "bytecode>=0.17,<0.18"
+      - name: Check repository and tag version
+        id: version
+        shell: bash
+        run: |
+          python tools/check_repo.py
+          VERSION=$(python tools/check_version.py --tag "$GITHUB_REF_NAME")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Build twice with tagged commit epoch
+        shell: bash
+        run: |
+          EPOCH=$(git show -s --format=%ct HEAD)
+          python tools/build_release.py --out-dir dist-a --epoch "$EPOCH"
+          python tools/build_release.py --out-dir dist-b --epoch "$EPOCH"
+          cmp dist-a/cpython_extensions-*.whl dist-b/cpython_extensions-*.whl
+          cmp dist-a/cpython_extensions-*.tar.gz dist-b/cpython_extensions-*.tar.gz
+          mv dist-a dist
+          rm -rf dist-b
+      - name: Validate package metadata
+        run: python -m twine check dist/*.whl dist/*.tar.gz
+      - name: Test exact wheel
+        shell: bash
+        run: |
+          python -m pip install --target .wheel-install dist/*.whl
+          PYTHONPATH=.wheel-install python tools/smoke_release.py
+      - name: Test extracted exact sdist
+        shell: bash
+        run: |
+          mkdir .sdist-test
+          tar -xzf dist/cpython_extensions-*.tar.gz -C .sdist-test
+          cd .sdist-test/cpython_extensions-*
+          python -m pytest
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-distributions-${{ steps.version.outputs.version }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  github-release:
+    name: GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-distributions-${{ needs.build.outputs.version }}
+          path: dist
+      - name: Create release and attach distributions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes --title "cpython-extensions ${{ needs.build.outputs.version }}"
+
+  pypi-publish:
+    name: PyPI Trusted Publishing
+    if: ${{ vars.PYPI_PUBLISH_ENABLED == 'true' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/cpython-extensions
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-distributions-${{ needs.build.outputs.version }}
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

@@ -1,0 +1,121 @@
+[
+  {
+    "kind": "direct",
+    "cases": 1,
+    "build_ms": 1.8486649996702909,
+    "ns_per_call": 85.47261000330764,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "direct",
+    "cases": 4,
+    "build_ms": 2.4965100001281826,
+    "ns_per_call": 83.82385500226519,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "direct",
+    "cases": 16,
+    "build_ms": 4.040349999741011,
+    "ns_per_call": 83.38930500030983,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "direct",
+    "cases": 64,
+    "build_ms": 12.615835999895353,
+    "ns_per_call": 80.53772499806655,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "direct",
+    "cases": 256,
+    "build_ms": 26.203663000160304,
+    "ns_per_call": 82.98542500142503,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "direct",
+    "cases": 1024,
+    "build_ms": 215.5160699994667,
+    "ns_per_call": 100.91480500250327,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "direct",
+    "cases": 4096,
+    "build_ms": 524.8928520004483,
+    "ns_per_call": 94.71023000060086,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "balanced",
+    "cases": 4,
+    "build_ms": 4.60655700044299,
+    "ns_per_call": 159.72595833773084,
+    "backend": "portable-balanced-v18"
+  },
+  {
+    "kind": "balanced",
+    "cases": 16,
+    "build_ms": 9.975980000490381,
+    "ns_per_call": 204.12559166895034,
+    "backend": "portable-balanced-v18"
+  },
+  {
+    "kind": "balanced",
+    "cases": 64,
+    "build_ms": 81.84317499944882,
+    "ns_per_call": 246.76775833540887,
+    "backend": "portable-balanced-v18"
+  },
+  {
+    "kind": "balanced",
+    "cases": 256,
+    "build_ms": 162.5912409999728,
+    "ns_per_call": 303.7117666660075,
+    "backend": "portable-balanced-v18"
+  },
+  {
+    "kind": "balanced",
+    "cases": 1024,
+    "build_ms": 752.141113000107,
+    "ns_per_call": 400.2180166708058,
+    "backend": "portable-balanced-v18"
+  },
+  {
+    "kind": "collision",
+    "cases": 4,
+    "build_ms": 2.2806409997429,
+    "ns_per_call": 343.5470333291354,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "collision",
+    "cases": 16,
+    "build_ms": 3.3880139999382664,
+    "ns_per_call": 945.0137833331004,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "collision",
+    "cases": 48,
+    "build_ms": 7.581023999591707,
+    "ns_per_call": 2709.5470000100854,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "collision",
+    "cases": 96,
+    "build_ms": 14.553615000295395,
+    "ns_per_call": 5030.115550001331,
+    "backend": "portable-direct-value-v18"
+  },
+  {
+    "kind": "collision",
+    "cases": 192,
+    "build_ms": 33.90972400029568,
+    "ns_per_call": 10632.974816674809,
+    "backend": "portable-direct-value-v18"
+  }
+]

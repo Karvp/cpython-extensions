@@ -1,0 +1,39 @@
+cpython-extensions 1.0.2 release audit
+=====================================
+
+Primary 1.0.1 stress finding addressed
+---------------------------------------
+An inlined direct target could become stale after decoration if its global/class binding,
+function __code__, or applicable defaults changed. 1.0.2 adds an explicit guarded binding
+mode. The transformed caller evaluates the callable once, checks identity/state, executes
+the inlined clone when valid, and otherwise uses the same already-loaded callable for a
+normal CALL. This avoids stale target use and avoids a second user-visible descriptor or
+namespace lookup on deoptimization.
+
+Compatibility decision
+----------------------
+Guarded binding is opt-in. The default remains binding="frozen" because changing the
+universal default would add validation to stable hot paths and would inhibit some
+cross-inline dataflow optimizations. Existing 1.0.1 code therefore retains its historical
+runtime model. Applications with monkey-patching, hot reload, target rebinding, or mutable
+function state should select binding="guarded" explicitly.
+
+Profitability hardening
+-----------------------
+The common exact-function guard is lowered as bytecode identity/state checks instead of a
+Python helper call. policy="speed" includes guard cost in its profitability decision and
+can keep trivial guarded sites as normal calls.
+
+Documentation
+-------------
+docs/COMPREHENSIVE_GUIDE.md documents installation, safe defaults, switch key/back-end
+selection, inline policy/binding/capture/shared-region choices, goto strictness,
+composition, reports/verifier usage, registry lifecycle, production recipes, performance
+methodology, concurrency boundaries, migration, exact public signatures, troubleshooting,
+and anti-patterns.
+
+Release gates
+-------------
+See PYTHON_EXTENSIONS_1.0.2_CERTIFICATION.txt for exact source-tree gates. Final wheel/sdist
+artifact installation, extracted-sdist test, reproducibility, and checksums are performed
+as the release seal after this source audit document is generated.

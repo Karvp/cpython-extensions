@@ -1,0 +1,5 @@
+Python: 3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+scenario                       v0.10 ns   v0.11 ns   speedup   code 0.10->0.11   locals
+constant-copy-chain               68.129     57.375    1.187x     48->24         4->4
+constant-arithmetic-chain         64.068     49.209    1.302x     26->14         2->2
+dynamic-copy-chain                79.008     77.004    1.026x     30->30         4->4

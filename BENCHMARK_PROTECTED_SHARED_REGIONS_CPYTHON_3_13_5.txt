@@ -1,0 +1,5 @@
+normal               886.24 ns  code= 128 bytes
+duplicated           822.91 ns  code= 456 bytes
+protected-shared     971.25 ns  code= 240 bytes
+duplicated stats: InlineStats(calls_inlined=4, original_code_bytes=128, final_code_bytes=456, calls_skipped_unprofitable=0, calls_skipped_unsupported=0, calls_shared=0, shared_regions=0, reused_local_groups=1, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=0, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=0, protected_shared_regions=0)
+shared stats:     InlineStats(calls_inlined=0, original_code_bytes=128, final_code_bytes=240, calls_skipped_unprofitable=0, calls_skipped_unsupported=0, calls_shared=4, shared_regions=1, reused_local_groups=0, constant_branches_folded=0, dead_instructions_pruned=0, late_stack_forwards=0, redundant_jumps_removed=0, caller_parameter_aliases=0, caller_local_aliases=0, constant_comparisons_folded=0, constant_binary_ops_folded=0, protected_shared_regions=1)

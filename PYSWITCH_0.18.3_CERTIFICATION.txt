@@ -1,0 +1,97 @@
+python_extensions 0.18.3 - pyswitch depth-aware stack-carrier scheduling certification
+=====================================================================================
+
+Runtime
+-------
+CPython 3.13.5
+Production/default backend: portable auto (non-self-modifying)
+Explicit live-bytecode modes remain opt-in research backends.
+
+Implemented in 0.18.3
+---------------------
+* Depth-aware last-use scheduling for CPython 3.13 stack-resident template payloads.
+* Final payload reads at physical depth 1 are consumed with no load opcode.
+* Final payload reads at depth 2 use SWAP 2 instead of COPY + later cleanup.
+* A sole return carrier at depth 3 may use SWAP 2; SWAP 3 because removing the
+  terminal SWAP/POP pair still gives a strict instruction-count win.
+* Deeper payload carriers remain on COPY lowering when rotations are not a clear win.
+* Fused LOAD_FAST_LOAD_FAST payload components participate in the same scheduler.
+* Structurally identical templates discard their unused identity payload once at
+  the join while preserving the dictionary lookup and therefore hash/equality effects.
+* No payload fast locals are reintroduced.
+
+Package tests
+-------------
+267 / 267 passed
+python -m compileall: passed
+
+Full stress/differential certification
+--------------------------------------
+New v0.18.3 stack scheduler harness:          2,391,800 calls passed
+Inherited v0.18.2 stack payload harness:      6,450,800 calls passed
+Inherited v0.18.1 adversarial harness:        4,703,400 calls passed
+Inherited v0.18 production harness:           3,680,000 calls passed
+                                                  ----------------
+Portable full-harness total:                 17,226,000 calls passed
+
+Explicit live-mode compatibility harness:    1,239,100 calls passed
+                                                  ----------------
+All full harnesses total:                    18,465,100 calls passed
+
+The new scheduler harness covers 18 single-payload and 5 multi-payload expression
+families, operand-order permutations, arithmetic, comparisons, tuple/list/dict
+construction, indexing, formatting, shallow and deep calls, user exceptions,
+trace hooks, 16-thread contention, repeated compilation, and GC churn.
+
+Performance - seven-process focused median, CPython 3.13.5
+----------------------------------------------------------
+Scenario                          0.18.2 ns    0.18.3 ns    speedup
+Direct 64-case return              50.880        50.483       1.008x
+Right-literal arithmetic           67.304        62.563       1.076x
+Left-literal arithmetic            66.619        62.071       1.073x
+Multi-payload arithmetic           87.368        85.672       1.020x
+Straight-line statement            97.417        95.155       1.024x
+
+Broader five-process medians
+----------------------------
+Right-literal 64-case:             1.076x
+Left-literal 64-case:              1.064x
+Multi-expression 64-case:          1.011x
+Statement 64-case:                 1.034x
+Tuple-left 64-case:                1.041x
+Tuple-right 64-case:               1.026x
+Single-argument call 64-case:      1.035x
+Deep two-argument call 64-case:    0.998x (intentionally unchanged)
+Identical-template 64-case:        1.057x
+Balanced 256-route:                1.005x (unchanged backend)
+
+The broad-run direct result varied slightly with process noise; the longer focused
+seven-process run confirms the direct-value backend is effectively unchanged.
+
+Correctness/production invariants retained
+------------------------------------------
+* Python dictionary hash/equality semantics in case_key_mode="python".
+* Exact runtime type participates in case identity in case_key_mode="typed".
+* Intrinsically unhashable subjects are misses/defaults; user hash/equality
+  TypeError exceptions propagate.
+* Subject expressions are evaluated once.
+* No compiler payload fast locals are visible in stackified template user code.
+* CPython 3.13 RETURN_VALUE receives an empty operand stack after the result is popped.
+* Tracing/sys.monitoring line locations stay within valid source ranges.
+* Unsupported runtimes/shapes fail closed to the proven portable fallback.
+* mode="auto" does not mutate executable bytecode.
+
+Artifact validation
+-------------------
+* Final wheel installed with --no-deps into a fresh venv; dependency-free
+  public portable direct-switch smoke passed as 0.18.3.
+* In a separate fresh venv, exposing only the host bytecode 0.17.0 distribution
+  (the declared runtime dependency) activated the stack scheduler from the
+  installed wheel; the depth-two hot path contained SWAP 2 with no COPY/POP
+  cleanup and returned the expected values.
+* A fresh venv without bytecode demonstrated the intended fail-closed behavior:
+  stack payload optimization reports bytecode-unavailable while portable switch
+  semantics continue to work.
+* Final sdist extracted into a separate tree and passed 267/267 tests plus
+  compileall.
+* Wheel ZIP and sdist TAR archive integrity checks passed.

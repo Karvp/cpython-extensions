@@ -1,0 +1,44 @@
+{
+  "baseline": {
+    "goto_code_bytes": 168,
+    "goto_loop_ns": 170.48815666666667,
+    "inline_code_bytes": 18,
+    "inline_fixed_ns": 64.225584,
+    "inline_unary_folds": 0,
+    "switch_code_bytes": 610,
+    "switch_default_code_bytes": 610,
+    "switch_default_hit_ns": 122.528836,
+    "switch_default_miss_ns": 116.533078,
+    "switch_hit_ns": 124.5466,
+    "switch_mid_ns": 128.674098,
+    "switch_miss_ns": 115.469356
+  },
+  "candidate": {
+    "goto_code_bytes": 168,
+    "goto_loop_ns": 173.26729,
+    "inline_code_bytes": 12,
+    "inline_fixed_ns": 43.079304,
+    "inline_unary_folds": 3,
+    "switch_code_bytes": 382,
+    "switch_default_code_bytes": 610,
+    "switch_default_hit_ns": 125.721718,
+    "switch_default_miss_ns": 114.715434,
+    "switch_hit_ns": 124.512508,
+    "switch_mid_ns": 133.140142,
+    "switch_miss_ns": 114.869624
+  },
+  "runs": 13,
+  "speedups": {
+    "goto_code_bytes": 1.0,
+    "goto_loop_ns": 0.983960427075801,
+    "inline_code_bytes": 1.5,
+    "inline_fixed_ns": 1.4908686547024994,
+    "switch_code_bytes": 1.5968586387434556,
+    "switch_default_code_bytes": 1.0,
+    "switch_default_hit_ns": 0.9746035764481042,
+    "switch_default_miss_ns": 1.0158448077701558,
+    "switch_hit_ns": 1.0002738038173642,
+    "switch_mid_ns": 0.9664560670214697,
+    "switch_miss_ns": 1.0052209799171974
+  }
+}

@@ -1,0 +1,6 @@
+scenario                 raw ns    optimized ns   speedup   bytes  nlocals  stats
+ephemeral-chain            60.05          34.87    1.722x     18        1  rt=2 cp=1 k=0 slots=0
+duplicate-temp             58.75          42.72    1.375x     18        1  rt=1 cp=0 k=0 slots=0
+copy-propagation           62.58          50.22    1.246x     16        1  rt=0 cp=1 k=0 slots=0
+constant-local             50.80          31.79    1.598x     12        1  rt=0 cp=0 k=1 slots=0
+cross-callee-slots        103.98          82.13    1.266x     46        2  rt=0 cp=0 k=0 slots=1

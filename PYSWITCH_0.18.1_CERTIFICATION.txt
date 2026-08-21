@@ -1,0 +1,64 @@
+python_extensions / pyswitch 0.18.1 production hardening certification
+====================================================================
+Runtime: CPython 3.13.5
+Scope: pyswitch portable production backend, with compatibility smoke for explicit live backends.
+
+Correctness and regression
+--------------------------
+- Package suite: 232/232 passed.
+- New adversarial full harness: 4,703,400 calls passed.
+- Inherited 0.18 production full harness: 3,680,000 calls passed.
+- Combined independent portable stress calls: 8,383,400.
+- Explicit live compatibility harness: portable/fast/isolated/thread_local/per_call mode smoke passed; isolated 16-thread 125,000-call run passed; recursion and generator checks passed.
+- Final source bytecode compileall passed.
+
+New hardening coverage
+----------------------
+- Generated compiler-temporary lifetime and locals()/frame hygiene around guarded and post-switch user code.
+- Nested recursive function self-closure rebinding without mutating the original closure cell.
+- Portable, isolated, and per-call nested recursion; async recursive closures; GC collection of the private self-cell cycle.
+- Strict fallthrough placement validation, nested-switch ownership, guarded duplicate route order, and default guards.
+- Real dict hash/equality call behavior, user equality exceptions, NaN identity, signed zero, cross-numeric collisions, exact-type keys, and intrinsically unhashable misses.
+- Subject alias single evaluation, complex-subject alias storage, descriptor/subscript exception boundaries, try/finally, closures/nonlocal mutation, zero-argument super(), PEP 695 type-parameter cells, generator send(), double decoration, async concurrency, and shared portable thread concurrency.
+- Generated random switches, decoration/GC churn, and recursion deeper than the isolated clone cache.
+
+Scale stress
+------------
+- Direct-value switches constructed and executed through 4,096 cases.
+- Guarded balanced routing constructed and executed through 1,024 distinct keys (2 guarded/unconditional clauses per key).
+- Deliberate same-hash custom-key tables executed through 192 keys.
+- Direct table dispatch remained roughly flat in the local run: ~81-101 ns/call from 1 through 4,096 cases.
+- Balanced guarded routing grew logarithmically: ~160 ns/call at 4 keys to ~400 ns/call at 1,024 keys.
+- Deliberate same-hash collisions degrade linearly as ordinary Python dict lookup does; no alternate equality scheme is substituted.
+
+Five-process hardening benchmark vs 0.18.0 (CPython 3.13.5)
+----------------------------------------------------------
+- 64-case literal return: 112.80 ns, 1.019x relative to 0.18.0 median.
+- 64-case literal local assignment: 125.28 ns, 1.017x.
+- 64-case expression-template assignment: 159.36 ns, 0.996x (parity).
+- 64-case statement-template assignment: 202.99 ns, 1.000x (parity).
+- 256-key guarded balanced routing: 324.24 ns, 0.983x (~1.7% cost for deleting dispatch temporaries before user code).
+
+Production fixes in 0.18.1
+--------------------------
+1. General/balanced dispatch deletes compiler subject/index temporaries before any selected user guard or case/default body executes.
+2. Specialized non-returning assignment paths clean payload/subject temporaries after the switch.
+3. A simple user `with switch(expr) as name` alias can hold a complex subject directly, avoiding an extra hidden subject local and preserving single evaluation.
+4. Direct literal assignment to a plain name stores the dict lookup result directly; overloadable descriptor/subscript/destructuring targets retain staged exception-safe assignment.
+5. Nested self-recursive closure functions receive a private transformed self-cell; recursive calls stay on the transformed callable/wrapper and the user's original self-cell is untouched.
+6. Non-trailing, nested, or argument-bearing fallthrough() markers are rejected at decoration time; nested switches validate their own markers independently.
+
+Known observational boundary
+----------------------------
+The source-level expression-template and statement-template fast paths still require compiler payload fast-locals while the specialized user expression/body is executing. An active tracer or explicit frame inspection from code called inside that expression/body can observe those private names transiently. They are removed after non-returning specialized switches. The balanced backend removes its dispatch temporaries before entering user guards/bodies. Eliminating this final transient template-local visibility without helper frames requires a future stack-resident CPython lowering.
+
+The explicit `fast`, `thread_local`, `isolated`, and `per_call` live-bytecode modes remain research/compatibility backends, not the production semantic contract. `mode="auto"` without live_threshold remains the recommended general-purpose path.
+
+Files
+-----
+- tests/test_switch_adversarial_v181.py
+- tests/harness_switch_adversarial_v181.py
+- tests/harness_switch_production_v18.py
+- benchmark_switch_v18_v181_hardening.py
+- BENCHMARK_SWITCH_V18_V181_HARDENING.json
+- PYSWITCH_SCALE_STRESS_V181.json

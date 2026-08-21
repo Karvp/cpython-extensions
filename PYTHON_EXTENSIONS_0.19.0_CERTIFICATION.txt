@@ -1,0 +1,58 @@
+python_extensions 0.19.0 — three-extension certification
+==================================================================
+
+Runtime: CPython 3.13.5
+Scope: pyswitch + inline_function/inline_calls + pygoto
+Production defaults: portable switch, verified inline lowering, strict goto
+
+Package gate
+------------
+315/315 tests passed
+compileall: clean
+
+Portable full-harness calls
+---------------------------
+Unified all-extension harness: 9,287,500
+Dedicated pygoto harness: 3,526,500
+pyswitch typed-router v18.5: 4,830,003
+pyswitch typed-partition v18.4: 4,760,005
+pyswitch adversarial v18.1: 4,703,400
+pyswitch production v18: 3,680,000
+inline lazy-strength v21: 3,300,000
+inline dominance-strength v20: 3,300,000
+inline strength-reduction v19: 3,300,000
+Portable total: 40,687,408
+
+Explicit live compatibility
+---------------------------
+pyswitch live compatibility v18.2: 1,239,100
+Total including live modes: 41,926,508
+
+Key 0.19.0 changes
+------------------
+pyswitch: boolean two-route lowering for general matched/default plans; fail-closed verification of optional bytecode rewrites.
+inline: descriptor-uniform decorators/registry, kw-default isolation, exact-builtin unary -/+ /~/not constant folding with telemetry.
+pygoto: earliest native jump placement, one-jump label skipping, semantic exception-handler-stack validation across await/yield splits, descriptor support, marker-free identity no-op.
+composition: descriptor-aware switch -> inline -> goto final pipeline verification.
+
+Final alternating seven-process benchmark vs 0.18.5
+-------------------------------------------------
+goto_backward_ns: 732.57 ns -> 259.70 ns (2.821x)
+goto_forward_fallthrough_ns: 70.69 ns -> 40.04 ns (1.765x)
+goto_forward_taken_ns: 94.44 ns -> 34.14 ns (2.766x)
+goto_marker_free_control_ns: 31.07 ns -> 25.01 ns (1.243x)
+inline_dynamic_control_ns: 34.98 ns -> 34.83 ns (1.005x)
+inline_inv_ns: 33.35 ns -> 24.84 ns (1.343x)
+inline_neg_ns: 34.14 ns -> 25.19 ns (1.355x)
+inline_not_ns: 28.13 ns -> 24.24 ns (1.161x)
+inline_pos_ns: 31.19 ns -> 25.31 ns (1.232x)
+switch_binary_guard_false_ns: 81.89 ns -> 77.67 ns (1.054x)
+switch_binary_hit_ns: 84.63 ns -> 72.30 ns (1.171x)
+switch_binary_miss_ns: 72.00 ns -> 63.55 ns (1.133x)
+switch_direct_control_ns: 41.25 ns -> 40.18 ns (1.027x)
+
+Notes
+-----
+Absolute timings are machine/build specific; ratios above are medians across seven alternating baseline/candidate processes.
+No benchmark-specific semantic shortcuts are used. Controls are included in the benchmark driver.
+Explicit switch live modes and goto unsafe mode remain opt-in low-level facilities.

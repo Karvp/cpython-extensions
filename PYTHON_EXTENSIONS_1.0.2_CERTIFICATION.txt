@@ -1,0 +1,62 @@
+python_extensions / cpython-extensions 1.0.2 production hardening certification
+Date: 2026-08-20
+Runtime certified here: CPython 3.13.5 (ordinary GIL build)
+Distribution: cpython-extensions
+Import namespace: python_extensions
+
+HARDENING DELIVERED
+===================
+- Added explicit inline binding modes:
+  * binding="frozen" (default): backward-compatible decoration-time snapshot semantics.
+  * binding="guarded": evaluate-once callable guard with ordinary-call deoptimization.
+- Guarded inline fast path validates target identity and the cloned function state that
+  is relevant to the call shape, including code/default state. Complex callable shapes
+  use conservative identity/state snapshots without invoking user equality.
+- Dynamic global/closure rebinding, function __code__ replacement, relevant defaults,
+  method replacement, functools.partial mutation, and callable-object type.__call__
+  replacement are covered by focused regressions.
+- Guard failure reuses the callable already loaded for that invocation; descriptor/global
+  lookup is not repeated merely because the inline path deoptimizes.
+- policy="speed" accounts for guarded validation cost and can retain an ordinary CALL
+  when guarded expansion is statically unprofitable.
+- Shared inline regions support guarded binding and deopt correctly after target changes.
+- binding="frozen" remains the default so 1.0.1 applications do not silently gain runtime
+  guards or lose existing optimizer freedom.
+- Added a comprehensive production guide under docs/COMPREHENSIVE_GUIDE.md.
+
+SOURCE-TREE VERIFICATION
+========================
+- 370/370 package tests passed.
+- 370/370 passed with CPython -X dev, -W error, PYTHONMALLOC=debug, and third-party
+  pytest plugin autoload disabled to isolate project warnings.
+- compileall succeeded for src/, tests/, and tools/.
+- Focused guarded-binding harness: 5,110,000 operations passed.
+- Historical coordinated switch/inline/goto harness: 7,860,000 operations passed.
+- Versatile application-style harness: 10,270,056 operations passed.
+- Deep release harness: 3,766,637 runtime operations passed and 1,167 generated code
+  objects were independently accepted by the verifier.
+- Unique full-workload total represented by those four full harnesses: 27,006,693
+  operations.
+- Additional guarded-binding reruns:
+  * -X dev -W error, scale 0.20: 1,022,000 operations.
+  * PYTHONHASHSEED=1, scale 0.25: 1,277,500 operations.
+  * PYTHONHASHSEED=777, scale 0.25: 1,277,500 operations.
+  These are repeated robustness configurations and are not included in the 27,006,693
+  unique full-workload total above.
+
+SEMANTIC BOUNDARIES
+===================
+- Guarded binding is intended to preserve changes occurring between calls. It is not an
+  atomic synchronization protocol for arbitrary concurrent mutation while another thread
+  executes the target; applications need the same synchronization they would use around
+  ordinary dynamic mutation.
+- freeze_globals=True and freeze_closures=True intentionally snapshot dependencies.
+  Guarded callable validation cannot make deliberately frozen dependencies dynamic again.
+- fusion_strategy="aggressive" remains an explicit observability tradeoff for users who
+  accept reduced trace/f_locals visibility of synthetic/local materialization.
+- Live switch modes remain explicit low-level modes with mode-specific re-entry/concurrency
+  contracts. Portable/auto is the production default.
+- enable_goto(mode="strict") remains the production default; unsafe mode is not claimed as
+  a general safe control-flow facility.
+- Certification is for ordinary CPython 3.13.5. A free-threaded CPython 3.13t executable
+  was not available in this environment and is not claimed as independently certified.

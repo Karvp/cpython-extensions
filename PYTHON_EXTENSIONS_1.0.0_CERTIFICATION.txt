@@ -1,0 +1,52 @@
+python_extensions 1.0.0 production certification
+==============================================
+
+Runtime
+-------
+CPython 3.13.5
+Production defaults remain portable/strict. Explicit switch live modes and goto unsafe mode remain opt-in.
+
+Release hardening
+-----------------
+- Package status promoted to Production/Stable.
+- Source-tree pytest configuration now declares the src/ layout; no PYTHONPATH workaround is required.
+- Inline registry, weak identity set, and synthetic-name allocation are serialized with a re-entrant lock during decoration/registration. Transformed runtime hot paths acquire no new locks.
+- python_extensions.switch, python_extensions.inline, and python_extensions.goto expose a coherent 1.0.0 module version.
+- 0.22.0 safe defaults and transformation semantics are retained.
+
+Source-tree gates
+-----------------
+- Package tests: 345/345 passed.
+- compileall: passed for src/ and tests/.
+- New/reused 0.22 coordinated harness: 7,860,000/7,860,000 calls passed.
+- Inherited 0.21 coordinated harness: 5,700,000 calls passed.
+- Inherited 0.20 coordinated harness: 5,624,000 calls passed.
+- Inherited 0.19 unified harness: 9,287,500 calls passed.
+- Dedicated pygoto v19 harness: 3,526,500 calls/yields passed.
+- pyswitch typed-router harness: 4,830,003/4,830,003 calls passed.
+- pyswitch typed-partition harness: 4,760,005/4,760,005 calls passed.
+- pyswitch adversarial harness: 4,703,400 calls passed.
+- pyswitch production differential/stress harness: 3,680,000 calls passed.
+- Inline lazy-strength harness: 3,300,000 calls passed.
+- Inline dominance-strength harness: 3,300,000 calls passed.
+- Inline strength-reduction harness: 3,300,000 calls passed.
+
+Portable full-harness total: 59,871,408 calls/yields.
+Explicit live-switch compatibility: 1,239,100 calls passed.
+Grand full-harness total: 61,110,508 operations.
+
+Production safety position
+--------------------------
+- pyswitch mode=auto/portable is the production default and does not self-modify executable bytecode.
+- inline transformations happen at decoration time and preserve explicit conservative fallbacks for unsupported or unprofitable shapes.
+- pygoto mode=strict validates protected-region behavior and proves final synthetic CFG edges.
+- Experimental live/self-modifying switch backends and goto mode=unsafe are deliberately not production defaults.
+
+Artifact validation
+-------------------
+- Wheel installed with --no-deps into an isolated target and imported from that target.
+- Installed-wheel metadata reports python-extensions 1.0.0 and Production/Stable.
+- Installed wheel passed switch, inline/no-CALL, and strict-goto smoke tests.
+- Independently extracted sdist passed 345/345 package tests and compileall.
+- Wheel ZIP and sdist TAR archive integrity are checked during sealing.
+- Final SHA-256 digests are emitted in SHA256SUMS.txt beside the artifacts.

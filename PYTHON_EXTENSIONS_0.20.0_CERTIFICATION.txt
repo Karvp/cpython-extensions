@@ -1,0 +1,105 @@
+python_extensions 0.20.0 certification
+=======================================
+
+Target runtime
+--------------
+CPython 3.13.5
+
+Scope
+-----
+Coordinated refinement across all three shipped extension families:
+  * pyswitch
+  * inline_function / inline_calls
+  * pygoto
+
+Production behavior changes
+---------------------------
+pyswitch
+  * The speed-first portable default is unchanged.
+  * New opt-in compact_routes=True hoists only source-location-identical route
+    continuations shared by every general route. This is intended as a code-density
+    control for fallthrough-heavy switches, not as an unconditional throughput win.
+  * New report fields: compact_routes, shared_continuation_plans,
+    shared_continuation_statements.
+
+inline
+  * Constant unary/binary/comparison folding now runs to a true fixed point.
+  * Exact immutable builtin LOAD_CONST + UNARY_NOT exposed by a preceding fold is
+    folded without invoking arbitrary user protocols at decoration time.
+
+pygoto
+  * Strict early-jump lowering validates one stable semantic exception-handler
+    signature across the entire goto pseudo-statement footprint, not only its first
+    instruction.
+  * Reports expose extended_arg_units and marker_units_elided, including zeros for
+    marker-free identity/no-op decoration.
+  * Lowering-metric label lookup is O(1) by label name.
+
+Static/package test gate
+------------------------
+  package tests: 325 / 325 passed
+  compileall: clean for src/ and tests/
+
+Full stress/differential certification
+--------------------------------------
+  new coordinated v20 harness:             5,624,000
+  inherited all-extensions v19 harness:     9,287,500
+  inherited pygoto v19 harness:             3,526,500
+  inherited pyswitch typed-router v18.5:    4,830,003
+  inherited pyswitch typed-partition v18.4: 4,760,005
+  inherited pyswitch adversarial v18.1:     4,703,400
+  inherited pyswitch production v18:        3,680,000
+  inherited inline lazy-strength:            3,300,000
+  inherited inline dominance-strength:       3,300,000
+  inherited inline strength-reduction:       3,300,000
+                                                ---------
+  portable total:                           46,311,408
+  explicit switch live compatibility:        1,239,100
+                                                ---------
+  grand total:                              47,550,508
+
+Reproduced 0.19.0 -> 0.20.0 benchmark
+------------------------------------
+Dataset: BENCHMARK_ALL_EXTENSIONS_V190_V200.json
+Method: 13 alternating independent CPython processes, median ns/call.
+
+Inline fixed-point fixture
+  0.19.0: 64.225584 ns/call, 18 code bytes, 0 unary folds
+  0.20.0: 43.079304 ns/call, 12 code bytes, 3 unary folds
+  speedup: 1.4909x
+  code-size ratio: 1.5x (33.3% fewer bytes)
+
+pyswitch default control
+  code bytes: 610 -> 610
+  The equivalent default fixture has identical generated co_code between 0.19.0
+  and 0.20.0. Timing controls are therefore treated as process/specialization noise,
+  not as a release-level speed claim.
+
+pyswitch compact_routes=True fixture
+  baseline/default layout: 610 code bytes
+  compact layout:          382 code bytes
+  size ratio:              1.5969x (37.4% fewer bytes)
+  route-position timing in the 13-process sample ranged from near parity to about
+  3.4% slower on the middle route. This is why compaction is opt-in and the default
+  remains speed-first.
+
+pygoto control
+  runtime code bytes: 168 -> 168
+  Equivalent patched co_code is byte-for-byte identical between 0.19.0 and 0.20.0;
+  strict-span validation and new telemetry are decoration-time changes only.
+
+Artifact-level validation
+-------------------------
+The final distributions are rebuilt from this exact source snapshot and validated
+independently:
+  * dependency-free wheel installation (`--no-deps`) successfully imports the
+    public package plus `pyswitch`/`pygoto`, and executes portable switch + strict
+    goto smoke cases;
+  * wheel loaded from an isolated target path with host `bytecode 0.17.0` activates
+    the inline backend and confirms fixed-point unary folding from the installed
+    artifact rather than the source checkout;
+  * extracted final sdist independently passes 325/325 package tests and compileall;
+  * clean source checkpoint independently passes 325/325 package tests and
+    compileall;
+  * wheel ZIP, sdist TAR, checkpoint ZIP, focused patch, benchmark, certification,
+    and SHA-256 manifest are verified before sealing.

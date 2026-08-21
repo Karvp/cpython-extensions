@@ -1,0 +1,183 @@
+{
+  "processes": 7,
+  "baseline_src": "/mnt/data/pe200base/python_extensions-0.20.0_source_checkpoint/src",
+  "candidate_src": "/mnt/data/pe200/python_extensions-0.20.0_source_checkpoint/src",
+  "medians": {
+    "baseline": {
+      "medium_guard_ns": 68.37639250079519,
+      "tiny_speed_ns": 47.80577599740355,
+      "switch_default_ns": 147.52862800378352,
+      "goto_ns": 188.40800000180025,
+      "medium_size": 20,
+      "tiny_size": 20,
+      "medium_inlined": 0,
+      "tiny_inlined": 0
+    },
+    "candidate": {
+      "medium_guard_ns": 69.65972750549554,
+      "tiny_speed_ns": 46.4218780034571,
+      "switch_default_ns": 142.5549479899928,
+      "goto_ns": 184.58519599516873,
+      "medium_size": 66,
+      "tiny_size": 20,
+      "medium_inlined": 1,
+      "tiny_inlined": 0
+    }
+  },
+  "baseline_over_candidate_speedup": {
+    "medium_guard_ns": 0.9815770883599982,
+    "tiny_speed_ns": 1.029811331498553,
+    "switch_default_ns": 1.0348895642271208,
+    "goto_ns": 1.0207102416096878
+  },
+  "auto_compact": {
+    "code_bytes": 336,
+    "plans": 1
+  },
+  "samples": {
+    "baseline": [
+      {
+        "medium_guard_ns": 67.73611499738763,
+        "tiny_speed_ns": 46.38868999609258,
+        "switch_default_ns": 148.43978399585467,
+        "goto_ns": 190.33158000092953,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 68.09837999753654,
+        "tiny_speed_ns": 47.80577599740355,
+        "switch_default_ns": 147.52862800378352,
+        "goto_ns": 237.5752199877752,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 68.37639250079519,
+        "tiny_speed_ns": 49.87738800264196,
+        "switch_default_ns": 140.98243199987337,
+        "goto_ns": 186.56349601224065,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 76.91258999329875,
+        "tiny_speed_ns": 48.184879997279495,
+        "switch_default_ns": 141.55638399824966,
+        "goto_ns": 181.13814400567207,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 68.07639750149974,
+        "tiny_speed_ns": 46.229671999753926,
+        "switch_default_ns": 139.35238399426456,
+        "goto_ns": 188.40800000180025,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 68.70903750495927,
+        "tiny_speed_ns": 46.7820159974508,
+        "switch_default_ns": 148.7156719958875,
+        "goto_ns": 186.82929199712817,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 69.1782875037461,
+        "tiny_speed_ns": 48.422875996038776,
+        "switch_default_ns": 150.6171799992444,
+        "goto_ns": 191.28974399063736,
+        "medium_size": 20,
+        "tiny_size": 20,
+        "medium_inlined": 0,
+        "tiny_inlined": 0
+      }
+    ],
+    "candidate": [
+      {
+        "medium_guard_ns": 69.87777749600355,
+        "tiny_speed_ns": 45.675507994019426,
+        "switch_default_ns": 142.2371199878398,
+        "goto_ns": 186.76647599204446,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 67.67935750758625,
+        "tiny_speed_ns": 49.31165800371673,
+        "switch_default_ns": 143.92238399886992,
+        "goto_ns": 182.13531200308353,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 68.59374250780093,
+        "tiny_speed_ns": 45.850768001400866,
+        "switch_default_ns": 140.13106399215758,
+        "goto_ns": 184.58519599516873,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 70.53733499560622,
+        "tiny_speed_ns": 47.1228800015524,
+        "switch_default_ns": 148.2412080076756,
+        "goto_ns": 183.8123240013374,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 71.83501500549028,
+        "tiny_speed_ns": 46.4218780034571,
+        "switch_default_ns": 151.59189599216913,
+        "goto_ns": 187.67567200120538,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 69.65972750549554,
+        "tiny_speed_ns": 48.29206000431441,
+        "switch_default_ns": 138.42496399593074,
+        "goto_ns": 187.04309199529234,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      },
+      {
+        "medium_guard_ns": 68.2027350012504,
+        "tiny_speed_ns": 46.2493219965836,
+        "switch_default_ns": 142.5549479899928,
+        "goto_ns": 182.01745199621652,
+        "medium_size": 66,
+        "tiny_size": 20,
+        "medium_inlined": 1,
+        "tiny_inlined": 0
+      }
+    ]
+  }
+}

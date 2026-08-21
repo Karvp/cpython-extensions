@@ -1,0 +1,114 @@
+python_extensions / pyswitch 0.18.5 certification
+=================================================
+
+Environment
+-----------
+Python: CPython 3.13.5
+Release: python_extensions 0.18.5
+Focus: production portable pyswitch multi-type allocation-free exact-type routing
+
+Design certified
+----------------
+0.18.5 extends the allocation-free typed fast path introduced in 0.18.4 from
+single-type case plans to safe multi-type plans.
+
+For case_key_mode="typed":
+
+* A single safe exact case type retains the 0.18.4 `type(subject) is T` path.
+* A safe multi-type plan creates one ordinary subject dictionary per exact type
+  and a type-object router whose values are the corresponding bound dict.get
+  callables.
+* Runtime multi-type dispatch performs one `type(subject)` router lookup and one
+  ordinary subject-table lookup. It does not allocate `(type(subject), subject)`
+  on the optimized route, create a Python helper frame, or create a generated
+  routing local.
+* Exact-type subject dictionaries preserve ordinary Python hash/equality
+  semantics, collisions, and user exceptions within each exact type.
+* Subject equality cannot cross exact-type partitions.
+* If any case-key type object uses a custom metaclass, the complete typed plan
+  remains on the historical tuple-key backend.
+* An unknown runtime type takes the router miss getter, which still performs the
+  subject's real hash operation; intrinsic unhashables remain normal switch
+  misses while genuine user hash failures propagate.
+* The existing stack-resident expression/statement payload lowering remains
+  active and frame-transparent on supported CPython 3.13 shapes.
+* Production `auto` remains portable/non-self-modifying. Raw live bytecode modes
+  remain explicit experimental opt-ins.
+
+Public diagnostics
+------------------
+The transformed callable and optimization report expose:
+
+* typed_partition_plans / __pyswitch_typed_partition_plan_count__
+* typed_partition_types / __pyswitch_typed_partition_type_count__
+* typed_router_plans / __pyswitch_typed_router_plan_count__
+* typed_router_types / __pyswitch_typed_router_type_count__
+
+Package/static gates
+--------------------
+290/290 package tests passed.
+compileall passed for src/, tests/, and the 0.18.5 benchmark driver.
+
+Full stress/differential certification
+--------------------------------------
+pyswitch typed-router 0.18.5:       4,830,003 / 4,830,003
+pyswitch typed-partition 0.18.4:    4,760,005 / 4,760,005
+pyswitch stack-scheduler 0.18.3:    2,391,800 / 2,391,800
+pyswitch stack-payload 0.18.2:      6,450,800 / 6,450,800
+pyswitch adversarial 0.18.1:        4,703,400 / 4,703,400
+pyswitch production 0.18:           3,680,000 / 3,680,000
+
+Portable full-harness total:       26,816,008 / 26,816,008
+
+Explicit live compatibility:        1,239,100 / 1,239,100
+Total including live modes:        28,055,108 / 28,055,108
+
+The 0.18.5 router harness includes 2-8 exact case types, int/float/bool
+aliases, strings/bytes/tuples/None/complex values, custom hash failures,
+intrinsic unhashables, custom metaclass fallbacks, deliberately colliding
+cross-type keys, generated switches, guarded routes, expression/statement
+templates, 16-thread shared execution, and async concurrency.
+
+Final interleaved benchmark versus 0.18.4
+----------------------------------------
+Driver: benchmark_switch_v184_v185_typed_router.py
+Dataset: BENCHMARK_SWITCH_V184_V185_TYPED_ROUTER.json
+Runs: 7 independent processes per release/scenario
+Loops: 100,000 per scenario per process
+
+Scenario                 0.18.4 ns    0.18.5 ns    speedup
+----------------------------------------------------------------
+dict_ref                   60.01338     59.85244      1.003x
+python_direct              63.82204     61.41587      1.039x
+typed_single_hit           74.74850     72.44037      1.032x
+typed_single_miss          76.12494     75.05605      1.014x
+typed_mix2                 92.36841     83.56692      1.105x
+typed_mix2_miss            84.43611     78.19162      1.080x
+typed_mix4                 92.99003     82.21049      1.131x
+typed_mix4_miss            80.38077     82.50914      0.974x
+typed_mix8                 97.44235     86.18972      1.131x
+typed_mix8_miss            90.05897     83.46327      1.079x
+typed_expr                156.81568    147.48641      1.063x
+typed_stmt                182.47265    171.19197      1.066x
+typed_balanced            121.04507    118.20615      1.024x
+
+Unknown-type miss timing is more sensitive to process/CPU noise than the hit
+paths. A separate interleaved 13-process check with 700,000 calls per child for
+the 4-type unknown miss measured 89.590 ns for 0.18.4 and 87.970 ns for 0.18.5
+(1.018x). Therefore the release does not claim a guaranteed miss speedup; the
+headline result is the consistent removal of tuple-allocation overhead on
+multi-type typed hits and template/guarded routes.
+
+Interpretation
+--------------
+The optimized mixed typed path is generally 1.10-1.13x faster for 2/4/8-type
+direct-hit workloads in the final benchmark, while expression and statement
+templates improve about 1.06x and guarded balanced typed routing about 1.02x.
+The unchanged single-type path remains near parity/slightly positive. Absolute
+nanosecond timings are machine/build dependent; semantic/differential gates are
+the authoritative certification criteria.
+
+Release status
+--------------
+All semantic, stress, concurrency, tracing/frame, inherited regression, and
+performance acceptance gates passed on the versioned 0.18.5 source tree.

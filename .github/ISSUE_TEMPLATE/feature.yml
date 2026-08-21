@@ -1,0 +1,39 @@
+name: Feature request
+description: Propose a general-purpose extension or optimization
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Subsystem
+      options:
+        - switch
+        - inline
+        - goto
+        - composition / verifier
+        - packaging / tooling
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: General use case
+      description: Explain the real workload, not just a benchmark pattern.
+    validations:
+      required: true
+  - type: textarea
+    id: semantics
+    attributes:
+      label: Required Python semantics
+      description: Identify observable behavior that must not change.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+  - type: textarea
+    id: validation
+    attributes:
+      label: Suggested tests / benchmarks

@@ -1,0 +1,43 @@
+python_extensions 0.21.0 certification
+======================================
+Runtime: CPython 3.13.5
+Scope: pyswitch + inline_function/inline_calls + pygoto
+
+Release changes
+---------------
+* Inline: exact registered functions loaded through a caller free-variable cell may be inlined behind an operand-stack identity guard. The original LOAD_DEREF value is retained and reused by the cold fallback CALL, so nonlocal rebinding preserves one-time callable lookup. policy="speed" charges five guard instructions and rejects the trivial guarded call; policy="always" exposes the guarded transform. Telemetry: guarded_closure_calls.
+* Switch: compact_routes="auto" is an opt-in density heuristic. It hoists only source-location-identical route suffixes and requires a duplicated-AST gain >= 24. compact_routes=False remains the speed-first default.
+* Goto: patched code is explicitly passed through verify_code before report attachment. Telemetry: synthetic_jumps_verified (goto jumps + label-skip jumps), with zero-valued no-op reporting for marker-free functions.
+
+Static/package gates
+--------------------
+* Package tests: 333/333 passed.
+* compileall: src + tests clean.
+
+Full harnesses reproduced on the candidate/release code
+-------------------------------------------------------
+* New coordinated v21 harness:                5,700,000 calls
+* Coordinated v20 harness:                    5,624,000 calls
+* Inherited all-extensions v19 harness:       9,287,500 calls
+* Dedicated pygoto v19 harness:               3,526,500 calls/yields
+* pyswitch typed-router v18.5:                4,830,003 calls
+* pyswitch typed-partition v18.4:             4,760,005 calls
+* pyswitch adversarial v18.1:                 4,703,400 calls
+* pyswitch production v18:                    3,680,000 calls
+* inline lazy-strength:                       3,300,000 calls
+* inline dominance-strength:                  3,300,000 calls
+* inline strength-reduction:                  3,300,000 calls
+Portable total:                              52,011,408 calls/yields
+* explicit pyswitch live compatibility:       1,239,100 calls
+Grand total:                                 53,250,508 calls/yields
+
+Final seven-process benchmark interpretation
+--------------------------------------------
+Baseline: sealed 0.20.0 source. Candidate: 0.21.0 release source.
+* guarded medium closure helper: 68.376 ns -> 69.660 ns (0.982x). This is NOT advertised as a speed win; it is a policy="always" semantic-reach feature.
+* trivial closure helper with policy="speed": 47.806 ns -> 46.422 ns (1.030x control); both versions leave the call uninlined in the final 0.21 policy.
+* default portable switch control: 147.529 ns -> 142.555 ns (1.035x noisy control; default generated route policy unchanged).
+* goto loop control: 188.408 ns -> 184.585 ns (1.021x noisy control; runtime lowering unchanged).
+* compact_routes="auto" large-tail fixture: 336 code bytes, 1 shared-continuation plan. Auto compaction is a density option, not a throughput claim.
+
+The benchmark driver is benchmark_all_extensions_v200_v210.py; raw data is BENCHMARK_ALL_EXTENSIONS_V200_V210.json. Baseline source may be overridden with PE_V200_SRC.

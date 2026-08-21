@@ -1,0 +1,10 @@
+Python 3.13.5 — median of 5 isolated processes
+scenario              v0.12 ns   current ns  speedup   code 0.12->current  locals
+while_invariant         382.41      306.00    1.250x    96->72         5->5
+for_invariant           232.66      205.85    1.130x    76->52         6->6
+changed_control         398.25      385.69    1.033x   100->100        5->5
+
+current loop diagnostics:
+while_invariant headers= 1 invariants= 2 variant_kills= 0
+for_invariant headers= 1 invariants= 2 variant_kills= 0
+changed_control headers= 1 invariants= 1 variant_kills= 0

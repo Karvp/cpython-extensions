@@ -1,0 +1,146 @@
+python_extensions / pyswitch 0.18.2 certification
+================================================
+
+Release scope
+-------------
+This patch release hardens the CPython 3.13 pyswitch implementation while
+keeping the ordinary @enable_switch / mode="auto" portable backend as the
+production/general-purpose contract. Raw live-bytecode modes remain explicit,
+experimental opt-ins.
+
+Runtime used for certification
+------------------------------
+CPython 3.13.5
+
+Implemented / refined in 0.18.2
+-------------------------------
+1. Stack-resident template payloads
+   - Branchless portable expression templates and straight-line statement
+     templates can keep selected literal payloads on the CPython operand stack
+     instead of private __pyswitch_payload_* fast locals.
+   - Multi-payload shapes are supported (for example x * K + C).
+   - Former payload-local loads are rewritten to depth-correct COPY operations,
+     including CPython 3.13 fused fast-local load forms.
+   - Multi-payload returns preserve CPython 3.13's empty-stack-at-RETURN_VALUE
+     invariant with one deep SWAP followed by N POP_TOP cleanup operations.
+   - The transform fails closed outside CPython 3.13 and for unsupported
+     branching, suspension, exception/control-flow, or bytecode layouts.
+
+2. Conservative statement-template contract
+   - Shared statement-template lowering is restricted to truly straight-line
+     statements.
+   - try/loop/nested-control-flow shapes conservatively use balanced lowering.
+
+3. Debugger / tracer / line-table hardening
+   - Generated locations that fall before a function's physical first source
+     line are normalized after compilation.
+   - Explicit live wrappers are relocated into the original function's source
+     range.
+   - Portable and live regression tests cover sys.settrace, sys.setprofile and
+     CPython sys.monitoring paths.
+   - Remaining documented caveat: several portable O(1) routes can deliberately
+     share one canonical compiled template body, so exact per-route case-body
+     line attribution is not guaranteed within that shared region. Generated
+     source locations nevertheless do not escape before the real function range.
+
+4. Live-mode semantics / hot-path recovery
+   - Python-key and exact-type live dispatch now treat subjects with
+     __hash__ = None as ordinary misses/defaults, matching portable semantics.
+   - TypeError genuinely raised by user __hash__/__eq__ still propagates.
+   - The subject is evaluated exactly once.
+   - Common lookup remains bound C-level dict.get; CPython zero-cost exception
+     handling covers only the exceptional intrinsically-unhashable path.
+   - Compiler subject/gate temporaries are deleted before selected user code.
+
+Package regression suite
+------------------------
+262 / 262 tests passed after the 0.18.2 version bump.
+python -m compileall -q src tests also passed.
+
+Full stress / differential harnesses
+------------------------------------
+Stack-payload v18.2:            6,450,800 calls passed
+Inherited adversarial v18.1:    4,703,400 calls passed
+Inherited production v18:       3,680,000 calls passed
+Live compatibility v18.2:       1,239,100 calls passed
+
+Portable full-harness total:   14,834,200 calls
+All four full-harness total:   16,073,300 calls
+
+The full versioned-tree rerun completed after the final source/version changes.
+The first combined shell invocation reached its external command timeout after
+successfully completing the first two harnesses; the remaining production and
+live full profiles were then rerun independently and both passed. No harness
+reported a semantic/test failure.
+
+Representative coverage
+-----------------------
+- direct-value, expression-template, multi-payload expression-template,
+  statement-template and balanced backends
+- Python-equivalent and exact-runtime-type case identities
+- intrinsically unhashable subjects and user hash/equality exceptions
+- exceptions before/after payload use and outer exception handling
+- source-offset tracing, profiling and sys.monitoring callbacks
+- repeated switches in one function and generated switch functions
+- recursion, nested recursion, generators and coroutines
+- 16-thread shared portable execution and live threaded/isolation modes
+- repeated compilation / GC churn
+- explicit fast, thread_local, isolated and per_call compatibility
+
+CPython 3.13.5 five-process benchmark vs 0.18.1
+-----------------------------------------------
+Scenario                       0.18.1 ns   0.18.2 ns   speedup
+portable_direct64                69.491       70.415      0.987x
+portable_expr64                  83.014       85.749      0.968x
+portable_multi_expr64           105.386      106.495      0.990x
+portable_statement64            116.279      118.213      0.984x
+portable_typed16                 90.799       98.355      0.923x
+portable_balanced256            174.765      180.325      0.969x
+live_fast64                      94.481      103.433      0.913x
+live_fast_typed16               143.531      124.378      1.154x
+
+References in the same harness:
+- equivalent dict.get 64-case wrapper: 71.294 ns
+- 64-way if/elif:                  418.311 ns
+- 64-way match:                    435.562 ns
+
+Interpretation
+--------------
+The production portable direct-table path remains direct-dict-class speed and
+essentially flat with case count. Stack-resident expression/statement templates trade roughly 1-3% throughput in
+this reproduced run for eliminating common payload fast-locals from observable
+frames. The direct portable path remains direct-dict-class speed. Exact-type live
+dispatch improves materially. The experimental untyped live path intentionally
+pays about 8.7% for corrected single-evaluation/unhashable semantics rather than
+weakening behavior. One typed-portable sample set was noisy; the reported median
+therefore should not be interpreted as an architectural regression without a
+longer dedicated benchmark.
+
+Release recommendation
+----------------------
+Use @enable_switch / mode="auto" without live_threshold for general production
+code. Treat fast/thread_local/isolated/per_call as CPython-3.13-specific explicit
+research/compatibility modes.
+
+Reproducible artifacts
+----------------------
+- tests/test_switch_stack_payload_v182.py
+- tests/harness_switch_stack_payload_v182.py
+- tests/harness_switch_adversarial_v181.py
+- tests/harness_switch_production_v18.py
+- tests/harness_switch_live_v182.py
+- benchmark_switch_v181_v182_stack_payload.py
+- BENCHMARK_SWITCH_V181_V182_STACK_PAYLOAD.json
+
+Artifact validation
+-------------------
+- Built wheel metadata reports Version: 0.18.2.
+- Built sdist includes the 0.18.2 certification, benchmark dataset/script, and
+  both new v18.2 harnesses.
+- A fresh virtual environment installed the wheel with --no-deps and passed a
+  dependency-free direct portable switch smoke test.
+- The built wheel, loaded with bytecode 0.17.0, activated a multi-payload
+  stack-resident template and passed explicit typed-live unhashable/default
+  smoke checks.
+- The extracted sdist independently passed 262/262 tests and compileall under
+  CPython 3.13.5.

@@ -1,0 +1,5 @@
+3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+case            v0.8 ns    v0.9 ns    ratio  v0.8 bytes  v0.9 bytes     locals
+speed             70.33      69.28    1.015          26          26 1 -> 1
+middle           275.61     282.14    0.977         188         192 3 -> 2
+deep              95.88      96.44    0.994          44          46 2 -> 1

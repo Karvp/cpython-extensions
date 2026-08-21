@@ -1,0 +1,608 @@
+{
+  "baseline_code_bytes": {
+    "goto_backward": 104,
+    "goto_control": 12,
+    "goto_forward": 98,
+    "inline_dynamic": 8,
+    "inline_inv": 8,
+    "inline_neg": 8,
+    "inline_not": 16,
+    "inline_pos": 8,
+    "switch_binary": 192,
+    "switch_direct": 74
+  },
+  "baseline_telemetry": {
+    "goto_early_jump": false,
+    "inline_unary_folds": 0,
+    "switch_backend": "portable-balanced-v18",
+    "switch_binary_route_plans": 0
+  },
+  "candidate_code_bytes": {
+    "goto_backward": 104,
+    "goto_control": 12,
+    "goto_forward": 98,
+    "inline_dynamic": 8,
+    "inline_inv": 6,
+    "inline_neg": 6,
+    "inline_not": 6,
+    "inline_pos": 6,
+    "switch_binary": 194,
+    "switch_direct": 74
+  },
+  "candidate_telemetry": {
+    "goto_early_jump": true,
+    "inline_unary_folds": 1,
+    "switch_backend": "portable-balanced-v18",
+    "switch_binary_route_plans": 1
+  },
+  "loops_per_metric_per_process": 250000,
+  "medians": {
+    "goto_backward_ns": {
+      "baseline_ns": 732.574180001393,
+      "candidate_ns": 259.7044639987871,
+      "speedup": 2.8207993375301177
+    },
+    "goto_forward_fallthrough_ns": {
+      "baseline_ns": 70.69104400579818,
+      "candidate_ns": 40.04352800257038,
+      "speedup": 1.7653550406762495
+    },
+    "goto_forward_taken_ns": {
+      "baseline_ns": 94.43664400896523,
+      "candidate_ns": 34.14162799890619,
+      "speedup": 2.766026389016679
+    },
+    "goto_marker_free_control_ns": {
+      "baseline_ns": 31.07402799651027,
+      "candidate_ns": 25.00644000247121,
+      "speedup": 1.2426410154120078
+    },
+    "inline_dynamic_control_ns": {
+      "baseline_ns": 34.983404009835795,
+      "candidate_ns": 34.825083988835104,
+      "speedup": 1.0045461490071768
+    },
+    "inline_inv_ns": {
+      "baseline_ns": 33.348331999150105,
+      "candidate_ns": 24.83590399788227,
+      "speedup": 1.3427468556004114
+    },
+    "inline_neg_ns": {
+      "baseline_ns": 34.13842800364364,
+      "candidate_ns": 25.186027996824123,
+      "speedup": 1.355451046427344
+    },
+    "inline_not_ns": {
+      "baseline_ns": 28.134011998190545,
+      "candidate_ns": 24.238576006609946,
+      "speedup": 1.160712246070821
+    },
+    "inline_pos_ns": {
+      "baseline_ns": 31.187116008368317,
+      "candidate_ns": 25.314660000731237,
+      "speedup": 1.231978466527595
+    },
+    "switch_binary_guard_false_ns": {
+      "baseline_ns": 81.88525600417051,
+      "candidate_ns": 77.67218799563125,
+      "speedup": 1.054241654796389
+    },
+    "switch_binary_hit_ns": {
+      "baseline_ns": 84.63241999561433,
+      "candidate_ns": 72.30276000336744,
+      "speedup": 1.1705282065535623
+    },
+    "switch_binary_miss_ns": {
+      "baseline_ns": 71.99970800138544,
+      "candidate_ns": 63.549219994456514,
+      "speedup": 1.1329754795993732
+    },
+    "switch_direct_control_ns": {
+      "baseline_ns": 41.2451960000908,
+      "candidate_ns": 40.17789200588595,
+      "speedup": 1.0265644597294574
+    }
+  },
+  "processes_per_side": 7,
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "raw": {
+    "baseline": [
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 732.574180001393,
+          "goto_forward_fallthrough_ns": 85.76610800810158,
+          "goto_forward_taken_ns": 113.0497559934156,
+          "goto_marker_free_control_ns": 30.51615599542856,
+          "inline_dynamic_control_ns": 33.915492007508874,
+          "inline_inv_ns": 59.91985999571625,
+          "inline_neg_ns": 77.18626401037909,
+          "inline_not_ns": 27.485808008350432,
+          "inline_pos_ns": 32.38786000292748,
+          "switch_binary_guard_false_ns": 78.85554399399552,
+          "switch_binary_hit_ns": 105.1173320011003,
+          "switch_binary_miss_ns": 142.8134159941692,
+          "switch_direct_control_ns": 41.589428001316264
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 694.7347480017925,
+          "goto_forward_fallthrough_ns": 68.04269998974632,
+          "goto_forward_taken_ns": 98.58379600336775,
+          "goto_marker_free_control_ns": 35.14414399978705,
+          "inline_dynamic_control_ns": 36.73745199921541,
+          "inline_inv_ns": 32.80155600805301,
+          "inline_neg_ns": 34.09107199695427,
+          "inline_not_ns": 30.728996003745124,
+          "inline_pos_ns": 29.612856000312604,
+          "switch_binary_guard_false_ns": 101.27752400876489,
+          "switch_binary_hit_ns": 117.61180000030436,
+          "switch_binary_miss_ns": 112.28872400533874,
+          "switch_direct_control_ns": 41.050668005482294
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 761.8635679973522,
+          "goto_forward_fallthrough_ns": 75.46758798707742,
+          "goto_forward_taken_ns": 157.4548360076733,
+          "goto_marker_free_control_ns": 35.48054398561362,
+          "inline_dynamic_control_ns": 39.53865999937989,
+          "inline_inv_ns": 41.702360002091154,
+          "inline_neg_ns": 56.87172400939744,
+          "inline_not_ns": 28.134011998190545,
+          "inline_pos_ns": 31.233143992722034,
+          "switch_binary_guard_false_ns": 97.87856800539885,
+          "switch_binary_hit_ns": 75.31848399958108,
+          "switch_binary_miss_ns": 71.99970800138544,
+          "switch_direct_control_ns": 66.75230398832355
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 700.988807991962,
+          "goto_forward_fallthrough_ns": 69.93956399674062,
+          "goto_forward_taken_ns": 92.91830800066236,
+          "goto_marker_free_control_ns": 30.14556400012225,
+          "inline_dynamic_control_ns": 33.87795599701349,
+          "inline_inv_ns": 32.19713999715168,
+          "inline_neg_ns": 32.333260009181686,
+          "inline_not_ns": 27.901987996301614,
+          "inline_pos_ns": 30.16363200731576,
+          "switch_binary_guard_false_ns": 81.88525600417051,
+          "switch_binary_hit_ns": 73.02864000666887,
+          "switch_binary_miss_ns": 67.26129999151453,
+          "switch_direct_control_ns": 39.072163999662735
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 715.3875880030682,
+          "goto_forward_fallthrough_ns": 73.09638000151608,
+          "goto_forward_taken_ns": 93.73067600245122,
+          "goto_marker_free_control_ns": 32.340031990315765,
+          "inline_dynamic_control_ns": 37.37852399353869,
+          "inline_inv_ns": 33.034579988452606,
+          "inline_neg_ns": 32.579748003627174,
+          "inline_not_ns": 35.84544399927836,
+          "inline_pos_ns": 30.334563998621892,
+          "switch_binary_guard_false_ns": 81.1238039896125,
+          "switch_binary_hit_ns": 94.65881600044668,
+          "switch_binary_miss_ns": 101.91480800858699,
+          "switch_direct_control_ns": 40.23241200775374
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 743.5573359980481,
+          "goto_forward_fallthrough_ns": 69.2868319893023,
+          "goto_forward_taken_ns": 94.43664400896523,
+          "goto_marker_free_control_ns": 30.604728002799675,
+          "inline_dynamic_control_ns": 34.983404009835795,
+          "inline_inv_ns": 49.545984002179466,
+          "inline_neg_ns": 49.074927999754436,
+          "inline_not_ns": 45.28320400277153,
+          "inline_pos_ns": 40.045052010100335,
+          "switch_binary_guard_false_ns": 79.11793600942474,
+          "switch_binary_hit_ns": 78.80134800507221,
+          "switch_binary_miss_ns": 66.59226400370244,
+          "switch_direct_control_ns": 41.2451960000908
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 8,
+          "inline_neg": 8,
+          "inline_not": 16,
+          "inline_pos": 8,
+          "switch_binary": 192,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 743.176431991742,
+          "goto_forward_fallthrough_ns": 70.69104400579818,
+          "goto_forward_taken_ns": 94.07234399986919,
+          "goto_marker_free_control_ns": 31.07402799651027,
+          "inline_dynamic_control_ns": 34.30014399054926,
+          "inline_inv_ns": 33.348331999150105,
+          "inline_neg_ns": 34.13842800364364,
+          "inline_not_ns": 28.068191997590475,
+          "inline_pos_ns": 31.187116008368317,
+          "switch_binary_guard_false_ns": 82.46776000305545,
+          "switch_binary_hit_ns": 84.63241999561433,
+          "switch_binary_miss_ns": 68.18222800211515,
+          "switch_direct_control_ns": 44.6067159937229
+        },
+        "telemetry": {
+          "goto_early_jump": false,
+          "inline_unary_folds": 0,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 0
+        }
+      }
+    ],
+    "candidate": [
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 259.7044639987871,
+          "goto_forward_fallthrough_ns": 39.34020400629379,
+          "goto_forward_taken_ns": 36.70812799828127,
+          "goto_marker_free_control_ns": 25.00644000247121,
+          "inline_dynamic_control_ns": 34.51618799590506,
+          "inline_inv_ns": 24.83590399788227,
+          "inline_neg_ns": 24.205972003983334,
+          "inline_not_ns": 23.955556011060253,
+          "inline_pos_ns": 24.535939999623224,
+          "switch_binary_guard_false_ns": 72.96710800437722,
+          "switch_binary_hit_ns": 67.44441200862639,
+          "switch_binary_miss_ns": 59.7807720041601,
+          "switch_direct_control_ns": 40.02834799757693
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 308.4471960028168,
+          "goto_forward_fallthrough_ns": 38.57899199647363,
+          "goto_forward_taken_ns": 35.50610000093002,
+          "goto_marker_free_control_ns": 24.322544006281532,
+          "inline_dynamic_control_ns": 34.31448400078807,
+          "inline_inv_ns": 24.582008001743816,
+          "inline_neg_ns": 35.292743996251374,
+          "inline_not_ns": 24.171159995603375,
+          "inline_pos_ns": 24.650792009197176,
+          "switch_binary_guard_false_ns": 104.84488800284453,
+          "switch_binary_hit_ns": 99.1720119927777,
+          "switch_binary_miss_ns": 96.13561599690001,
+          "switch_direct_control_ns": 61.973111995030195
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 288.57761599647347,
+          "goto_forward_fallthrough_ns": 40.04352800257038,
+          "goto_forward_taken_ns": 33.60679600154981,
+          "goto_marker_free_control_ns": 24.596752002253197,
+          "inline_dynamic_control_ns": 34.825083988835104,
+          "inline_inv_ns": 25.654163997387514,
+          "inline_neg_ns": 25.186027996824123,
+          "inline_not_ns": 27.96544399461709,
+          "inline_pos_ns": 25.314660000731237,
+          "switch_binary_guard_false_ns": 77.67218799563125,
+          "switch_binary_hit_ns": 72.30276000336744,
+          "switch_binary_miss_ns": 63.549219994456514,
+          "switch_direct_control_ns": 39.6415720024379
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 251.74462000723,
+          "goto_forward_fallthrough_ns": 41.474860001471825,
+          "goto_forward_taken_ns": 34.14162799890619,
+          "goto_marker_free_control_ns": 24.824528009048663,
+          "inline_dynamic_control_ns": 34.97274799156003,
+          "inline_inv_ns": 25.19563998794183,
+          "inline_neg_ns": 25.085839995881543,
+          "inline_not_ns": 23.994896007934585,
+          "inline_pos_ns": 24.76483999635093,
+          "switch_binary_guard_false_ns": 80.63948000199161,
+          "switch_binary_hit_ns": 76.0204079997493,
+          "switch_binary_miss_ns": 62.06076400121674,
+          "switch_direct_control_ns": 41.533304000040516
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 244.33566399966364,
+          "goto_forward_fallthrough_ns": 41.0335599881364,
+          "goto_forward_taken_ns": 32.99788800359238,
+          "goto_marker_free_control_ns": 27.947855996899307,
+          "inline_dynamic_control_ns": 34.4329799991101,
+          "inline_inv_ns": 25.75811999849975,
+          "inline_neg_ns": 30.95633200427983,
+          "inline_not_ns": 24.769847994321026,
+          "inline_pos_ns": 25.603287998819724,
+          "switch_binary_guard_false_ns": 104.90019200369716,
+          "switch_binary_hit_ns": 103.07489600381814,
+          "switch_binary_miss_ns": 101.98908000893425,
+          "switch_direct_control_ns": 40.62611599511001
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 330.1794599974528,
+          "goto_forward_fallthrough_ns": 39.303027995629236,
+          "goto_forward_taken_ns": 34.160456008976325,
+          "goto_marker_free_control_ns": 27.73655999044422,
+          "inline_dynamic_control_ns": 55.06984000385273,
+          "inline_inv_ns": 24.47737600596156,
+          "inline_neg_ns": 24.62547599861864,
+          "inline_not_ns": 37.77046799950767,
+          "inline_pos_ns": 38.82832000090275,
+          "switch_binary_guard_false_ns": 76.3907200016547,
+          "switch_binary_hit_ns": 67.05771600536536,
+          "switch_binary_miss_ns": 59.27005199191626,
+          "switch_direct_control_ns": 39.17203200398944
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      },
+      {
+        "code_bytes": {
+          "goto_backward": 104,
+          "goto_control": 12,
+          "goto_forward": 98,
+          "inline_dynamic": 8,
+          "inline_inv": 6,
+          "inline_neg": 6,
+          "inline_not": 6,
+          "inline_pos": 6,
+          "switch_binary": 194,
+          "switch_direct": 74
+        },
+        "metrics": {
+          "goto_backward_ns": 237.23654000787064,
+          "goto_forward_fallthrough_ns": 40.468883991707116,
+          "goto_forward_taken_ns": 33.65574798954185,
+          "goto_marker_free_control_ns": 82.85111200530082,
+          "inline_dynamic_control_ns": 35.90028801409062,
+          "inline_inv_ns": 24.62663600454107,
+          "inline_neg_ns": 25.709244000609033,
+          "inline_not_ns": 24.238576006609946,
+          "inline_pos_ns": 26.84389600472059,
+          "switch_binary_guard_false_ns": 73.76485600252636,
+          "switch_binary_hit_ns": 66.9110559974797,
+          "switch_binary_miss_ns": 66.05514399416279,
+          "switch_direct_control_ns": 40.17789200588595
+        },
+        "telemetry": {
+          "goto_early_jump": true,
+          "inline_unary_folds": 1,
+          "switch_backend": "portable-balanced-v18",
+          "switch_binary_route_plans": 1
+        }
+      }
+    ]
+  },
+  "roots": {
+    "baseline": "/mnt/data/python_extensions-0.18.5_source_checkpoint/src",
+    "candidate": "/mnt/data/px185_work/python_extensions-0.18.5_source_checkpoint/src"
+  }
+}

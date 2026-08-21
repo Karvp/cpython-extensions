@@ -1,0 +1,82 @@
+python_extensions 1.0.1 production hardening certification
+=========================================================
+
+Release target
+--------------
+- Distribution: cpython-extensions 1.0.1
+- Import package: python_extensions
+- Runtime target: CPython >=3.13,<3.14
+- Certification interpreter: CPython 3.13.5
+- Production defaults remain semantics-safe: portable switch, guarded inline,
+  strict goto. Explicit live/self-modifying switch modes and unsafe goto remain
+  opt-in compatibility/research paths.
+
+Deep-audit corrections in 1.0.1
+-------------------------------
+- Inline registration lifecycle is transactional across temporary registration,
+  successful replacement, rollback, unregistration, and weak-reference cleanup.
+- Failed inline decoration no longer leaves a hidden registered identity.
+- Same-named methods and independently-created local/factory functions no longer
+  compete for a registry slot keyed only by a short function name.
+- Registry/current/original identities are ref-counted weakly and cleaned without
+  introducing locking on transformed runtime hot paths.
+- The dormant native-match switch compiler, unreachable from the production
+  lowering path, was removed.
+- Release version metadata has one source of truth and the distribution carries
+  a PEP 561 py.typed marker.
+- The sdist retains historical benchmark/certification evidence referenced by the
+  long-form README while excluding generated caches.
+- The redundant PEP 517 wheel build requirement was removed; setuptools>=75
+  supplies the wheel build command used by this release.
+- The distribution name is cpython-extensions; the python_extensions import API is
+  unchanged. This avoids collision with an unrelated normalized distribution name.
+- Switch marker parsing accepts exact aliases and qualified public forms such as
+  pe.switch / pe.case / pe.fallthrough without invoking arbitrary attribute hooks.
+- Reproducible release tooling builds the wheel under a fixed SOURCE_DATE_EPOCH
+  and canonically repacks the setuptools-selected sdist with fixed ordering,
+  ownership, and timestamps.
+
+Source verification
+-------------------
+- python -m pytest: 354/354 passed.
+- PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -X dev -W error -m pytest:
+  354/354 passed.
+- PYTHONMALLOC=debug + -X dev + -W error targeted release/API tests:
+  17/17 passed.
+- Targeted release/API tests passed under PYTHONHASHSEED=1 and 987654321.
+- python -m compileall -q -f src tests: passed.
+- Dependency-free lazy import smoke under python -S: passed; switch/goto/root
+  metadata import without bytecode, while requesting inline reports its explicit
+  bytecode dependency.
+- Branch-aware package coverage from the deep audit: 82% overall; switch 78%,
+  inline 83%, goto 85%.
+- Runtime code-payload SHA-256 (16 package/shim files, path+length framed):
+  04fa7dacf85d8d1ad23f19f01120b062ee00bdf53454d5069a16216fc295cc13
+
+Stress and differential evidence on the exact 1.0.1 runtime tree
+---------------------------------------------------------------
+- Deep 1.0.1 release harness: 3,766,637 operations
+  * portable switch differential calls: 1,800,012
+  * live switch calls: 1,262,500
+  * goto differential calls: 700,000
+  * inline registry transactions: 4,125
+  * independently verified generated code objects: 1,167
+- Coordinated all-extension v22 harness: 7,860,000 calls
+- Production switch differential/stress harness: 3,680,000 calls
+- Adversarial switch harness: 4,703,400 calls
+- Stack-payload switch harness: 6,450,800 calls
+- Stack-scheduler switch harness: 2,391,800 calls
+- Inline optimizer/stack/multi-stack/fusion harnesses: 15,600,000 operations
+- Inline selective-spill/live-range/segmented-lifetime harnesses:
+  10,770,000 operations
+
+Conservative accounted stress total: 55,222,637 operations.
+This total intentionally excludes any earlier execution whose component count was
+not reconstructed from retained 1.0.1 logs during the final sealing pass.
+
+Scope boundary
+--------------
+This certification is for the CPython 3.13.5 build used above. Concurrency and
+registry locking were exercised with threads, but a free-threaded CPython 3.13t
+interpreter was not available in this environment and is therefore not claimed
+as independently certified by this file.

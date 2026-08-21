@@ -1,0 +1,87 @@
+{
+  "python": "3.13.5",
+  "processes": 5,
+  "scenarios": {
+    "typed_direct16_mix": {
+      "old_ns": 105.50011111263302,
+      "new_ns": 94.91531111254719,
+      "speedup": 1.1115183617481352,
+      "partition": 1,
+      "stack": 0
+    },
+    "typed_direct16_hit": {
+      "old_ns": 108.61635555556859,
+      "new_ns": 94.13147777700539,
+      "speedup": 1.153879213634332,
+      "partition": 1,
+      "stack": 0
+    },
+    "typed_direct16_miss": {
+      "old_ns": 197.06193334059205,
+      "new_ns": 191.17283889297846,
+      "speedup": 1.030805079224201,
+      "partition": 1,
+      "stack": 0
+    },
+    "typed_direct64_mix": {
+      "old_ns": 105.1961555579813,
+      "new_ns": 93.13048334054959,
+      "speedup": 1.1295566369317687,
+      "partition": 1,
+      "stack": 0
+    },
+    "typed_str16": {
+      "old_ns": 108.76586111407958,
+      "new_ns": 95.57660000104482,
+      "speedup": 1.137996759801987,
+      "partition": 1,
+      "stack": 0
+    },
+    "typed_expr16": {
+      "old_ns": 129.05292777658258,
+      "new_ns": 119.0468166694498,
+      "speedup": 1.084051899807755,
+      "partition": 1,
+      "stack": 1
+    },
+    "typed_stmt16": {
+      "old_ns": 148.57913889095977,
+      "new_ns": 136.7724333350553,
+      "speedup": 1.0863237223175028,
+      "partition": 1,
+      "stack": 1
+    },
+    "typed_balanced16": {
+      "old_ns": 163.83348519892795,
+      "new_ns": 153.9217485921225,
+      "speedup": 1.064394646614044,
+      "partition": 1,
+      "stack": 0
+    },
+    "typed_mixed5": {
+      "old_ns": 112.09114143545504,
+      "new_ns": 111.12896145967433,
+      "speedup": 1.0086582288104067,
+      "partition": 0,
+      "stack": 0
+    },
+    "python_direct64": {
+      "old_ns": 82.92001666632132,
+      "new_ns": 81.03516111077624,
+      "speedup": 1.0232597249108748,
+      "partition": 0,
+      "stack": 0
+    },
+    "python_expr64": {
+      "old_ns": 92.2250333335089,
+      "new_ns": 92.3745888940175,
+      "speedup": 0.9983809880801723,
+      "partition": 0,
+      "stack": 1
+    }
+  },
+  "references": {
+    "tuple_ns": 105.08003889400344,
+    "partition_ns": 97.79737222035894
+  }
+}

@@ -1,0 +1,88 @@
+python_extensions 0.18.4 — pyswitch exact-type partition certification
+======================================================================
+
+Release focus
+-------------
+Portable typed-switch dispatch no longer allocates `(type(subject), subject)` on every dispatch when the compiler proves that every case key in a plan has one safe exact runtime type (ordinary `type` metaclass). Matching subjects use the raw per-type dictionary. Exact-type mismatches preserve observable hash semantics by invoking the subject's real hash once, then take the miss/default path without equality or tuple allocation. Mixed-type plans and custom-metaclass case types retain the conservative tuple-key backend.
+
+Environment
+-----------
+CPython: 3.13.5
+Production portable backend: non-self-modifying
+Optional dependency used for CPython bytecode template optimization: bytecode 0.17.x
+
+Package / compile certification
+-------------------------------
+278/278 package tests passed.
+`python -m compileall -q src tests` passed.
+
+Full semantic/stress certification
+----------------------------------
+New typed-partition harness:            4,760,005 calls passed
+Inherited 0.18.3 scheduler harness:     2,391,800 calls passed
+Inherited 0.18.2 stack-payload harness: 6,450,800 calls passed
+Inherited 0.18.1 adversarial harness:   4,703,400 calls passed
+Inherited 0.18 production harness:      3,680,000 calls passed
+Portable full-harness total:           21,986,005 calls passed
+Explicit live-mode compatibility:       1,239,100 calls passed
+Total full-harness calls:              23,225,105 calls passed
+
+Typed-partition coverage includes int/string exact-type partitions, hit/miss routing,
+intrinsic unhashables, genuine user hash failures, forced hash collisions, custom
+hash/equality observability, mixed-type non-transforms, stack-resident expression
+and statement templates, guarded/balanced routes, 16-thread sharing, async
+concurrency, compile-time hash/equality event counts, and public optimization
+report telemetry.
+
+Final focused benchmark (7 independent processes; medians)
+---------------------------------------------------------
+Scenario                         0.18.3 ns    0.18.4 ns    speedup
+Typed literal                    74.225       62.979        1.179x
+Typed expression template        93.142       83.458        1.116x
+Typed statement template        111.527      103.032        1.082x
+Typed guarded balanced route    134.161      128.437        1.045x
+
+Final broad benchmark (5 independent processes; medians)
+--------------------------------------------------------
+Scenario                         0.18.3 ns    0.18.4 ns    speedup
+Typed direct 16 mixed traffic   105.500       94.915        1.112x
+Typed direct 16 hits            108.616       94.131        1.154x
+Typed direct 16 misses          197.062      191.173        1.031x
+Typed direct 64 mixed traffic   105.196       93.130        1.130x
+Typed strings 16                108.766       95.577        1.138x
+Typed expression 16             129.053      119.047        1.084x
+Typed statement 16              148.579      136.772        1.086x
+Typed guarded balanced 16       163.833      153.922        1.064x
+Mixed-type typed plan           112.091      111.129        1.009x
+Python-key direct 64             82.920       81.035        1.023x
+Python-key expression 64         92.225       92.375        0.998x
+
+Reference implementations in the broad run:
+Historical tuple-key typed lookup: 105.080 ns
+Allocation-free partition reference: 97.797 ns
+
+Benchmark timings are machine/build specific. Semantic certification and backend
+selection rules are the release contract; absolute nanosecond figures are not.
+
+Release guarantees / conservative boundaries
+--------------------------------------------
+- The optimization is proof-based, not profile- or benchmark-specific.
+- All case keys in the plan must share one exact runtime type.
+- The case type object must use the ordinary `type` metaclass.
+- Matching subjects still use ordinary Python dictionary hash/equality semantics.
+- Exact-type mismatch never performs equality because typed equality is impossible,
+  but the real subject hash is executed once so user hash failures remain observable.
+- Intrinsically unhashable mismatches are ordinary misses/defaults.
+- Mixed typed plans remain on the 0.18.3 tuple-key route.
+- `auto` remains portable/non-self-modifying; raw live modes remain explicit opt-ins.
+- Partition counts are exposed via `__pyswitch_typed_partition_plan_count__`,
+  `__pyswitch_typed_partition_type_count__`, and optimization reports.
+
+Reproducibility files
+---------------------
+BENCHMARK_SWITCH_V183_V184_TYPED_PARTITION.json
+BENCHMARK_SWITCH_V183_V184_TYPED_CORE.json
+benchmark_switch_v183_v184_typed_partition.py
+benchmark_switch_v183_v184_typed_core.py
+tests/harness_switch_typed_partition_v184.py
+tests/test_switch_typed_partition_v184.py

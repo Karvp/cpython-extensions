@@ -1,0 +1,73 @@
+python_extensions / cpython-extensions 1.0.3
+PRODUCTION REPOSITORY CERTIFICATION
+Date: 2026-08-21
+Target: CPython 3.13.x
+Primary interpreter used for this pass: CPython 3.13.5
+
+SCOPE
+-----
+1.0.3 is a repository/release-engineering hardening release over the 1.0.2
+runtime. The switch, inline, goto, compose, and shared _core transformation
+modules are byte-identical to the certified 1.0.2 source tree. The only file
+under src/python_extensions changed for 1.0.3 is _version.py.
+
+Repository-facing changes include GitHub CI/security/release automation,
+contributor/security documentation, repository hygiene tooling, release smoke
+tests, an application-style stress harness, development extras/coverage
+configuration, and sanitization of historical benchmark launcher defaults.
+
+SOURCE TEST GATES
+-----------------
+PASS  370/370 ordinary package unit/regression tests
+PASS  370/370 under `python -X dev -W error` with third-party pytest plugin
+      autoload disabled
+PASS  370/370 under PYTHONMALLOC=debug + `python -X dev -W error`
+PASS  branch-aware coverage gate: 81% total (configured minimum: 80%)
+PASS  compileall for src/tests/tools/benchmark Python sources
+PASS  installed/source smoke for switch, guarded inline mutation/deopt, goto,
+      composition, and verify_code
+PASS  repository hygiene/version/generated-output/secret/local-path checks
+
+FULL-SCALE STRESS RERUN ON THE 1.0.3 SOURCE TREE
+------------------------------------------------
+  2,505,011  application-style public API operations
+  5,110,000  guarded inline mutation/concurrency operations
+  3,766,637  deep switch/live/goto/registry/generated-code operations
+  7,860,000  coordinated switch/inline/goto operations
+------------
+ 19,241,648  total full-scale stress operations
+
+The deep harness additionally verified 1,167 generated code objects.
+
+REPOSITORY AUTOMATION
+---------------------
+- CPython 3.13 test matrix: Ubuntu, Windows, macOS
+- CPython dev-mode and allocator-debug jobs
+- branch coverage gate
+- wheel/sdist build + metadata + installed-artifact smoke
+- CodeQL Python scanning
+- Dependabot for pip and GitHub Actions
+- dependency review for public pull requests
+- scheduled/manual production stress workflow
+- tag release workflow with deterministic double-build comparison
+- GitHub Release creation from validated artifacts
+- opt-in PyPI Trusted Publishing via OIDC; no repository token required
+
+SUPPORT BOUNDARY
+----------------
+Supported: CPython >=3.13,<3.14 with bytecode>=0.17,<0.18.
+The project remains CPython-specific. Free-threaded CPython 3.13t is not
+independently certified by this release and is not a required CI gate.
+
+PRODUCTION DEFAULTS
+-------------------
+Switch: mode="auto" (portable production lowering)
+Inline: policy="speed", binding="frozen"; use binding="guarded" for mutable or
+        replaceable targets
+Goto: mode="strict"
+Verifier failures are fail-closed and must not be bypassed in production.
+
+RESULT
+------
+PASS. 1.0.3 is suitable as the GitHub repository baseline and release tag,
+subject to the documented CPython 3.13 support boundary.

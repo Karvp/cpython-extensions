@@ -1,0 +1,8 @@
+[prefix_speed]
+0.7.0 median=153.817 ns range=150.391-172.162 bytes=124 locals=5 split=0 split_reads=0
+0.8.0 median=149.078 ns range=148.836-155.831 bytes=124 locals=4 split=1 split_reads=2
+
+[suffix_density]
+0.7.0 median=120.969 ns range=116.582-131.902 bytes=102 locals=4 split=0 split_reads=0
+0.8.0 median=125.215 ns range=122.185-134.887 bytes=104 locals=3 split=1 split_reads=3
+

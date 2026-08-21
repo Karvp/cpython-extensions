@@ -1,0 +1,75 @@
+python_extensions 0.22.0 certification
+=======================================
+
+Runtime
+-------
+CPython 3.13.5
+Production defaults remain portable/strict. Explicit switch live modes remain opt-in.
+
+Source-tree gates
+-----------------
+- Package tests: 343/343 passed.
+- compileall: passed for src/.
+- New 0.22 coordinated harness: 7,860,000/7,860,000 calls passed.
+- Inherited 0.21 coordinated harness: 5,700,000 calls passed.
+- Inherited 0.20 coordinated harness: 5,624,000 calls passed.
+- Inherited 0.19 unified harness: 9,287,500 calls passed.
+- Dedicated pygoto v19 harness: 3,526,500 calls/yields passed.
+- pyswitch typed-router harness: 4,830,003/4,830,003 calls passed.
+- pyswitch typed-partition harness: 4,760,005/4,760,005 calls passed.
+- pyswitch adversarial harness: 4,703,400 calls passed.
+- pyswitch production differential/stress harness: 3,680,000 calls passed.
+- Inline lazy-strength harness: 3,300,000 calls passed.
+- Inline dominance-strength harness: 3,300,000 calls passed.
+- Inline strength-reduction harness: 3,300,000 calls passed.
+
+Portable full-harness total: 59,871,408 calls/yields.
+Explicit live-switch compatibility: 1,239,100 calls passed.
+Grand full-harness total: 61,110,508 operations.
+
+0.22 refinements
+----------------
+Inline:
+- Guarded closure speed profitability is body-aware: concrete fold/prune reductions may repay the identity guard.
+- Public telemetry: guarded_closure_speed_accepted and guarded_closure_body_credit.
+- Closure-held registered bound methods and positional-only functools.partial objects are supported behind the same evaluate-once identity guard.
+- Keyword-bearing partials and generic callable instances remain ordinary calls because behavior can mutate without object identity changing.
+
+pyswitch:
+- compact_routes="auto" uses a side-effect-free compiled CPython bytecode-size proxy instead of AST-node count.
+- Context-dependent tails fail closed.
+- Public telemetry: auto_compact_plans and auto_compact_estimated_bytes_saved.
+- Default compact_routes=False remains unchanged.
+
+pygoto:
+- Every emitted goto and label-skip native jump is proven against the final CFG: exact opcode/target, CFG terminator placement, jump successor, and strict source exception signature.
+- One verified CFG is reused for the feature proof and report.
+- Public telemetry includes cfg_verification_passes=1.
+
+Final seven-process alternating benchmark vs 0.21.0
+---------------------------------------------------
+Median per-process measurements from BENCHMARK_ALL_EXTENSIONS_V210_V220.json:
+- guarded closure body-specialized call: 72.84 ns -> 54.71 ns (1.331x)
+- trivial guarded speed-policy control: 51.44 ns -> 46.88 ns (1.097x; unchanged path, treated as parity/noise)
+- auto-compacted switch hit: 213.99 ns -> 198.00 ns (1.081x)
+- auto-compacted switch miss: 173.93 ns -> 173.44 ns (1.003x)
+- default portable switch control: 42.57 ns -> 41.15 ns (1.035x; unchanged default policy)
+- goto runtime control: 265.47 ns -> 261.82 ns (1.014x; runtime bytecode unchanged)
+- goto decoration: 1,200,616.99 ns -> 904,814.75 ns (1.327x)
+
+The representative auto-compaction fixture is 322 bytes on 0.21.0 and 238 bytes on 0.22.0; the bytecode proxy estimated 92 duplicated bytes saved. Route timing is density/profile sensitive and is not claimed as universally faster.
+
+Safety notes
+------------
+- No new self-modifying behavior is added to the production portable switch path.
+- Guarded closure fallback reuses the exact object loaded from the closure cell; rebinding does not cause a second closure read.
+- Identity-only guarded inlining is deliberately not applied to mutable-keyword partials or generic callable instances.
+- Switch auto-compaction never executes user code during its size estimate and fails closed for unsupported lexical contexts.
+- pygoto strict mode still rejects protected-region violations and additionally proves each final synthetic CFG edge.
+
+Artifact validation
+-------------------
+- Final wheel installed with --no-deps into an isolated target and passed dependency-free pyswitch/pygoto smoke; import resolved from the installed wheel target.
+- The installed wheel also passed a guarded-closure body-aware inline smoke with the optional bytecode backend active; guarded_closure_speed_accepted=1 and guarded_closure_body_credit=2.
+- Final extracted sdist independently passed 343/343 package tests and compileall.
+- Wheel ZIP and sdist TAR archive integrity are checked during sealing.

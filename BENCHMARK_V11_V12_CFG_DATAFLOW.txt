@@ -1,0 +1,18 @@
+3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]
+baseline=/mnt/data/python_extensions_v0_12_work/python_extensions-0.11.0-source/src
+current=/mnt/data/python_extensions_v0_12_impl/src
+
+[branch_merge]
+baseline 46.40 ns  code=64 locals=4
+current  43.40 ns  code=40 locals=4
+speedup  1.069x
+
+[fixed_point]
+baseline 56.47 ns  code=88 locals=5
+current  49.10 ns  code=44 locals=5
+speedup  1.150x
+
+[different_merge]
+baseline 47.08 ns  code=64 locals=4
+current  47.38 ns  code=64 locals=4
+speedup  0.994x
